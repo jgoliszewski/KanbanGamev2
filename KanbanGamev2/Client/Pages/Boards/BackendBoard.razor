@@ -1,0 +1,122 @@
+@page "/backend-board"
+@using KanbanGame.Shared
+@using KanbanGamev2.Client.Services
+@using KanbanGamev2.Client.Components
+@inject IEmployeeService EmployeeService
+@inject ITaskService TaskService
+
+<PageTitle>Backend Development Board</PageTitle>
+
+<link href="css/kanban.css" rel="stylesheet" />
+
+<div class="container-fluid">
+    <KanbanBoard 
+        Title="Backend Development Board"
+        Description="Track backend tasks and employee assignments through the development process"
+        BoardType="@BoardType.Backend"
+        Columns="@backendColumns"
+        OnCardMoved="@OnCardMoved" />
+</div>
+
+@code {
+    private List<KanbanBoard.KanbanColumnData> backendColumns = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+        OrganizeColumns();
+    }
+
+    private async Task LoadData()
+    {
+        await EmployeeService.GetEmployees();
+        await TaskService.GetTasks();
+    }
+
+    private void OrganizeColumns()
+    {
+        backendColumns = new List<KanbanBoard.KanbanColumnData>
+        {
+            new KanbanBoard.KanbanColumnData
+            {
+                Title = "Backlog",
+                ColumnId = "backend-backlog",
+                Cards = GetCardsByColumn("backend-backlog")
+            },
+            new KanbanBoard.KanbanColumnData
+            {
+                Title = "Analysis",
+                ColumnId = "backend-analysis",
+                Cards = GetCardsByColumn("backend-analysis")
+            },
+            new KanbanBoard.KanbanColumnData
+            {
+                Title = "Development Waiting",
+                ColumnId = "backend-dev-waiting",
+                Cards = GetCardsByColumn("backend-dev-waiting")
+            },
+            new KanbanBoard.KanbanColumnData
+            {
+                Title = "Development Doing",
+                ColumnId = "backend-dev-doing",
+                Cards = GetCardsByColumn("backend-dev-doing")
+            },
+            new KanbanBoard.KanbanColumnData
+            {
+                Title = "Testing Waiting",
+                ColumnId = "backend-test-waiting",
+                Cards = GetCardsByColumn("backend-test-waiting")
+            },
+            new KanbanBoard.KanbanColumnData
+            {
+                Title = "Testing Doing",
+                ColumnId = "backend-test-doing",
+                Cards = GetCardsByColumn("backend-test-doing")
+            },
+            new KanbanBoard.KanbanColumnData
+            {
+                Title = "Done",
+                ColumnId = "backend-done",
+                Cards = GetCardsByColumn("backend-done")
+            }
+        };
+    }
+
+    private List<Card> GetCardsByColumn(string columnId)
+    {
+        var cards = new List<Card>();
+        
+        // Add tasks for this column
+        var tasks = TaskService.Tasks.Where(t => t.ColumnId == columnId).ToList();
+        cards.AddRange(tasks);
+        
+        // Add employees for this column
+        var employees = EmployeeService.Employees.Where(e => e.ColumnId == columnId).ToList();
+        cards.AddRange(employees);
+        
+        return cards;
+    }
+
+    private async Task OnCardMoved((Card card, string fromColumn, string toColumn) moveInfo)
+    {
+        var (card, fromColumn, toColumn) = moveInfo;
+        
+        // Update the card's column
+        card.ColumnId = toColumn;
+        card.UpdatedAt = DateTime.Now;
+
+        // Update the card in the appropriate service
+        if (card is Employee employee)
+        {
+            await EmployeeService.UpdateEmployee(employee);
+        }
+        else if (card is KanbanTask task)
+        {
+            await TaskService.UpdateTask(task);
+        }
+
+        // Reorganize columns to reflect the change
+        OrganizeColumns();
+        StateHasChanged();
+    }
+} 

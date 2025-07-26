@@ -1,18 +1,21 @@
 @using KanbanGame.Shared
+@using KanbanGamev2.Client.Services
+@inject IDragDropService DragDropService
 
 <div class="kanban-board">
-    <div class="board-header mb-3">
+    <div class="board-header mb-3 @(DragDropService.IsReadOnlyBoard(BoardType) ? "read-only" : "")">
         <h2>@Title</h2>
         <p class="text-muted">@Description</p>
     </div>
     <div class="board-content">
-        <div class="row">
+        <div class="d-flex flex-row" style="gap: 15px;">
             @foreach (var column in Columns)
             {
-                <div class="col-md-3">
+                <div class="flex-fill">
                     <DroppableColumn 
                         Title="@column.Title" 
                         ColumnId="@column.ColumnId"
+                        BoardType="@BoardType"
                         Cards="@column.Cards" 
                         OnCardMoved="@OnCardMoved" />
                 </div>
@@ -24,6 +27,7 @@
 @code {
     [Parameter] public string Title { get; set; } = string.Empty;
     [Parameter] public string Description { get; set; } = string.Empty;
+    [Parameter] public BoardType BoardType { get; set; }
     [Parameter] public List<KanbanColumnData> Columns { get; set; } = new();
     [Parameter] public EventCallback<(Card card, string fromColumn, string toColumn)> OnCardMoved { get; set; }
 

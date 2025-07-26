@@ -10,12 +10,24 @@
     min-height: 400px;
     border: 1px solid #dee2e6;
     transition: all 0.2s ease;
+    flex: 1;
+    margin-right: 15px;
+}
+
+.kanban-column:last-child {
+    margin-right: 0;
 }
 
 .kanban-column.drag-over {
     background-color: #e3f2fd;
     border-color: #2196f3;
     box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
+}
+
+.kanban-column.invalid-drop {
+    background-color: #ffebee;
+    border-color: #f44336;
+    box-shadow: 0 0 10px rgba(244, 67, 54, 0.3);
 }
 
 .column-header {
@@ -83,6 +95,53 @@
     margin-bottom: 10px;
 }
 
+/* Employee Card Specific Styles */
+.employee-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.employee-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #dee2e6;
+}
+
+.employee-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.employee-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #495057;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.employee-seniority {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-bottom: 4px;
+}
+
+.employee-status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.employee-status .badge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+}
+
 /* Drag and Drop Styles */
 .draggable-card {
     transition: all 0.2s ease;
@@ -94,14 +153,28 @@
     z-index: 1000;
 }
 
+/* Read-only board indicator */
+.board-header.read-only::after {
+    content: " (Read Only)";
+    color: #6c757d;
+    font-size: 0.9rem;
+    font-weight: normal;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .kanban-column {
         margin-bottom: 15px;
         min-height: 300px;
+        margin-right: 0;
     }
 
     .column-content {
         min-height: 200px;
+    }
+
+    .employee-avatar {
+        width: 35px;
+        height: 35px;
     }
 }

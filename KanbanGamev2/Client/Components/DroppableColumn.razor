@@ -17,6 +17,7 @@
             <DraggableCard 
                 Card="@card"
                 ColumnId="@ColumnId"
+                BoardType="@BoardType"
                 OnCardMoved="@OnCardMoved" />
         }
     </div>
@@ -25,14 +26,25 @@
 @code {
     [Parameter] public string Title { get; set; } = string.Empty;
     [Parameter] public string ColumnId { get; set; } = string.Empty;
+    [Parameter] public BoardType BoardType { get; set; }
     [Parameter] public List<Card> Cards { get; set; } = new();
     [Parameter] public EventCallback<(Card card, string fromColumn, string toColumn)> OnCardMoved { get; set; }
 
-    private bool IsDragOver => DragDropService.IsDragging && DragDropService.TargetColumnId == ColumnId;
+    private bool IsDragOver => DragDropService.IsDragging && 
+                               DragDropService.TargetColumnId == ColumnId && 
+                               IsValidDropTarget();
+
+    private bool IsValidDropTarget()
+    {
+        if (!DragDropService.IsDragging || DragDropService.DraggedCard == null || DragDropService.SourceColumnId == null)
+            return false;
+
+        return DragDropService.IsValidMove(BoardType, DragDropService.DraggedCard, DragDropService.SourceColumnId, ColumnId);
+    }
 
     private void OnDragOver(DragEventArgs e)
     {
-        if (DragDropService.IsDragging && DragDropService.SourceColumnId != ColumnId)
+        if (DragDropService.IsDragging && DragDropService.SourceColumnId != ColumnId && IsValidDropTarget())
         {
             DragDropService.SetDropTarget(ColumnId);
             StateHasChanged();
@@ -41,7 +53,7 @@
 
     private async void OnDrop(DragEventArgs e)
     {
-        if (DragDropService.IsDragging && DragDropService.SourceColumnId != ColumnId)
+        if (DragDropService.IsDragging && DragDropService.SourceColumnId != ColumnId && IsValidDropTarget())
         {
             // Handle the card movement
             await OnCardMoved.InvokeAsync((DragDropService.DraggedCard!, DragDropService.SourceColumnId!, ColumnId));

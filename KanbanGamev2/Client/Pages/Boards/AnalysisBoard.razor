@@ -1,24 +1,25 @@
-@page "/backend-board"
+@page "/analysis-board"
 @using KanbanGame.Shared
 @using KanbanGamev2.Client.Services
 @using KanbanGamev2.Client.Components
 @inject IEmployeeService EmployeeService
-@inject ITaskService TaskService
+@inject IFeatureService FeatureService
 
-<PageTitle>Backend Development Board</PageTitle>
+<PageTitle>High Level Analysis Board</PageTitle>
 
 <link href="css/kanban.css" rel="stylesheet" />
 
 <div class="container-fluid">
     <KanbanBoard 
-        Title="Backend Development Board"
-        Description="Track backend tasks and employee assignments through the development process"
-        Columns="@backendColumns"
+        Title="High Level Analysis Board"
+        Description="Track features and employee assignments through the analysis process"
+        BoardType="@BoardType.Analysis"
+        Columns="@analysisColumns"
         OnCardMoved="@OnCardMoved" />
 </div>
 
 @code {
-    private List<KanbanBoard.KanbanColumnData> backendColumns = new();
+    private List<KanbanBoard.KanbanColumnData> analysisColumns = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -29,54 +30,42 @@
     private async Task LoadData()
     {
         await EmployeeService.GetEmployees();
-        await TaskService.GetTasks();
+        await FeatureService.GetFeatures();
     }
 
     private void OrganizeColumns()
     {
-        backendColumns = new List<KanbanBoard.KanbanColumnData>
+        analysisColumns = new List<KanbanBoard.KanbanColumnData>
         {
             new KanbanBoard.KanbanColumnData
             {
                 Title = "Backlog",
-                ColumnId = "backend-backlog",
-                Cards = GetCardsByColumn("backend-backlog")
+                ColumnId = "backlog",
+                Cards = GetCardsByColumn("backlog")
             },
             new KanbanBoard.KanbanColumnData
             {
-                Title = "Analysis",
-                ColumnId = "backend-analysis",
-                Cards = GetCardsByColumn("backend-analysis")
+                Title = "Under Analysis 1",
+                ColumnId = "analysis1",
+                Cards = GetCardsByColumn("analysis1")
             },
             new KanbanBoard.KanbanColumnData
             {
-                Title = "Development Waiting",
-                ColumnId = "backend-dev-waiting",
-                Cards = GetCardsByColumn("backend-dev-waiting")
+                Title = "Waiting",
+                ColumnId = "waiting",
+                Cards = GetCardsByColumn("waiting")
             },
             new KanbanBoard.KanbanColumnData
             {
-                Title = "Development Doing",
-                ColumnId = "backend-dev-doing",
-                Cards = GetCardsByColumn("backend-dev-doing")
+                Title = "Under Analysis 2",
+                ColumnId = "analysis2",
+                Cards = GetCardsByColumn("analysis2")
             },
             new KanbanBoard.KanbanColumnData
             {
-                Title = "Testing Waiting",
-                ColumnId = "backend-test-waiting",
-                Cards = GetCardsByColumn("backend-test-waiting")
-            },
-            new KanbanBoard.KanbanColumnData
-            {
-                Title = "Testing Doing",
-                ColumnId = "backend-test-doing",
-                Cards = GetCardsByColumn("backend-test-doing")
-            },
-            new KanbanBoard.KanbanColumnData
-            {
-                Title = "Done",
-                ColumnId = "backend-done",
-                Cards = GetCardsByColumn("backend-done")
+                Title = "Ready for Development",
+                ColumnId = "ready-dev",
+                Cards = GetCardsByColumn("ready-dev")
             }
         };
     }
@@ -85,9 +74,9 @@
     {
         var cards = new List<Card>();
         
-        // Add tasks for this column
-        var tasks = TaskService.Tasks.Where(t => t.ColumnId == columnId).ToList();
-        cards.AddRange(tasks);
+        // Add features for this column
+        var features = FeatureService.Features.Where(f => f.ColumnId == columnId).ToList();
+        cards.AddRange(features);
         
         // Add employees for this column
         var employees = EmployeeService.Employees.Where(e => e.ColumnId == columnId).ToList();
@@ -109,9 +98,9 @@
         {
             await EmployeeService.UpdateEmployee(employee);
         }
-        else if (card is KanbanTask task)
+        else if (card is Feature feature)
         {
-            await TaskService.UpdateTask(task);
+            await FeatureService.UpdateFeature(feature);
         }
 
         // Reorganize columns to reflect the change

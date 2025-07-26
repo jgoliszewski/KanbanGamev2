@@ -72,13 +72,14 @@ public class EmployeeService : IEmployeeService
     {
         _employees = new List<Employee>
         {
+            // Analysis Board - Employees can only be in analysis1 and analysis2
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Name = "John Doe",
+                Name = "Alex Turner",
                 Role = Role.SeniorDeveloper,
                 Department = Department.Engineering,
-                Email = "john.doe@company.com",
+                Email = "alex.turner@company.com",
                 IsAvailable = true,
                 ColumnId = "analysis1",
                 Order = 1
@@ -86,10 +87,23 @@ public class EmployeeService : IEmployeeService
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Name = "Jane Smith",
+                Name = "Emma Davis",
+                Role = Role.ProductManager,
+                Department = Department.Product,
+                Email = "emma.davis@company.com",
+                IsAvailable = true,
+                ColumnId = "analysis2",
+                Order = 1
+            },
+            
+            // Backend Board - Employees can only be in analysis, backend-dev-doing, backend-test-doing
+            new Employee
+            {
+                Id = Guid.NewGuid(),
+                Name = "Beth Cooper",
                 Role = Role.LeadDeveloper,
                 Department = Department.Engineering,
-                Email = "jane.smith@company.com",
+                Email = "beth.cooper@company.com",
                 IsAvailable = false,
                 ColumnId = "backend-dev-doing",
                 Order = 1
@@ -97,21 +111,10 @@ public class EmployeeService : IEmployeeService
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Name = "Mike Johnson",
-                Role = Role.Developer,
-                Department = Department.Engineering,
-                Email = "mike.johnson@company.com",
-                IsAvailable = true,
-                ColumnId = "frontend-dev-doing",
-                Order = 1
-            },
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Sarah Wilson",
+                Name = "David Brown",
                 Role = Role.QAEngineer,
                 Department = Department.QualityAssurance,
-                Email = "sarah.wilson@company.com",
+                Email = "david.brown@company.com",
                 IsAvailable = true,
                 ColumnId = "backend-test-doing",
                 Order = 1
@@ -119,12 +122,47 @@ public class EmployeeService : IEmployeeService
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Name = "David Brown",
-                Role = Role.ProductManager,
-                Department = Department.Product,
-                Email = "david.brown@company.com",
+                Name = "Henry Chen",
+                Role = Role.DevOpsEngineer,
+                Department = Department.Engineering,
+                Email = "henry.chen@company.com",
                 IsAvailable = true,
-                ColumnId = "analysis2",
+                ColumnId = "backend-analysis",
+                Order = 1
+            },
+            
+            // Frontend Board - Employees can only be in frontend-analysis, frontend-dev-doing, frontend-test-doing
+            new Employee
+            {
+                Id = Guid.NewGuid(),
+                Name = "Claire Bennett",
+                Role = Role.Developer,
+                Department = Department.Engineering,
+                Email = "claire.bennett@company.com",
+                IsAvailable = true,
+                ColumnId = "frontend-dev-doing",
+                Order = 1
+            },
+            new Employee
+            {
+                Id = Guid.NewGuid(),
+                Name = "Frank Miller",
+                Role = Role.UIDesigner,
+                Department = Department.Design,
+                Email = "frank.miller@company.com",
+                IsAvailable = true,
+                ColumnId = "frontend-analysis",
+                Order = 1
+            },
+            new Employee
+            {
+                Id = Guid.NewGuid(),
+                Name = "Grace Lee",
+                Role = Role.UXDesigner,
+                Department = Department.Design,
+                Email = "grace.lee@company.com",
+                IsAvailable = false,
+                ColumnId = "frontend-test-doing",
                 Order = 1
             }
         };

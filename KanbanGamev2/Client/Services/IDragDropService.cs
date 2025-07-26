@@ -12,4 +12,8 @@ public interface IDragDropService
     void SetDropTarget(string columnId);
     void ClearDrag();
     bool IsDragging { get; }
+    
+    // Validation methods
+    bool IsValidMove(BoardType boardType, Card card, string fromColumn, string toColumn);
+    bool IsReadOnlyBoard(BoardType boardType);
 } 
