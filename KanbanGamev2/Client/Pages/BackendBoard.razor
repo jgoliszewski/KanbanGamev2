@@ -4,6 +4,8 @@
 @using KanbanGamev2.Client.Components
 @inject IEmployeeService EmployeeService
 @inject ITaskService TaskService
+@inject ISignalRService SignalRService
+@implements IDisposable
 
 <PageTitle>Backend Development Board</PageTitle>
 
@@ -26,6 +28,9 @@
     {
         await LoadData();
         OrganizeColumns();
+        
+        // Subscribe to real-time board updates
+        SignalRService.BoardUpdated += OnBoardUpdated;
     }
 
     private async Task LoadData()
@@ -156,5 +161,25 @@
         // Reorganize columns to reflect the change
         OrganizeColumns();
         StateHasChanged();
+        
+        // Notify other players about the work assignment
+        await SignalRService.NotifyBoardUpdateAsync(BoardType.Backend.ToString(), employee.ColumnId, workCard);
+    }
+
+    private async void OnBoardUpdated(string boardType, string columnId, object cardData)
+    {
+        // Only handle updates for this board type
+        if (boardType == BoardType.Backend.ToString())
+        {
+            // Reload data from services to ensure we have the latest state
+            await LoadData();
+            OrganizeColumns();
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        SignalRService.BoardUpdated -= OnBoardUpdated;
     }
 } 

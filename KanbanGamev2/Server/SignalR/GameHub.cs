@@ -55,12 +55,33 @@ public class GameHub : Hub
         
         await Clients.All.SendAsync("UpdateReadyCount", _readyUsers.Count);
         await Clients.All.SendAsync("UserReadyStatusChanged", connectionId, isReady);
+        
+        // Check if all connected users are ready
+        if (_readyUsers.Count > 0 && _readyUsers.Count == _connectedUsers.Count)
+        {
+            await Clients.All.SendAsync("AllPlayersReady");
+        }
     }
 
     public async Task GetCurrentStats()
     {
         await Clients.Caller.SendAsync("UpdateConnectedCount", _connectedUsers.Count);
         await Clients.Caller.SendAsync("UpdateReadyCount", _readyUsers.Count);
+    }
+
+    public async Task AdvanceToNextDay()
+    {
+        // Reset all users to not ready
+        _readyUsers.Clear();
+        
+        // Notify all clients about the next day
+        await Clients.All.SendAsync("NextDayStarted");
+        await Clients.All.SendAsync("UpdateReadyCount", 0);
+    }
+
+    public async Task NotifyBoardUpdate(string boardType, string columnId, object cardData)
+    {
+        await Clients.All.SendAsync("BoardUpdated", boardType, columnId, cardData);
     }
 
     public static int GetConnectedCount() => _connectedUsers.Count;

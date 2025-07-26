@@ -7,6 +7,9 @@ public interface ISignalRService
     event Action<UserInfo>? UserConnected;
     event Action<string>? UserDisconnected;
     event Action<string, bool>? UserReadyStatusChanged;
+    event Action? AllPlayersReady;
+    event Action? NextDayStarted;
+    event Action<string, string, object>? BoardUpdated;
     
     bool IsConnected { get; }
     int ConnectedCount { get; }
@@ -16,6 +19,8 @@ public interface ISignalRService
     Task DisconnectAsync();
     Task SetReadyStatusAsync(bool isReady);
     Task GetCurrentStatsAsync();
+    Task AdvanceToNextDayAsync();
+    Task NotifyBoardUpdateAsync(string boardType, string columnId, object cardData);
 }
 
 public class UserInfo

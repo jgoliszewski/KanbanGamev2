@@ -1,6 +1,7 @@
 @using KanbanGame.Shared
 @using KanbanGamev2.Client.Services
 @inject IDragDropService DragDropService
+@inject ISignalRService SignalRService
 
 <div class="draggable-card @(IsDragging ? "dragging" : "") @(IsAssignedWorkItem ? "assigned-work-item" : "") @(IsDragOverEmployee ? "drag-over-employee" : "")"
      draggable="true"
@@ -177,6 +178,10 @@
                     draggedCard.ColumnId = employee.ColumnId;
                     DragDropService.AssignWorkToEmployee(draggedCard, employee);
                     await OnWorkAssigned.InvokeAsync((draggedCard, employee));
+                    
+                    // Notify other players about the work assignment
+                    await SignalRService.NotifyBoardUpdateAsync(BoardType.ToString(), employee.ColumnId, draggedCard);
+                    
                     StateHasChanged();
                 }
             }
@@ -189,6 +194,10 @@
                     Card.ColumnId = draggedEmployee.ColumnId;
                     DragDropService.AssignWorkToEmployee(Card, draggedEmployee);
                     await OnWorkAssigned.InvokeAsync((Card, draggedEmployee));
+                    
+                    // Notify other players about the work assignment
+                    await SignalRService.NotifyBoardUpdateAsync(BoardType.ToString(), draggedEmployee.ColumnId, Card);
+                    
                     StateHasChanged();
                 }
             }

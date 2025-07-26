@@ -41,6 +41,8 @@
         SignalRService.UserConnected += OnUserConnected;
         SignalRService.UserDisconnected += OnUserDisconnected;
         SignalRService.UserReadyStatusChanged += OnUserReadyStatusChanged;
+        SignalRService.AllPlayersReady += OnAllPlayersReady;
+        SignalRService.NextDayStarted += OnNextDayStarted;
 
         // Subscribe to game state events
         GameStateService.DayChanged += OnDayChanged;
@@ -57,9 +59,23 @@
         StateHasChanged();
     }
 
-    private async void AdvanceToNextDay()
+    private async Task AdvanceToNextDay()
     {
+        await SignalRService.AdvanceToNextDayAsync();
         await GameStateService.AdvanceToNextDay();
+    }
+
+    private void OnAllPlayersReady()
+    {
+        // Automatically advance to next day when all players are ready
+        _ = AdvanceToNextDay();
+    }
+
+    private void OnNextDayStarted()
+    {
+        // Reset local ready status when next day starts
+        IsReady = false;
+        StateHasChanged();
     }
 
     private void OnConnectedCountChanged(int count)
@@ -105,6 +121,8 @@
         SignalRService.UserConnected -= OnUserConnected;
         SignalRService.UserDisconnected -= OnUserDisconnected;
         SignalRService.UserReadyStatusChanged -= OnUserReadyStatusChanged;
+        SignalRService.AllPlayersReady -= OnAllPlayersReady;
+        SignalRService.NextDayStarted -= OnNextDayStarted;
 
         GameStateService.DayChanged -= OnDayChanged;
         GameStateService.AchievementUnlocked -= OnAchievementUnlocked;

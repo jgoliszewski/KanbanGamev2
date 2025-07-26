@@ -1,0 +1,113 @@
+.game-status {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 16px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    margin: 10px 0;
+    min-width: 200px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.status-display {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.player-count {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.count-text {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.count-label {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.day-display {
+    display: flex;
+    justify-content: center;
+}
+
+.day-text {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    background-color: rgba(23, 162, 184, 0.8);
+    padding: 4px 12px;
+    border-radius: 6px;
+}
+
+.status-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.game-status .btn {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 6px;
+    min-width: 80px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.game-status .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.game-status .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .game-status {
+        flex-direction: column;
+        gap: 8px;
+        margin-right: 0;
+        margin-bottom: 10px;
+        min-width: 180px;
+    }
+
+    .count-text {
+        font-size: 1.2rem;
+    }
+
+    .day-text {
+        font-size: 1rem;
+    }
+
+    .status-buttons {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .game-status .btn {
+        min-width: 100%;
+    }
+}

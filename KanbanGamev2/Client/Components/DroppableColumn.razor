@@ -1,6 +1,7 @@
 @using KanbanGame.Shared
 @using KanbanGamev2.Client.Services
 @inject IDragDropService DragDropService
+@inject ISignalRService SignalRService
 
 <div class="kanban-column @(IsDragOver ? "drag-over" : "")"
      @ondragover="OnDragOver"
@@ -107,6 +108,9 @@
             
             // Handle the card movement (unassignment will be handled in the board pages)
             await OnCardMoved.InvokeAsync((draggedCard, DragDropService.SourceColumnId!, ColumnId));
+            
+            // Notify other players about the board update
+            await SignalRService.NotifyBoardUpdateAsync(BoardType.ToString(), ColumnId, draggedCard);
             
             // Add a small delay before clearing drag state to ensure proper cleanup
             await Task.Delay(100);

@@ -1,6 +1,10 @@
 ﻿@inherits LayoutComponentBase
+@using KanbanGamev2.Client.Components
+@inject KanbanGamev2.Client.Services.ISignalRService SignalRService
+@implements IDisposable
 
 <div class="page">
+    <GlobalLoader IsVisible="@IsLoading" Title="@LoaderTitle" Message="@LoaderMessage" />
     <div class="sidebar">
         <NavMenu />
     </div>
@@ -15,3 +19,34 @@
         </article>
     </main>
 </div>
+
+@code {
+    private bool IsLoading { get; set; } = false;
+    private string LoaderTitle { get; set; } = "Loading...";
+    private string LoaderMessage { get; set; } = "Please wait...";
+
+    protected override void OnInitialized()
+    {
+        SignalRService.NextDayStarted += OnNextDayStarted;
+    }
+
+    private void OnNextDayStarted()
+    {
+        IsLoading = true;
+        LoaderTitle = "Advancing to Next Day";
+        LoaderMessage = "Preparing the game for the next day...";
+        StateHasChanged();
+
+        // Hide loader after 3 seconds
+        Task.Delay(3000).ContinueWith(_ =>
+        {
+            IsLoading = false;
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        SignalRService.NextDayStarted -= OnNextDayStarted;
+    }
+}

@@ -18,6 +18,9 @@ public class SignalRService : ISignalRService, IAsyncDisposable
     public event Action<UserInfo>? UserConnected;
     public event Action<string>? UserDisconnected;
     public event Action<string, bool>? UserReadyStatusChanged;
+    public event Action? AllPlayersReady;
+    public event Action? NextDayStarted;
+    public event Action<string, string, object>? BoardUpdated;
 
     public SignalRService(string baseUrl)
     {
@@ -60,6 +63,21 @@ public class SignalRService : ISignalRService, IAsyncDisposable
         _hubConnection.On<string, bool>("UserReadyStatusChanged", (connectionId, isReady) =>
         {
             UserReadyStatusChanged?.Invoke(connectionId, isReady);
+        });
+
+        _hubConnection.On("AllPlayersReady", () =>
+        {
+            AllPlayersReady?.Invoke();
+        });
+
+        _hubConnection.On("NextDayStarted", () =>
+        {
+            NextDayStarted?.Invoke();
+        });
+
+        _hubConnection.On<string, string, object>("BoardUpdated", (boardType, columnId, cardData) =>
+        {
+            BoardUpdated?.Invoke(boardType, columnId, cardData);
         });
 
         // Handle connection state changes
@@ -118,6 +136,22 @@ public class SignalRService : ISignalRService, IAsyncDisposable
         if (_hubConnection?.State == HubConnectionState.Connected)
         {
             await _hubConnection.InvokeAsync("GetCurrentStats");
+        }
+    }
+
+    public async Task AdvanceToNextDayAsync()
+    {
+        if (_hubConnection?.State == HubConnectionState.Connected)
+        {
+            await _hubConnection.InvokeAsync("AdvanceToNextDay");
+        }
+    }
+
+    public async Task NotifyBoardUpdateAsync(string boardType, string columnId, object cardData)
+    {
+        if (_hubConnection?.State == HubConnectionState.Connected)
+        {
+            await _hubConnection.InvokeAsync("NotifyBoardUpdate", boardType, columnId, cardData);
         }
     }
 

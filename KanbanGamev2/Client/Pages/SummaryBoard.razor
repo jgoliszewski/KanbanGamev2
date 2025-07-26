@@ -3,6 +3,8 @@
 @using KanbanGamev2.Client.Services
 @using KanbanGamev2.Client.Components
 @inject IFeatureService FeatureService
+@inject ISignalRService SignalRService
+@implements IDisposable
 
 <PageTitle>Summary Board</PageTitle>
 
@@ -23,6 +25,9 @@
     {
         await LoadData();
         OrganizeColumns();
+        
+        // Subscribe to real-time board updates
+        SignalRService.BoardUpdated += OnBoardUpdated;
     }
 
     private async Task LoadData()
@@ -60,5 +65,22 @@
         // For summary board, we only show features
         var features = FeatureService.Features.Where(f => f.ColumnId == columnId).ToList();
         return features.Cast<Card>().ToList();
+    }
+
+    private async void OnBoardUpdated(string boardType, string columnId, object cardData)
+    {
+        // Only handle updates for this board type
+        if (boardType == BoardType.Summary.ToString())
+        {
+            // Reload data from services to ensure we have the latest state
+            await LoadData();
+            OrganizeColumns();
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        SignalRService.BoardUpdated -= OnBoardUpdated;
     }
 } 
