@@ -1,0 +1,69 @@
+@using KanbanGame.Shared
+@using KanbanGamev2.Client.Services
+@inject IDragDropService DragDropService
+
+<div class="draggable-card @(IsDragging ? "dragging" : "")"
+     draggable="true"
+     @ondragstart="OnDragStart"
+     @ondragend="OnDragEnd">
+    <div class="card mb-2">
+        <div class="card-body p-2">
+            <h6 class="card-title mb-1">@Card.Title</h6>
+            <p class="card-text small mb-1">@Card.Description</p>
+            @if (Card is Employee employee)
+            {
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">@employee.Role.GetDisplayName()</small>
+                    <span class="badge @(employee.IsAvailable ? "bg-success" : "bg-warning")">
+                        @(employee.IsAvailable ? "Available" : "Busy")
+                    </span>
+                </div>
+            }
+            else if (Card is Feature feature)
+            {
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge @feature.Priority.GetBadgeClass()">@feature.Priority</span>
+                    <small class="text-muted">@feature.StoryPoints SP</small>
+                </div>
+                @if (!string.IsNullOrEmpty(feature.AssignedTo))
+                {
+                    <small class="text-muted">Assigned: @feature.AssignedTo</small>
+                }
+            }
+            else if (Card is KanbanTask task)
+            {
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge @task.Priority.GetBadgeClass()">@task.Priority</span>
+                    <small class="text-muted">@task.ActualHours/@task.EstimatedHours h</small>
+                </div>
+                @if (!string.IsNullOrEmpty(task.AssignedTo))
+                {
+                    <small class="text-muted">Assigned: @task.AssignedTo</small>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public Card Card { get; set; } = null!;
+    [Parameter] public string ColumnId { get; set; } = string.Empty;
+    [Parameter] public EventCallback<(Card card, string fromColumn, string toColumn)> OnCardMoved { get; set; }
+
+    private bool IsDragging => DragDropService.IsDragging && DragDropService.DraggedCard?.Id == Card.Id;
+
+    private void OnDragStart(DragEventArgs e)
+    {
+        DragDropService.StartDrag(Card, ColumnId);
+        e.DataTransfer.EffectAllowed = "move";
+        StateHasChanged();
+    }
+
+    private void OnDragEnd(DragEventArgs e)
+    {
+        // Only clear the drag state, don't handle the movement here
+        // The OnDrop event in DroppableColumn will handle the actual movement
+        DragDropService.ClearDrag();
+        StateHasChanged();
+    }
+} 

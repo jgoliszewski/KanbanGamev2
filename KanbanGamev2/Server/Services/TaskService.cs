@@ -11,25 +11,25 @@ public class TaskService : ITaskService
         SeedData();
     }
 
-    public async Task<List<KanbanTask>> GetTasksAsync()
+    public List<KanbanTask> GetTasks()
     {
-        return await Task.FromResult(_tasks);
+        return _tasks;
     }
 
-    public async Task<KanbanTask?> GetTaskAsync(Guid id)
+    public KanbanTask? GetTask(Guid id)
     {
-        return await Task.FromResult(_tasks.FirstOrDefault(t => t.Id == id));
+        return _tasks.FirstOrDefault(t => t.Id == id);
     }
 
-    public async Task<KanbanTask> CreateTaskAsync(KanbanTask task)
+    public KanbanTask CreateTask(KanbanTask task)
     {
         task.Id = Guid.NewGuid();
         task.CreatedAt = DateTime.Now;
         _tasks.Add(task);
-        return await Task.FromResult(task);
+        return task;
     }
 
-    public async Task<KanbanTask> UpdateTaskAsync(KanbanTask task)
+    public KanbanTask UpdateTask(KanbanTask task)
     {
         var existing = _tasks.FirstOrDefault(t => t.Id == task.Id);
         if (existing != null)
@@ -45,25 +45,25 @@ public class TaskService : ITaskService
             existing.ColumnId = task.ColumnId;
             existing.Order = task.Order;
             existing.UpdatedAt = DateTime.Now;
-            return await Task.FromResult(existing);
+            return existing;
         }
         throw new ArgumentException("Task not found");
     }
 
-    public async Task<bool> DeleteTaskAsync(Guid id)
+    public bool DeleteTask(Guid id)
     {
         var task = _tasks.FirstOrDefault(t => t.Id == id);
         if (task != null)
         {
             _tasks.Remove(task);
-            return await Task.FromResult(true);
+            return true;
         }
-        return await Task.FromResult(false);
+        return false;
     }
 
-    public async Task<List<KanbanTask>> GetTasksByColumnAsync(string columnId)
+    public List<KanbanTask> GetTasksByColumn(string columnId)
     {
-        return await Task.FromResult(_tasks.Where(t => t.ColumnId == columnId).OrderBy(t => t.Order).ToList());
+        return _tasks.Where(t => t.ColumnId == columnId).OrderBy(t => t.Order).ToList();
     }
 
     private void SeedData()
@@ -73,85 +73,71 @@ public class TaskService : ITaskService
             new KanbanTask
             {
                 Id = Guid.NewGuid(),
-                Title = "Fix Login Bug",
-                Description = "Users cannot log in with correct credentials",
+                Title = "Setup Database Schema",
+                Description = "Create initial database tables and relationships",
                 Priority = Priority.High,
                 Status = Status.InProgress,
                 AssignedTo = "John Doe",
-                DueDate = DateTime.Now.AddDays(2),
-                EstimatedHours = 4,
-                ActualHours = 2,
+                DueDate = DateTime.Now.AddDays(3),
+                EstimatedHours = 8,
+                ActualHours = 4,
                 ColumnId = "backend-dev-doing",
                 Order = 1
             },
             new KanbanTask
             {
                 Id = Guid.NewGuid(),
-                Title = "Update Documentation",
-                Description = "Update API documentation with new endpoints",
-                Priority = Priority.Medium,
-                Status = Status.ToDo,
-                AssignedTo = "",
-                DueDate = DateTime.Now.AddDays(5),
-                EstimatedHours = 6,
-                ActualHours = 0,
-                ColumnId = "backend-backlog",
-                Order = 1
-            },
-            new KanbanTask
-            {
-                Id = Guid.NewGuid(),
-                Title = "Code Review",
-                Description = "Review pull request #123 for user management feature",
-                Priority = Priority.Low,
-                Status = Status.Done,
-                AssignedTo = "Jane Smith",
-                DueDate = DateTime.Now.AddDays(-1),
-                EstimatedHours = 2,
-                ActualHours = 1,
-                ColumnId = "backend-done",
-                Order = 1
-            },
-            new KanbanTask
-            {
-                Id = Guid.NewGuid(),
-                Title = "Design Homepage",
-                Description = "Create responsive homepage design",
+                Title = "Implement API Endpoints",
+                Description = "Create REST API endpoints for user management",
                 Priority = Priority.High,
+                Status = Status.ToDo,
+                AssignedTo = "Jane Smith",
+                DueDate = DateTime.Now.AddDays(5),
+                EstimatedHours = 12,
+                ActualHours = 0,
+                ColumnId = "backend-dev-waiting",
+                Order = 1
+            },
+            new KanbanTask
+            {
+                Id = Guid.NewGuid(),
+                Title = "Design User Interface",
+                Description = "Create wireframes and mockups for the main dashboard",
+                Priority = Priority.Medium,
                 Status = Status.InProgress,
-                AssignedTo = "David Brown",
-                DueDate = DateTime.Now.AddDays(3),
-                EstimatedHours = 8,
-                ActualHours = 4,
+                AssignedTo = "Mike Johnson",
+                DueDate = DateTime.Now.AddDays(7),
+                EstimatedHours = 6,
+                ActualHours = 3,
                 ColumnId = "frontend-dev-doing",
                 Order = 1
             },
             new KanbanTask
             {
                 Id = Guid.NewGuid(),
-                Title = "Implement Search",
-                Description = "Add search functionality to the application",
+                Title = "Write Unit Tests",
+                Description = "Create comprehensive unit tests for backend services",
                 Priority = Priority.Medium,
                 Status = Status.ToDo,
-                AssignedTo = "",
-                DueDate = DateTime.Now.AddDays(7),
-                EstimatedHours = 12,
+                AssignedTo = "Sarah Wilson",
+                DueDate = DateTime.Now.AddDays(4),
+                EstimatedHours = 10,
                 ActualHours = 0,
-                ColumnId = "frontend-backlog",
+                ColumnId = "backend-test-waiting",
                 Order = 1
             },
             new KanbanTask
             {
                 Id = Guid.NewGuid(),
-                Title = "Unit Tests",
-                Description = "Write unit tests for authentication module",
-                Priority = Priority.Medium,
-                Status = Status.InProgress,
-                AssignedTo = "Sarah Wilson",
-                DueDate = DateTime.Now.AddDays(4),
-                EstimatedHours = 6,
-                ActualHours = 3,
-                ColumnId = "backend-test-doing",
+                Title = "Performance Testing",
+                Description = "Conduct load testing and performance optimization",
+                Priority = Priority.Low,
+                Status = Status.Done,
+                AssignedTo = "David Brown",
+                DueDate = DateTime.Now.AddDays(-1),
+                EstimatedHours = 4,
+                ActualHours = 4,
+                ColumnId = "backend-done",
                 Order = 1
             }
         };

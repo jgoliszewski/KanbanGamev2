@@ -10,11 +10,11 @@
             @foreach (var column in Columns)
             {
                 <div class="col-md-3">
-                    <KanbanColumn 
+                    <DroppableColumn 
                         Title="@column.Title" 
+                        ColumnId="@column.ColumnId"
                         Cards="@column.Cards" 
-                        OnCardClick="@OnCardClick" 
-                        OnColumnClick="@OnColumnClick" />
+                        OnCardMoved="@OnCardMoved" />
                 </div>
             }
         </div>
@@ -25,12 +25,12 @@
     [Parameter] public string Title { get; set; } = string.Empty;
     [Parameter] public string Description { get; set; } = string.Empty;
     [Parameter] public List<KanbanColumnData> Columns { get; set; } = new();
-    [Parameter] public EventCallback<Card> OnCardClick { get; set; }
-    [Parameter] public EventCallback OnColumnClick { get; set; }
+    [Parameter] public EventCallback<(Card card, string fromColumn, string toColumn)> OnCardMoved { get; set; }
 
     public class KanbanColumnData
     {
         public string Title { get; set; } = string.Empty;
+        public string ColumnId { get; set; } = string.Empty;
         public List<Card> Cards { get; set; } = new();
     }
 } 

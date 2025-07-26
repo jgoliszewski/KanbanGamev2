@@ -16,44 +16,44 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<Employee>>> GetEmployees()
+    public ActionResult<List<Employee>> GetEmployees()
     {
-        var employees = await _employeeService.GetEmployeesAsync();
+        var employees = _employeeService.GetEmployees();
         return Ok(employees);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Employee>> GetEmployee(Guid id)
+    public ActionResult<Employee> GetEmployee(Guid id)
     {
-        var employee = await _employeeService.GetEmployeeAsync(id);
+        var employee = _employeeService.GetEmployee(id);
         if (employee == null)
             return NotFound();
         return Ok(employee);
     }
 
     [HttpGet("available")]
-    public async Task<ActionResult<List<Employee>>> GetAvailableEmployees()
+    public ActionResult<List<Employee>> GetAvailableEmployees()
     {
-        var employees = await _employeeService.GetAvailableEmployeesAsync();
+        var employees = _employeeService.GetAvailableEmployees();
         return Ok(employees);
     }
 
     [HttpPost]
-    public async Task<ActionResult<Employee>> CreateEmployee(Employee employee)
+    public ActionResult<Employee> CreateEmployee(Employee employee)
     {
-        var created = await _employeeService.CreateEmployeeAsync(employee);
+        var created = _employeeService.CreateEmployee(employee);
         return CreatedAtAction(nameof(GetEmployee), new { id = created.Id }, created);
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<Employee>> UpdateEmployee(Guid id, Employee employee)
+    public ActionResult<Employee> UpdateEmployee(Guid id, Employee employee)
     {
         if (id != employee.Id)
             return BadRequest();
 
         try
         {
-            var updated = await _employeeService.UpdateEmployeeAsync(employee);
+            var updated = _employeeService.UpdateEmployee(employee);
             return Ok(updated);
         }
         catch (ArgumentException)
@@ -63,9 +63,9 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteEmployee(Guid id)
+    public ActionResult DeleteEmployee(Guid id)
     {
-        var deleted = await _employeeService.DeleteEmployeeAsync(id);
+        var deleted = _employeeService.DeleteEmployee(id);
         if (!deleted)
             return NotFound();
         return NoContent();

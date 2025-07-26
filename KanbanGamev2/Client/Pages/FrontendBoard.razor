@@ -14,7 +14,7 @@
         Title="Frontend Development Board"
         Description="Track frontend tasks and employee assignments through the development process"
         Columns="@frontendColumns"
-        OnCardClick="@OnCardClick" />
+        OnCardMoved="@OnCardMoved" />
 </div>
 
 @code {
@@ -39,36 +39,43 @@
             new KanbanBoard.KanbanColumnData
             {
                 Title = "Backlog",
+                ColumnId = "frontend-backlog",
                 Cards = GetCardsByColumn("frontend-backlog")
             },
             new KanbanBoard.KanbanColumnData
             {
                 Title = "Analysis",
+                ColumnId = "frontend-analysis",
                 Cards = GetCardsByColumn("frontend-analysis")
             },
             new KanbanBoard.KanbanColumnData
             {
                 Title = "Development Waiting",
+                ColumnId = "frontend-dev-waiting",
                 Cards = GetCardsByColumn("frontend-dev-waiting")
             },
             new KanbanBoard.KanbanColumnData
             {
                 Title = "Development Doing",
+                ColumnId = "frontend-dev-doing",
                 Cards = GetCardsByColumn("frontend-dev-doing")
             },
             new KanbanBoard.KanbanColumnData
             {
                 Title = "Testing Waiting",
+                ColumnId = "frontend-test-waiting",
                 Cards = GetCardsByColumn("frontend-test-waiting")
             },
             new KanbanBoard.KanbanColumnData
             {
                 Title = "Testing Doing",
+                ColumnId = "frontend-test-doing",
                 Cards = GetCardsByColumn("frontend-test-doing")
             },
             new KanbanBoard.KanbanColumnData
             {
                 Title = "Done",
+                ColumnId = "frontend-done",
                 Cards = GetCardsByColumn("frontend-done")
             }
         };
@@ -89,9 +96,26 @@
         return cards;
     }
 
-    private void OnCardClick(Card card)
+    private async Task OnCardMoved((Card card, string fromColumn, string toColumn) moveInfo)
     {
-        // Handle card click - will be enhanced with drag and drop later
-        Console.WriteLine($"Card clicked: {card.Title}");
+        var (card, fromColumn, toColumn) = moveInfo;
+        
+        // Update the card's column
+        card.ColumnId = toColumn;
+        card.UpdatedAt = DateTime.Now;
+
+        // Update the card in the appropriate service
+        if (card is Employee employee)
+        {
+            await EmployeeService.UpdateEmployee(employee);
+        }
+        else if (card is KanbanTask task)
+        {
+            await TaskService.UpdateTask(task);
+        }
+
+        // Reorganize columns to reflect the change
+        OrganizeColumns();
+        StateHasChanged();
     }
 } 

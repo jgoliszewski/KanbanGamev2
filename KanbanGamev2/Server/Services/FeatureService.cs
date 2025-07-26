@@ -11,25 +11,25 @@ public class FeatureService : IFeatureService
         SeedData();
     }
 
-    public async Task<List<Feature>> GetFeaturesAsync()
+    public List<Feature> GetFeatures()
     {
-        return await Task.FromResult(_features);
+        return _features;
     }
 
-    public async Task<Feature?> GetFeatureAsync(Guid id)
+    public Feature? GetFeature(Guid id)
     {
-        return await Task.FromResult(_features.FirstOrDefault(f => f.Id == id));
+        return _features.FirstOrDefault(f => f.Id == id);
     }
 
-    public async Task<Feature> CreateFeatureAsync(Feature feature)
+    public Feature CreateFeature(Feature feature)
     {
         feature.Id = Guid.NewGuid();
         feature.CreatedAt = DateTime.Now;
         _features.Add(feature);
-        return await Task.FromResult(feature);
+        return feature;
     }
 
-    public async Task<Feature> UpdateFeatureAsync(Feature feature)
+    public Feature UpdateFeature(Feature feature)
     {
         var existing = _features.FirstOrDefault(f => f.Id == feature.Id);
         if (existing != null)
@@ -44,25 +44,25 @@ public class FeatureService : IFeatureService
             existing.ColumnId = feature.ColumnId;
             existing.Order = feature.Order;
             existing.UpdatedAt = DateTime.Now;
-            return await Task.FromResult(existing);
+            return existing;
         }
         throw new ArgumentException("Feature not found");
     }
 
-    public async Task<bool> DeleteFeatureAsync(Guid id)
+    public bool DeleteFeature(Guid id)
     {
         var feature = _features.FirstOrDefault(f => f.Id == id);
         if (feature != null)
         {
             _features.Remove(feature);
-            return await Task.FromResult(true);
+            return true;
         }
-        return await Task.FromResult(false);
+        return false;
     }
 
-    public async Task<List<Feature>> GetFeaturesByColumnAsync(string columnId)
+    public List<Feature> GetFeaturesByColumn(string columnId)
     {
-        return await Task.FromResult(_features.Where(f => f.ColumnId == columnId).OrderBy(f => f.Order).ToList());
+        return _features.Where(f => f.ColumnId == columnId).OrderBy(f => f.Order).ToList();
     }
 
     private void SeedData()

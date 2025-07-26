@@ -13,7 +13,7 @@
         Title="Summary Board"
         Description="High-level overview of all features across the development lifecycle"
         Columns="@summaryColumns"
-        OnCardClick="@OnCardClick" />
+        OnCardMoved="@OnCardMoved" />
 </div>
 
 @code {
@@ -37,16 +37,19 @@
             new KanbanBoard.KanbanColumnData
             {
                 Title = "Backlog",
+                ColumnId = "backlog",
                 Cards = GetFeaturesByColumn("backlog")
             },
             new KanbanBoard.KanbanColumnData
             {
                 Title = "During Development",
+                ColumnId = "development",
                 Cards = GetFeaturesByColumn("development")
             },
             new KanbanBoard.KanbanColumnData
             {
                 Title = "Done",
+                ColumnId = "done",
                 Cards = GetFeaturesByColumn("done")
             }
         };
@@ -59,9 +62,22 @@
         return features.Cast<Card>().ToList();
     }
 
-    private void OnCardClick(Card card)
+    private async Task OnCardMoved((Card card, string fromColumn, string toColumn) moveInfo)
     {
-        // Handle card click - will be enhanced with drag and drop later
-        Console.WriteLine($"Card clicked: {card.Title}");
+        var (card, fromColumn, toColumn) = moveInfo;
+        
+        // Update the card's column
+        card.ColumnId = toColumn;
+        card.UpdatedAt = DateTime.Now;
+
+        // Update the feature in the service
+        if (card is Feature feature)
+        {
+            await FeatureService.UpdateFeature(feature);
+        }
+
+        // Reorganize columns to reflect the change
+        OrganizeColumns();
+        StateHasChanged();
     }
 } 

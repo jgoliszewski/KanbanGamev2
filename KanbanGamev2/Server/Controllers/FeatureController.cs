@@ -16,44 +16,44 @@ public class FeatureController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<Feature>>> GetFeatures()
+    public ActionResult<List<Feature>> GetFeatures()
     {
-        var features = await _featureService.GetFeaturesAsync();
+        var features = _featureService.GetFeatures();
         return Ok(features);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Feature>> GetFeature(Guid id)
+    public ActionResult<Feature> GetFeature(Guid id)
     {
-        var feature = await _featureService.GetFeatureAsync(id);
+        var feature = _featureService.GetFeature(id);
         if (feature == null)
             return NotFound();
         return Ok(feature);
     }
 
     [HttpGet("column/{columnId}")]
-    public async Task<ActionResult<List<Feature>>> GetFeaturesByColumn(string columnId)
+    public ActionResult<List<Feature>> GetFeaturesByColumn(string columnId)
     {
-        var features = await _featureService.GetFeaturesByColumnAsync(columnId);
+        var features = _featureService.GetFeaturesByColumn(columnId);
         return Ok(features);
     }
 
     [HttpPost]
-    public async Task<ActionResult<Feature>> CreateFeature(Feature feature)
+    public ActionResult<Feature> CreateFeature(Feature feature)
     {
-        var created = await _featureService.CreateFeatureAsync(feature);
+        var created = _featureService.CreateFeature(feature);
         return CreatedAtAction(nameof(GetFeature), new { id = created.Id }, created);
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<Feature>> UpdateFeature(Guid id, Feature feature)
+    public ActionResult<Feature> UpdateFeature(Guid id, Feature feature)
     {
         if (id != feature.Id)
             return BadRequest();
 
         try
         {
-            var updated = await _featureService.UpdateFeatureAsync(feature);
+            var updated = _featureService.UpdateFeature(feature);
             return Ok(updated);
         }
         catch (ArgumentException)
@@ -63,9 +63,9 @@ public class FeatureController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteFeature(Guid id)
+    public ActionResult DeleteFeature(Guid id)
     {
-        var deleted = await _featureService.DeleteFeatureAsync(id);
+        var deleted = _featureService.DeleteFeature(id);
         if (!deleted)
             return NotFound();
         return NoContent();

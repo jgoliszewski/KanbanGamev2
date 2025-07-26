@@ -14,7 +14,7 @@
         Title="High Level Analysis Board"
         Description="Track features and employee assignments through the analysis process"
         Columns="@analysisColumns"
-        OnCardClick="@OnCardClick" />
+        OnCardMoved="@OnCardMoved" />
 </div>
 
 @code {
@@ -39,26 +39,31 @@
             new KanbanBoard.KanbanColumnData
             {
                 Title = "Backlog",
+                ColumnId = "backlog",
                 Cards = GetCardsByColumn("backlog")
             },
             new KanbanBoard.KanbanColumnData
             {
                 Title = "Under Analysis 1",
+                ColumnId = "analysis1",
                 Cards = GetCardsByColumn("analysis1")
             },
             new KanbanBoard.KanbanColumnData
             {
                 Title = "Waiting",
+                ColumnId = "waiting",
                 Cards = GetCardsByColumn("waiting")
             },
             new KanbanBoard.KanbanColumnData
             {
                 Title = "Under Analysis 2",
+                ColumnId = "analysis2",
                 Cards = GetCardsByColumn("analysis2")
             },
             new KanbanBoard.KanbanColumnData
             {
                 Title = "Ready for Development",
+                ColumnId = "ready-dev",
                 Cards = GetCardsByColumn("ready-dev")
             }
         };
@@ -79,9 +84,26 @@
         return cards;
     }
 
-    private void OnCardClick(Card card)
+    private async Task OnCardMoved((Card card, string fromColumn, string toColumn) moveInfo)
     {
-        // Handle card click - will be enhanced with drag and drop later
-        Console.WriteLine($"Card clicked: {card.Title}");
+        var (card, fromColumn, toColumn) = moveInfo;
+        
+        // Update the card's column
+        card.ColumnId = toColumn;
+        card.UpdatedAt = DateTime.Now;
+
+        // Update the card in the appropriate service
+        if (card is Employee employee)
+        {
+            await EmployeeService.UpdateEmployee(employee);
+        }
+        else if (card is Feature feature)
+        {
+            await FeatureService.UpdateFeature(feature);
+        }
+
+        // Reorganize columns to reflect the change
+        OrganizeColumns();
+        StateHasChanged();
     }
 } 

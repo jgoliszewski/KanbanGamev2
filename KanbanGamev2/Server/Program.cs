@@ -4,19 +4,28 @@ using KanbanGamev2.Server.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
-// Register our services
-builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-builder.Services.AddScoped<IFeatureService, FeatureService>();
-builder.Services.AddScoped<ITaskService, TaskService>();
+// Register our services as singletons (like the working project)
+builder.Services.AddSingleton<IEmployeeService, EmployeeService>();
+builder.Services.AddSingleton<IFeatureService, FeatureService>();
+builder.Services.AddSingleton<ITaskService, TaskService>();
 
-// Add API controllers
-builder.Services.AddControllers();
+// Add SignalR (for future real-time updates)
+builder.Services.AddSignalR();
+
+// Add response compression
+builder.Services.AddResponseCompression(
+    options =>
+        options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+            new[] { "application/octet-stream" }
+        )
+);
 
 var app = builder.Build();
+
+app.UseResponseCompression();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

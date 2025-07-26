@@ -1,0 +1,55 @@
+@using KanbanGame.Shared
+@using KanbanGamev2.Client.Services
+@inject IDragDropService DragDropService
+
+<div class="kanban-column @(IsDragOver ? "drag-over" : "")"
+     @ondragover="OnDragOver"
+     @ondragover:preventDefault
+     @ondrop="OnDrop"
+     @ondrop:preventDefault>
+    <div class="column-header">
+        <h5>@Title</h5>
+        <span class="badge bg-secondary">@Cards.Count</span>
+    </div>
+    <div class="column-content">
+        @foreach (var card in Cards)
+        {
+            <DraggableCard 
+                Card="@card"
+                ColumnId="@ColumnId"
+                OnCardMoved="@OnCardMoved" />
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string ColumnId { get; set; } = string.Empty;
+    [Parameter] public List<Card> Cards { get; set; } = new();
+    [Parameter] public EventCallback<(Card card, string fromColumn, string toColumn)> OnCardMoved { get; set; }
+
+    private bool IsDragOver => DragDropService.IsDragging && DragDropService.TargetColumnId == ColumnId;
+
+    private void OnDragOver(DragEventArgs e)
+    {
+        if (DragDropService.IsDragging && DragDropService.SourceColumnId != ColumnId)
+        {
+            DragDropService.SetDropTarget(ColumnId);
+            StateHasChanged();
+        }
+    }
+
+    private async void OnDrop(DragEventArgs e)
+    {
+        if (DragDropService.IsDragging && DragDropService.SourceColumnId != ColumnId)
+        {
+            // Handle the card movement
+            await OnCardMoved.InvokeAsync((DragDropService.DraggedCard!, DragDropService.SourceColumnId!, ColumnId));
+            
+            // Add a small delay before clearing drag state to ensure proper cleanup
+            await Task.Delay(100);
+            DragDropService.ClearDrag();
+            StateHasChanged();
+        }
+    }
+} 

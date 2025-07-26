@@ -11,31 +11,34 @@ public class EmployeeService : IEmployeeService
         SeedData();
     }
 
-    public async Task<List<Employee>> GetEmployeesAsync()
+    public List<Employee> GetEmployees()
     {
-        return await Task.FromResult(_employees);
+        return _employees;
     }
 
-    public async Task<Employee?> GetEmployeeAsync(Guid id)
+    public Employee? GetEmployee(Guid id)
     {
-        return await Task.FromResult(_employees.FirstOrDefault(e => e.Id == id));
+        return _employees.FirstOrDefault(e => e.Id == id);
     }
 
-    public async Task<Employee> CreateEmployeeAsync(Employee employee)
+    public List<Employee> GetAvailableEmployees()
+    {
+        return _employees.Where(e => e.IsAvailable).ToList();
+    }
+
+    public Employee CreateEmployee(Employee employee)
     {
         employee.Id = Guid.NewGuid();
         employee.CreatedAt = DateTime.Now;
         _employees.Add(employee);
-        return await Task.FromResult(employee);
+        return employee;
     }
 
-    public async Task<Employee> UpdateEmployeeAsync(Employee employee)
+    public Employee UpdateEmployee(Employee employee)
     {
         var existing = _employees.FirstOrDefault(e => e.Id == employee.Id);
         if (existing != null)
         {
-            existing.Title = employee.Title;
-            existing.Description = employee.Description;
             existing.Name = employee.Name;
             existing.Role = employee.Role;
             existing.Department = employee.Department;
@@ -44,25 +47,25 @@ public class EmployeeService : IEmployeeService
             existing.ColumnId = employee.ColumnId;
             existing.Order = employee.Order;
             existing.UpdatedAt = DateTime.Now;
-            return await Task.FromResult(existing);
+            return existing;
         }
         throw new ArgumentException("Employee not found");
     }
 
-    public async Task<bool> DeleteEmployeeAsync(Guid id)
+    public bool DeleteEmployee(Guid id)
     {
         var employee = _employees.FirstOrDefault(e => e.Id == id);
         if (employee != null)
         {
             _employees.Remove(employee);
-            return await Task.FromResult(true);
+            return true;
         }
-        return await Task.FromResult(false);
+        return false;
     }
 
-    public async Task<List<Employee>> GetAvailableEmployeesAsync()
+    public List<Employee> GetEmployeesByColumn(string columnId)
     {
-        return await Task.FromResult(_employees.Where(e => e.IsAvailable).ToList());
+        return _employees.Where(e => e.ColumnId == columnId).OrderBy(e => e.Order).ToList();
     }
 
     private void SeedData()
@@ -72,7 +75,6 @@ public class EmployeeService : IEmployeeService
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Title = "John Doe",
                 Name = "John Doe",
                 Role = Role.SeniorDeveloper,
                 Department = Department.Engineering,
@@ -84,31 +86,28 @@ public class EmployeeService : IEmployeeService
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Title = "Jane Smith",
                 Name = "Jane Smith",
-                Role = Role.UIDesigner,
-                Department = Department.Design,
+                Role = Role.LeadDeveloper,
+                Department = Department.Engineering,
                 Email = "jane.smith@company.com",
-                IsAvailable = true,
+                IsAvailable = false,
                 ColumnId = "backend-dev-doing",
                 Order = 1
             },
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Title = "Mike Johnson",
                 Name = "Mike Johnson",
-                Role = Role.ProductManager,
-                Department = Department.Product,
+                Role = Role.Developer,
+                Department = Department.Engineering,
                 Email = "mike.johnson@company.com",
-                IsAvailable = false,
-                ColumnId = "frontend-dev-waiting",
+                IsAvailable = true,
+                ColumnId = "frontend-dev-doing",
                 Order = 1
             },
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Title = "Sarah Wilson",
                 Name = "Sarah Wilson",
                 Role = Role.QAEngineer,
                 Department = Department.QualityAssurance,
@@ -120,13 +119,12 @@ public class EmployeeService : IEmployeeService
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Title = "David Brown",
                 Name = "David Brown",
-                Role = Role.Developer,
-                Department = Department.Engineering,
+                Role = Role.ProductManager,
+                Department = Department.Product,
                 Email = "david.brown@company.com",
                 IsAvailable = true,
-                ColumnId = "frontend-dev-doing",
+                ColumnId = "analysis2",
                 Order = 1
             }
         };

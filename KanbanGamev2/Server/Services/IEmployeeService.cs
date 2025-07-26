@@ -4,10 +4,12 @@ namespace KanbanGamev2.Server.Services;
 
 public interface IEmployeeService
 {
-    Task<List<Employee>> GetEmployeesAsync();
-    Task<Employee?> GetEmployeeAsync(Guid id);
-    Task<Employee> CreateEmployeeAsync(Employee employee);
-    Task<Employee> UpdateEmployeeAsync(Employee employee);
-    Task<bool> DeleteEmployeeAsync(Guid id);
-    Task<List<Employee>> GetAvailableEmployeesAsync();
+    List<Employee> GetEmployees();
+    Employee? GetEmployee(Guid id);
+    List<Employee> GetAvailableEmployees();
+    Employee CreateEmployee(Employee employee);
+    Employee UpdateEmployee(Employee employee);
+    bool DeleteEmployee(Guid id);
+    List<Employee> GetEmployeesByColumn(string columnId);
+    void ResetData();
 } 

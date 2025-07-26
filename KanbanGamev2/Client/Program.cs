@@ -14,4 +14,7 @@ builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IFeatureService, FeatureService>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 
+// Register drag and drop service
+builder.Services.AddScoped<IDragDropService, DragDropService>();
+
 await builder.Build().RunAsync();
