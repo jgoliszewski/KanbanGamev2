@@ -15,7 +15,7 @@
                     @if (card is Employee employee)
                     {
                         <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-muted">@employee.Role</small>
+                            <small class="text-muted">@employee.Role.GetDisplayName()</small>
                             <span class="badge @(employee.IsAvailable ? "bg-success" : "bg-warning")">
                                 @(employee.IsAvailable ? "Available" : "Busy")
                             </span>
@@ -24,7 +24,7 @@
                     else if (card is Feature feature)
                     {
                         <div class="d-flex justify-content-between align-items-center">
-                            <span class="badge bg-primary">@feature.Priority</span>
+                            <span class="badge @feature.Priority.GetBadgeClass()">@feature.Priority</span>
                             <small class="text-muted">@feature.StoryPoints SP</small>
                         </div>
                         @if (!string.IsNullOrEmpty(feature.AssignedTo))
@@ -35,7 +35,7 @@
                     else if (card is KanbanTask task)
                     {
                         <div class="d-flex justify-content-between align-items-center">
-                            <span class="badge bg-primary">@task.Priority</span>
+                            <span class="badge @task.Priority.GetBadgeClass()">@task.Priority</span>
                             <small class="text-muted">@task.ActualHours/@task.EstimatedHours h</small>
                         </div>
                         @if (!string.IsNullOrEmpty(task.AssignedTo))

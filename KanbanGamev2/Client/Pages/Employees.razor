@@ -21,8 +21,8 @@ else
                     <div class="card-body">
                         <h5 class="card-title">@employee.Name</h5>
                         <p class="card-text">
-                            <strong>Role:</strong> @employee.Role<br/>
-                            <strong>Department:</strong> @employee.Department<br/>
+                            <strong>Role:</strong> @employee.Role.GetDisplayName()<br/>
+                            <strong>Department:</strong> @employee.Department.GetDisplayName()<br/>
                             <strong>Email:</strong> @employee.Email<br/>
                             <strong>Status:</strong> 
                             @if (employee.IsAvailable)
