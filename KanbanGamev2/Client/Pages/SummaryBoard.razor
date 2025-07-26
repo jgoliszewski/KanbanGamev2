@@ -13,9 +13,7 @@
         Title="Summary Board"
         Description="High-level overview of all features across the development lifecycle"
         BoardType="@BoardType.Summary"
-        Columns="@summaryColumns"
-        OnCardMoved="@OnCardMoved"
-        OnWorkAssigned="@OnWorkAssigned" />
+        Columns="@summaryColumns" />
 </div>
 
 @code {
@@ -62,13 +60,5 @@
         // For summary board, we only show features
         var features = FeatureService.Features.Where(f => f.ColumnId == columnId).ToList();
         return features.Cast<Card>().ToList();
-    }
-
-    private async Task OnCardMoved((Card card, string fromColumn, string toColumn) moveInfo)
-    {
-    }
-
-    private async Task OnWorkAssigned((Card workCard, Employee employee) assignmentInfo)
-    {
     }
 } 

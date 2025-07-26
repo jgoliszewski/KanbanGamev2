@@ -96,45 +96,7 @@
         cards.AddRange(employees);
 
         // Sort cards so employees appear above their assigned work
-        return SortCardsWithEmployeesFirst(cards);
-    }
-
-    private List<Card> SortCardsWithEmployeesFirst(List<Card> cards)
-    {
-        var sortedCards = new List<Card>();
-        var employees = cards.OfType<Employee>().ToList();
-        var workItems = cards.Where(c => c is Feature || c is KanbanTask).ToList();
-
-        // Add employees first
-        sortedCards.AddRange(employees);
-
-        // Add work items, placing assigned work right after their assigned employee
-        foreach (var employee in employees)
-        {
-            if (employee.AssignedTaskId.HasValue)
-            {
-                var assignedTask = workItems.OfType<KanbanTask>().FirstOrDefault(t => t.Id == employee.AssignedTaskId.Value);
-                if (assignedTask != null)
-                {
-                    sortedCards.Add(assignedTask);
-                    workItems.Remove(assignedTask);
-                }
-            }
-            else if (employee.AssignedFeatureId.HasValue)
-            {
-                var assignedFeature = workItems.OfType<Feature>().FirstOrDefault(f => f.Id == employee.AssignedFeatureId.Value);
-                if (assignedFeature != null)
-                {
-                    sortedCards.Add(assignedFeature);
-                    workItems.Remove(assignedFeature);
-                }
-            }
-        }
-
-        // Add remaining unassigned work items
-        sortedCards.AddRange(workItems);
-
-        return sortedCards;
+        return cards;
     }
 
     private async Task OnCardMoved((Card card, string fromColumn, string toColumn) moveInfo)
