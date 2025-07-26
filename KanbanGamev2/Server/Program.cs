@@ -1,5 +1,6 @@
-using Microsoft.AspNetCore.ResponseCompression;
 using KanbanGamev2.Server.Services;
+using KanbanGamev2.Server.SignalR;
+using Microsoft.AspNetCore.ResponseCompression;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddSingleton<IEmployeeService, EmployeeService>();
 builder.Services.AddSingleton<IFeatureService, FeatureService>();
 builder.Services.AddSingleton<ITaskService, TaskService>();
+builder.Services.AddSingleton<KanbanGamev2.Shared.Services.IGameStateService, GameStateService>();
 
 // Add SignalR (for future real-time updates)
 builder.Services.AddSignalR();
@@ -48,6 +50,7 @@ app.UseRouting();
 
 app.MapRazorPages();
 app.MapControllers();
+app.MapHub<GameHub>("/gamehub");
 app.MapFallbackToFile("index.html");
 
 app.Run();

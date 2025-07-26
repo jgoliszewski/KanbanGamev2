@@ -17,4 +17,14 @@ builder.Services.AddScoped<ITaskService, TaskService>();
 // Register drag and drop service
 builder.Services.AddScoped<IDragDropService, DragDropService>();
 
+// Register SignalR service
+builder.Services.AddScoped<ISignalRService>(sp => 
+{
+    var httpClient = sp.GetRequiredService<HttpClient>();
+    return new SignalRService(httpClient.BaseAddress?.ToString() ?? "https://localhost:7001/");
+});
+
+// Register game state service
+builder.Services.AddScoped<KanbanGamev2.Shared.Services.IGameStateService, GameStateService>();
+
 await builder.Build().RunAsync();

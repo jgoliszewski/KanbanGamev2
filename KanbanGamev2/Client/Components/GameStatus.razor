@@ -1,0 +1,112 @@
+@using KanbanGamev2.Client.Services
+@using KanbanGamev2.Shared.Services
+@inject ISignalRService SignalRService
+@inject IGameStateService GameStateService
+@implements IDisposable
+
+<div class="game-status">
+    <div class="status-display">
+        <div class="player-count">
+            <span class="count-text">@SignalRService.ReadyCount / @SignalRService.ConnectedCount</span>
+            <span class="count-label">ready players</span>
+        </div>
+        
+        <div class="day-display">
+            <span class="day-text">Day @GameStateService.CurrentDay</span>
+        </div>
+    </div>
+    
+    <div class="status-buttons">
+        <button class="btn btn-sm @(IsReady ? "btn-success" : "btn-outline-success")" 
+                @onclick="ToggleReadyStatus" 
+                disabled="@(!SignalRService.IsConnected)">
+            @(IsReady ? "Ready" : "Not Ready")
+        </button>
+        
+        <button class="btn btn-sm btn-primary" 
+                @onclick="AdvanceToNextDay">
+            Next Day
+        </button>
+    </div>
+</div>
+
+@code {
+    private bool IsReady { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Subscribe to SignalR events
+        SignalRService.ConnectedCountChanged += OnConnectedCountChanged;
+        SignalRService.ReadyCountChanged += OnReadyCountChanged;
+        SignalRService.UserConnected += OnUserConnected;
+        SignalRService.UserDisconnected += OnUserDisconnected;
+        SignalRService.UserReadyStatusChanged += OnUserReadyStatusChanged;
+
+        // Subscribe to game state events
+        GameStateService.DayChanged += OnDayChanged;
+        GameStateService.AchievementUnlocked += OnAchievementUnlocked;
+
+        // Connect to SignalR
+        await SignalRService.ConnectAsync();
+    }
+
+    private async void ToggleReadyStatus()
+    {
+        IsReady = !IsReady;
+        await SignalRService.SetReadyStatusAsync(IsReady);
+        StateHasChanged();
+    }
+
+    private async void AdvanceToNextDay()
+    {
+        await GameStateService.AdvanceToNextDay();
+    }
+
+    private void OnConnectedCountChanged(int count)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnReadyCountChanged(int count)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnUserConnected(UserInfo userInfo)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnUserDisconnected(string connectionId)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnUserReadyStatusChanged(string connectionId, bool isReady)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnDayChanged(int newDay)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnAchievementUnlocked(Achievement achievement)
+    {
+        // Could show a toast notification here
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        SignalRService.ConnectedCountChanged -= OnConnectedCountChanged;
+        SignalRService.ReadyCountChanged -= OnReadyCountChanged;
+        SignalRService.UserConnected -= OnUserConnected;
+        SignalRService.UserDisconnected -= OnUserDisconnected;
+        SignalRService.UserReadyStatusChanged -= OnUserReadyStatusChanged;
+
+        GameStateService.DayChanged -= OnDayChanged;
+        GameStateService.AchievementUnlocked -= OnAchievementUnlocked;
+    }
+} 

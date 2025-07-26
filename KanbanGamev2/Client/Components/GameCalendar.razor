@@ -1,0 +1,93 @@
+@using KanbanGamev2.Shared.Services
+@inject IGameStateService GameStateService
+@implements IDisposable
+
+<div class="game-calendar">
+    <div class="calendar-header">
+        <h3>Game Calendar</h3>
+        <div class="current-day-info">
+            <span class="day-label">Current Day:</span>
+            <span class="day-number">@GameStateService.CurrentDay</span>
+        </div>
+    </div>
+    
+    <div class="calendar-body">
+        <div class="calendar-controls">
+            <label for="game-date" class="form-label">Game Date:</label>
+            <input type="date" 
+                   id="game-date" 
+                   class="form-control" 
+                   value="@GetGameDate().ToString("yyyy-MM-dd")" 
+                   readonly />
+        </div>
+        
+        <div class="game-progress">
+            <div class="progress mb-3">
+                <div class="progress-bar" 
+                     role="progressbar" 
+                     style="width: @(Math.Min(GameStateService.CurrentDay * 3.33, 100))%" 
+                     aria-valuenow="@GameStateService.CurrentDay" 
+                     aria-valuemin="0" 
+                     aria-valuemax="30">
+                    Day @GameStateService.CurrentDay
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="calendar-footer">
+        <div class="game-info">
+            <p><strong>Game Start Date:</strong> @GameStateService.GameStartDate.ToString("MMM dd, yyyy")</p>
+            <p><strong>Days Played:</strong> @(GameStateService.CurrentDay - 1)</p>
+            <p><strong>Current Date:</strong> @GetGameDate().ToString("MMM dd, yyyy")</p>
+        </div>
+        
+        @if (GameStateService.UnlockedAchievements.Any())
+        {
+            <div class="achievements-section">
+                <h4>Recent Achievements</h4>
+                <div class="achievements-list">
+                    @foreach (var achievement in GameStateService.UnlockedAchievements.TakeLast(3))
+                    {
+                        <div class="achievement-item">
+                            <span class="achievement-icon">@achievement.Icon</span>
+                            <div class="achievement-info">
+                                <div class="achievement-name">@achievement.Name</div>
+                                <div class="achievement-description">@achievement.Description</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        GameStateService.DayChanged += OnDayChanged;
+        GameStateService.AchievementUnlocked += OnAchievementUnlocked;
+    }
+
+    private DateTime GetGameDate()
+    {
+        return GameStateService.GameStartDate.AddDays(GameStateService.CurrentDay - 1);
+    }
+
+    private void OnDayChanged(int newDay)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnAchievementUnlocked(Achievement achievement)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        GameStateService.DayChanged -= OnDayChanged;
+        GameStateService.AchievementUnlocked -= OnAchievementUnlocked;
+    }
+} 
