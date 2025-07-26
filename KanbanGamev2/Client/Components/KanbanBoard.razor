@@ -1,0 +1,36 @@
+@using KanbanGame.Shared
+
+<div class="kanban-board">
+    <div class="board-header mb-3">
+        <h2>@Title</h2>
+        <p class="text-muted">@Description</p>
+    </div>
+    <div class="board-content">
+        <div class="row">
+            @foreach (var column in Columns)
+            {
+                <div class="col-md-3">
+                    <KanbanColumn 
+                        Title="@column.Title" 
+                        Cards="@column.Cards" 
+                        OnCardClick="@OnCardClick" 
+                        OnColumnClick="@OnColumnClick" />
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Description { get; set; } = string.Empty;
+    [Parameter] public List<KanbanColumnData> Columns { get; set; } = new();
+    [Parameter] public EventCallback<Card> OnCardClick { get; set; }
+    [Parameter] public EventCallback OnColumnClick { get; set; }
+
+    public class KanbanColumnData
+    {
+        public string Title { get; set; } = string.Empty;
+        public List<Card> Cards { get; set; } = new();
+    }
+} 

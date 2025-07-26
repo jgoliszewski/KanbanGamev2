@@ -1,0 +1,49 @@
+@page "/employees"
+@using KanbanGame.Shared
+@using KanbanGamev2.Client.Services
+@inject IEmployeeService EmployeeService
+
+<PageTitle>Employees</PageTitle>
+
+<h1>Employees</h1>
+
+@if (EmployeeService.Employees.Count == 0)
+{
+    <p>Loading employees...</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var employee in EmployeeService.Employees)
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">@employee.Name</h5>
+                        <p class="card-text">
+                            <strong>Role:</strong> @employee.Role<br/>
+                            <strong>Department:</strong> @employee.Department<br/>
+                            <strong>Email:</strong> @employee.Email<br/>
+                            <strong>Status:</strong> 
+                            @if (employee.IsAvailable)
+                            {
+                                <span class="badge bg-success">Available</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning">Busy</span>
+                            }
+                        </p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await EmployeeService.GetEmployees();
+    }
+} 

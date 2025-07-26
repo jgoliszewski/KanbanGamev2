@@ -1,0 +1,97 @@
+@page "/frontend-board"
+@using KanbanGame.Shared
+@using KanbanGamev2.Client.Services
+@using KanbanGamev2.Client.Components
+@inject IEmployeeService EmployeeService
+@inject ITaskService TaskService
+
+<PageTitle>Frontend Development Board</PageTitle>
+
+<link href="css/kanban.css" rel="stylesheet" />
+
+<div class="container-fluid">
+    <KanbanBoard 
+        Title="Frontend Development Board"
+        Description="Track frontend tasks and employee assignments through the development process"
+        Columns="@frontendColumns"
+        OnCardClick="@OnCardClick" />
+</div>
+
+@code {
+    private List<KanbanBoard.KanbanColumnData> frontendColumns = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+        OrganizeColumns();
+    }
+
+    private async Task LoadData()
+    {
+        await EmployeeService.GetEmployees();
+        await TaskService.GetTasks();
+    }
+
+    private void OrganizeColumns()
+    {
+        frontendColumns = new List<KanbanBoard.KanbanColumnData>
+        {
+            new KanbanBoard.KanbanColumnData
+            {
+                Title = "Backlog",
+                Cards = GetCardsByColumn("frontend-backlog")
+            },
+            new KanbanBoard.KanbanColumnData
+            {
+                Title = "Analysis",
+                Cards = GetCardsByColumn("frontend-analysis")
+            },
+            new KanbanBoard.KanbanColumnData
+            {
+                Title = "Development Waiting",
+                Cards = GetCardsByColumn("frontend-dev-waiting")
+            },
+            new KanbanBoard.KanbanColumnData
+            {
+                Title = "Development Doing",
+                Cards = GetCardsByColumn("frontend-dev-doing")
+            },
+            new KanbanBoard.KanbanColumnData
+            {
+                Title = "Testing Waiting",
+                Cards = GetCardsByColumn("frontend-test-waiting")
+            },
+            new KanbanBoard.KanbanColumnData
+            {
+                Title = "Testing Doing",
+                Cards = GetCardsByColumn("frontend-test-doing")
+            },
+            new KanbanBoard.KanbanColumnData
+            {
+                Title = "Done",
+                Cards = GetCardsByColumn("frontend-done")
+            }
+        };
+    }
+
+    private List<Card> GetCardsByColumn(string columnId)
+    {
+        var cards = new List<Card>();
+        
+        // Add tasks for this column
+        var tasks = TaskService.Tasks.Where(t => t.ColumnId == columnId).ToList();
+        cards.AddRange(tasks);
+        
+        // Add employees for this column
+        var employees = EmployeeService.Employees.Where(e => e.ColumnId == columnId).ToList();
+        cards.AddRange(employees);
+        
+        return cards;
+    }
+
+    private void OnCardClick(Card card)
+    {
+        // Handle card click - will be enhanced with drag and drop later
+        Console.WriteLine($"Card clicked: {card.Title}");
+    }
+} 

@@ -1,0 +1,47 @@
+@page "/tasks"
+@using KanbanGame.Shared
+@using KanbanGamev2.Client.Services
+@inject ITaskService TaskService
+
+<PageTitle>Tasks</PageTitle>
+
+<h1>Tasks</h1>
+
+@if (TaskService.Tasks.Count == 0)
+{
+    <p>Loading tasks...</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var task in TaskService.Tasks)
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">@task.Title</h5>
+                        <p class="card-text">@task.Description</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary">@task.Priority</span>
+                            <span class="badge bg-secondary">@task.Status</span>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <strong>Assigned:</strong> @(string.IsNullOrEmpty(task.AssignedTo) ? "Unassigned" : task.AssignedTo)<br/>
+                                <strong>Hours:</strong> @task.ActualHours/@task.EstimatedHours<br/>
+                                <strong>Due:</strong> @(task.DueDate?.ToString("MM/dd/yyyy") ?? "No due date")
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await TaskService.GetTasks();
+    }
+} 

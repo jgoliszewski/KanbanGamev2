@@ -1,0 +1,47 @@
+@page "/features"
+@using KanbanGame.Shared
+@using KanbanGamev2.Client.Services
+@inject IFeatureService FeatureService
+
+<PageTitle>Features</PageTitle>
+
+<h1>Features</h1>
+
+@if (FeatureService.Features.Count == 0)
+{
+    <p>Loading features...</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var feature in FeatureService.Features)
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">@feature.Title</h5>
+                        <p class="card-text">@feature.Description</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary">@feature.Priority</span>
+                            <span class="badge bg-secondary">@feature.Status</span>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <strong>Assigned:</strong> @(string.IsNullOrEmpty(feature.AssignedTo) ? "Unassigned" : feature.AssignedTo)<br/>
+                                <strong>Story Points:</strong> @feature.StoryPoints<br/>
+                                <strong>Due:</strong> @(feature.DueDate?.ToString("MM/dd/yyyy") ?? "No due date")
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await FeatureService.GetFeatures();
+    }
+} 

@@ -1,0 +1,67 @@
+@page "/summary-board"
+@using KanbanGame.Shared
+@using KanbanGamev2.Client.Services
+@using KanbanGamev2.Client.Components
+@inject IFeatureService FeatureService
+
+<PageTitle>Summary Board</PageTitle>
+
+<link href="css/kanban.css" rel="stylesheet" />
+
+<div class="container-fluid">
+    <KanbanBoard 
+        Title="Summary Board"
+        Description="High-level overview of all features across the development lifecycle"
+        Columns="@summaryColumns"
+        OnCardClick="@OnCardClick" />
+</div>
+
+@code {
+    private List<KanbanBoard.KanbanColumnData> summaryColumns = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+        OrganizeColumns();
+    }
+
+    private async Task LoadData()
+    {
+        await FeatureService.GetFeatures();
+    }
+
+    private void OrganizeColumns()
+    {
+        summaryColumns = new List<KanbanBoard.KanbanColumnData>
+        {
+            new KanbanBoard.KanbanColumnData
+            {
+                Title = "Backlog",
+                Cards = GetFeaturesByColumn("backlog")
+            },
+            new KanbanBoard.KanbanColumnData
+            {
+                Title = "During Development",
+                Cards = GetFeaturesByColumn("development")
+            },
+            new KanbanBoard.KanbanColumnData
+            {
+                Title = "Done",
+                Cards = GetFeaturesByColumn("done")
+            }
+        };
+    }
+
+    private List<Card> GetFeaturesByColumn(string columnId)
+    {
+        // For summary board, we only show features
+        var features = FeatureService.Features.Where(f => f.ColumnId == columnId).ToList();
+        return features.Cast<Card>().ToList();
+    }
+
+    private void OnCardClick(Card card)
+    {
+        // Handle card click - will be enhanced with drag and drop later
+        Console.WriteLine($"Card clicked: {card.Title}");
+    }
+} 

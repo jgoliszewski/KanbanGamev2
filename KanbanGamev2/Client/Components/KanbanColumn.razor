@@ -1,0 +1,57 @@
+@using KanbanGame.Shared
+
+<div class="kanban-column">
+    <div class="column-header">
+        <h5>@Title</h5>
+        <span class="badge bg-secondary">@Cards.Count</span>
+    </div>
+    <div class="column-content" @onclick="OnColumnClick">
+        @foreach (var card in Cards.OrderBy(c => c.Order))
+        {
+            <div class="card mb-2" @onclick="() => OnCardClick.InvokeAsync(card)">
+                <div class="card-body p-2">
+                    <h6 class="card-title mb-1">@card.Title</h6>
+                    <p class="card-text small mb-1">@card.Description</p>
+                    @if (card is Employee employee)
+                    {
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">@employee.Role</small>
+                            <span class="badge @(employee.IsAvailable ? "bg-success" : "bg-warning")">
+                                @(employee.IsAvailable ? "Available" : "Busy")
+                            </span>
+                        </div>
+                    }
+                    else if (card is Feature feature)
+                    {
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary">@feature.Priority</span>
+                            <small class="text-muted">@feature.StoryPoints SP</small>
+                        </div>
+                        @if (!string.IsNullOrEmpty(feature.AssignedTo))
+                        {
+                            <small class="text-muted">Assigned: @feature.AssignedTo</small>
+                        }
+                    }
+                    else if (card is KanbanTask task)
+                    {
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary">@task.Priority</span>
+                            <small class="text-muted">@task.ActualHours/@task.EstimatedHours h</small>
+                        </div>
+                        @if (!string.IsNullOrEmpty(task.AssignedTo))
+                        {
+                            <small class="text-muted">Assigned: @task.AssignedTo</small>
+                        }
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public List<Card> Cards { get; set; } = new();
+    [Parameter] public EventCallback<Card> OnCardClick { get; set; }
+    [Parameter] public EventCallback OnColumnClick { get; set; }
+} 

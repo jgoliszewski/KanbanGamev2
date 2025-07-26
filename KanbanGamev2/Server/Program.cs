@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.ResponseCompression;
+using KanbanGamev2.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,6 +7,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+
+// Register our services
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<IFeatureService, FeatureService>();
+builder.Services.AddScoped<ITaskService, TaskService>();
+
+// Add API controllers
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
@@ -27,7 +36,6 @@ app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
 app.UseRouting();
-
 
 app.MapRazorPages();
 app.MapControllers();

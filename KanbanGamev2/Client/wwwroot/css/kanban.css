@@ -1,0 +1,88 @@
+.kanban-board {
+    padding: 20px;
+}
+
+.kanban-column {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    min-height: 400px;
+    border: 1px solid #dee2e6;
+}
+
+.column-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.column-header h5 {
+    margin: 0;
+    color: #495057;
+    font-weight: 600;
+}
+
+.column-content {
+    min-height: 300px;
+}
+
+.column-content .card {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid #dee2e6;
+}
+
+.column-content .card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.column-content .card-body {
+    padding: 10px;
+}
+
+.column-content .card-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.column-content .card-text {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-bottom: 8px;
+}
+
+.badge {
+    font-size: 0.7rem;
+}
+
+.text-muted {
+    font-size: 0.75rem;
+}
+
+.board-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.board-header h2 {
+    color: #495057;
+    margin-bottom: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .kanban-column {
+        margin-bottom: 15px;
+        min-height: 300px;
+    }
+
+    .column-content {
+        min-height: 200px;
+    }
+}

@@ -1,0 +1,87 @@
+@page "/analysis-board"
+@using KanbanGame.Shared
+@using KanbanGamev2.Client.Services
+@using KanbanGamev2.Client.Components
+@inject IEmployeeService EmployeeService
+@inject IFeatureService FeatureService
+
+<PageTitle>High Level Analysis Board</PageTitle>
+
+<link href="css/kanban.css" rel="stylesheet" />
+
+<div class="container-fluid">
+    <KanbanBoard 
+        Title="High Level Analysis Board"
+        Description="Track features and employee assignments through the analysis process"
+        Columns="@analysisColumns"
+        OnCardClick="@OnCardClick" />
+</div>
+
+@code {
+    private List<KanbanBoard.KanbanColumnData> analysisColumns = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+        OrganizeColumns();
+    }
+
+    private async Task LoadData()
+    {
+        await EmployeeService.GetEmployees();
+        await FeatureService.GetFeatures();
+    }
+
+    private void OrganizeColumns()
+    {
+        analysisColumns = new List<KanbanBoard.KanbanColumnData>
+        {
+            new KanbanBoard.KanbanColumnData
+            {
+                Title = "Backlog",
+                Cards = GetCardsByColumn("backlog")
+            },
+            new KanbanBoard.KanbanColumnData
+            {
+                Title = "Under Analysis 1",
+                Cards = GetCardsByColumn("analysis1")
+            },
+            new KanbanBoard.KanbanColumnData
+            {
+                Title = "Waiting",
+                Cards = GetCardsByColumn("waiting")
+            },
+            new KanbanBoard.KanbanColumnData
+            {
+                Title = "Under Analysis 2",
+                Cards = GetCardsByColumn("analysis2")
+            },
+            new KanbanBoard.KanbanColumnData
+            {
+                Title = "Ready for Development",
+                Cards = GetCardsByColumn("ready-dev")
+            }
+        };
+    }
+
+    private List<Card> GetCardsByColumn(string columnId)
+    {
+        var cards = new List<Card>();
+        
+        // Add features for this column
+        var features = FeatureService.Features.Where(f => f.ColumnId == columnId).ToList();
+        cards.AddRange(features);
+        
+        // Add employees for this column
+        var employees = EmployeeService.Employees.Where(e => e.ColumnId == columnId).ToList();
+        cards.AddRange(employees);
+        
+        return cards;
+    }
+
+    private void OnCardClick(Card card)
+    {
+        // Handle card click - will be enhanced with drag and drop later
+        Console.WriteLine($"Card clicked: {card.Title}");
+    }
+} 
