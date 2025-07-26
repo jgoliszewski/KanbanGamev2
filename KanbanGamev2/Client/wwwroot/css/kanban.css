@@ -147,16 +147,38 @@
 .employee-card.assigned::after {
     content: '';
     position: absolute;
-    bottom: -2px;
+    bottom: -12px;
     left: 50%;
     transform: translateX(-50%);
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     background-image: url('../link.png');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
     z-index: 10;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+/* Ensure employee cards with assigned work have proper spacing */
+.employee-card.assigned {
+    margin-bottom: 20px;
+    border-bottom: 2px solid transparent;
+    position: relative;
+    padding-bottom: 5px;
+}
+
+/* Style for work items that are assigned to employees */
+.draggable-card.assigned-work-item {
+    margin-top: 5px;
+    border-left: 3px solid #28a745;
+    background-color: #f8fff9;
+}
+
+/* Visual connection between employee and assigned work */
+.draggable-card.assigned-work-item .card {
+    border-left: 3px solid #28a745;
+    background-color: #f8fff9;
 }
 
 /* Drag and Drop Styles */
@@ -168,6 +190,18 @@
     opacity: 0.5;
     transform: rotate(5deg);
     z-index: 1000;
+}
+
+/* Employee card drag-over highlighting */
+.draggable-card.drag-over-employee .card {
+    background-color: #e3f2fd;
+    border-color: #2196f3;
+    box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
+    transform: scale(1.02);
+}
+
+.draggable-card.drag-over-employee .employee-card {
+    background-color: #e3f2fd;
 }
 
 /* Read-only board indicator */

@@ -12,7 +12,7 @@
         <span class="badge bg-secondary">@Cards.Count</span>
     </div>
     <div class="column-content">
-        @foreach (var card in Cards)
+        @foreach (var card in SortedCards)
         {
             <DraggableCard 
                 Card="@card"
@@ -35,6 +35,52 @@
     private bool IsDragOver => DragDropService.IsDragging && 
                                DragDropService.TargetColumnId == ColumnId && 
                                IsValidDropTarget();
+
+    private List<Card> SortedCards
+    {
+        get
+        {
+            var sortedCards = new List<Card>();
+            var employees = Cards.OfType<Employee>().ToList();
+            var workItems = Cards.Where(c => c is KanbanTask || c is Feature).ToList();
+
+            // Add employees first
+            foreach (var employee in employees)
+            {
+                sortedCards.Add(employee);
+                
+                // Find and add assigned work items immediately after the employee
+                var assignedWorkItems = workItems.Where(work => 
+                {
+                    if (work is KanbanTask task)
+                        return task.AssignedToEmployeeId == employee.Id;
+                    if (work is Feature feature)
+                        return feature.AssignedToEmployeeId == employee.Id;
+                    return false;
+                }).ToList();
+                
+                sortedCards.AddRange(assignedWorkItems);
+            }
+            
+            // Add any remaining unassigned work items at the end
+            var assignedWorkItemIds = workItems
+                .Where(work => 
+                {
+                    if (work is KanbanTask task)
+                        return task.AssignedToEmployeeId.HasValue;
+                    if (work is Feature feature)
+                        return feature.AssignedToEmployeeId.HasValue;
+                    return false;
+                })
+                .Select(w => w.Id)
+                .ToHashSet();
+                
+            var unassignedWorkItems = workItems.Where(w => !assignedWorkItemIds.Contains(w.Id)).ToList();
+            sortedCards.AddRange(unassignedWorkItems);
+            
+            return sortedCards;
+        }
+    }
 
     private bool IsValidDropTarget()
     {

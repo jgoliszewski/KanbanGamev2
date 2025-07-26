@@ -2,10 +2,12 @@
 @using KanbanGamev2.Client.Services
 @inject IDragDropService DragDropService
 
-<div class="draggable-card @(IsDragging ? "dragging" : "")"
+<div class="draggable-card @(IsDragging ? "dragging" : "") @(IsAssignedWorkItem ? "assigned-work-item" : "") @(IsDragOverEmployee ? "drag-over-employee" : "")"
      draggable="true"
      @ondragstart="OnDragStart"
      @ondragend="OnDragEnd"
+     @ondragover="OnDragOver"
+     @ondragover:preventDefault
      @ondrop="OnDrop"
      @ondrop:preventDefault>
     <div class="card mb-2">
@@ -65,6 +67,23 @@
 
     private bool IsDragging => DragDropService.IsDragging && DragDropService.DraggedCard?.Id == Card.Id;
     private bool IsDraggable => !DragDropService.IsReadOnlyBoard(BoardType);
+    
+    private bool IsDragOverEmployee => DragDropService.IsDragging && 
+                                      Card is Employee && 
+                                      (DragDropService.DraggedCard is KanbanTask || DragDropService.DraggedCard is Feature) &&
+                                      DragDropService.CanMoveWorkForward(BoardType, DragDropService.DraggedCard, (Employee)Card);
+    
+    private bool IsAssignedWorkItem
+    {
+        get
+        {
+            if (Card is KanbanTask task)
+                return task.AssignedToEmployeeId.HasValue;
+            if (Card is Feature feature)
+                return feature.AssignedToEmployeeId.HasValue;
+            return false;
+        }
+    }
 
     private string GetEmployeeAvatar(string employeeName)
     {
@@ -133,6 +152,12 @@
         // Only clear the drag state, don't handle the movement here
         // The OnDrop event in DroppableColumn will handle the actual movement
         DragDropService.ClearDrag();
+        StateHasChanged();
+    }
+
+    private void OnDragOver(DragEventArgs e)
+    {
+        // Trigger state change to update the drag-over highlighting
         StateHasChanged();
     }
 
