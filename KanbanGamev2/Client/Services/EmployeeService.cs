@@ -1,6 +1,6 @@
-using System.Net.Http.Json;
-using Microsoft.AspNetCore.Components;
 using KanbanGame.Shared;
+using Microsoft.AspNetCore.Components;
+using System.Net.Http.Json;
 
 namespace KanbanGamev2.Client.Services;
 
@@ -54,4 +54,10 @@ public class EmployeeService : IEmployeeService
         var result = await _http.GetFromJsonAsync<List<Employee>>("api/employee/available");
         return result ?? new List<Employee>();
     }
-} 
+
+    public async Task<bool> UnassignWorkFromEmployee(Guid employeeId)
+    {
+        var response = await _http.PutAsync($"api/employee/{employeeId}/unassign", null);
+        return response.IsSuccessStatusCode;
+    }
+}

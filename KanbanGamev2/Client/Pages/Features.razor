@@ -5,9 +5,9 @@
 
 <PageTitle>Features</PageTitle>
 
-<h1>Features</h1>
+<h3>Features</h3>
 
-@if (FeatureService.Features.Count == 0)
+@if (FeatureService.Features == null || !FeatureService.Features.Any())
 {
     <p>Loading features...</p>
 }
@@ -21,16 +21,17 @@ else
                     <div class="card-body">
                         <h5 class="card-title">@feature.Title</h5>
                         <p class="card-text">@feature.Description</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="badge @feature.Priority.GetBadgeClass()">@feature.Priority</span>
-                            <span class="badge @feature.Status.GetBadgeClass()">@feature.Status</span>
-                        </div>
-                        <div class="mt-2">
-                            <small class="text-muted">
-                                <strong>Assigned:</strong> @(string.IsNullOrEmpty(feature.AssignedTo) ? "Unassigned" : feature.AssignedTo)<br/>
-                                <strong>Story Points:</strong> @feature.StoryPoints<br/>
-                                <strong>Due:</strong> @(feature.DueDate?.ToString("MM/dd/yyyy") ?? "No due date")
-                            </small>
+                        <div class="card-text">
+                            <strong>Priority:</strong> <span class="badge @feature.Priority.GetBadgeClass()">@feature.Priority</span><br/>
+                            <strong>Status:</strong> <span class="badge @feature.Status.GetBadgeClass()">@feature.Status</span><br/>
+                            <strong>Story Points:</strong> @feature.StoryPoints<br/>
+                            <strong>Assigned:</strong> @(feature.IsAssigned ? "Assigned" : "Unassigned")<br/>
+                            @if (feature.DueDate.HasValue)
+                            {
+                                <strong>Due Date:</strong> @feature.DueDate.Value.ToShortDateString()<br/>
+                            }
+                            <strong>Column:</strong> @feature.ColumnId<br/>
+                            <strong>Created:</strong> @feature.CreatedAt.ToShortDateString()
                         </div>
                     </div>
                 </div>

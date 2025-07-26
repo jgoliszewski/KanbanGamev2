@@ -38,7 +38,7 @@ public class FeatureService : IFeatureService
             existing.Description = feature.Description;
             existing.Priority = feature.Priority;
             existing.Status = feature.Status;
-            existing.AssignedTo = feature.AssignedTo;
+            existing.AssignedToEmployeeId = feature.AssignedToEmployeeId;
             existing.DueDate = feature.DueDate;
             existing.StoryPoints = feature.StoryPoints;
             existing.ColumnId = feature.ColumnId;
@@ -76,7 +76,7 @@ public class FeatureService : IFeatureService
                 Description = "Implement secure user authentication system",
                 Priority = Priority.High,
                 Status = Status.InProgress,
-                AssignedTo = "John Doe",
+                AssignedToEmployeeId = null, // Will be assigned via drag and drop
                 DueDate = DateTime.Now.AddDays(7),
                 StoryPoints = 8,
                 ColumnId = "analysis1",
@@ -89,7 +89,7 @@ public class FeatureService : IFeatureService
                 Description = "Create analytics dashboard with charts and metrics",
                 Priority = Priority.Medium,
                 Status = Status.ToDo,
-                AssignedTo = "",
+                AssignedToEmployeeId = null,
                 DueDate = DateTime.Now.AddDays(14),
                 StoryPoints = 13,
                 ColumnId = "backlog",
@@ -102,7 +102,7 @@ public class FeatureService : IFeatureService
                 Description = "Add email notification system for important events",
                 Priority = Priority.Low,
                 Status = Status.Done,
-                AssignedTo = "Jane Smith",
+                AssignedToEmployeeId = null,
                 DueDate = DateTime.Now.AddDays(-2),
                 StoryPoints = 5,
                 ColumnId = "done",
@@ -115,7 +115,7 @@ public class FeatureService : IFeatureService
                 Description = "Integrate payment gateway for subscription management",
                 Priority = Priority.High,
                 Status = Status.InProgress,
-                AssignedTo = "Mike Johnson",
+                AssignedToEmployeeId = null,
                 DueDate = DateTime.Now.AddDays(10),
                 StoryPoints = 21,
                 ColumnId = "development",
@@ -128,7 +128,7 @@ public class FeatureService : IFeatureService
                 Description = "Develop mobile application for iOS and Android",
                 Priority = Priority.Medium,
                 Status = Status.ToDo,
-                AssignedTo = "",
+                AssignedToEmployeeId = null,
                 DueDate = DateTime.Now.AddDays(30),
                 StoryPoints = 34,
                 ColumnId = "backlog",

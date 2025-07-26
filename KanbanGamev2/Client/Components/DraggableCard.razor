@@ -5,19 +5,21 @@
 <div class="draggable-card @(IsDragging ? "dragging" : "")"
      draggable="true"
      @ondragstart="OnDragStart"
-     @ondragend="OnDragEnd">
+     @ondragend="OnDragEnd"
+     @ondrop="OnDrop"
+     @ondrop:preventDefault>
     <div class="card mb-2">
         <div class="card-body p-2">
             @if (Card is Employee employee)
             {
-                <div class="employee-card">
+                <div class="employee-card @(employee.IsWorking ? "assigned" : "")">
                     <img src="@GetEmployeeAvatar(employee.Name)" alt="@employee.Name" class="employee-avatar" />
                     <div class="employee-info">
                         <div class="employee-name">@employee.Name</div>
                         <div class="employee-seniority">@employee.Role.GetDisplayName()</div>
                         <div class="employee-status">
-                            <span class="badge @(employee.IsAvailable ? "bg-success" : "bg-warning")">
-                                @(employee.IsAvailable ? "Available" : "Busy")
+                            <span class="badge @(employee.IsWorking ? "bg-danger" : "bg-success")">
+                                @(employee.IsWorking ? "Working" : "Free")
                             </span>
                         </div>
                     </div>
@@ -33,9 +35,9 @@
                         <span class="badge @feature.Priority.GetBadgeClass()">@feature.Priority</span>
                         <small class="text-muted">@feature.StoryPoints SP</small>
                     </div>
-                    @if (!string.IsNullOrEmpty(feature.AssignedTo))
+                    @if (feature.IsAssigned)
                     {
-                        <small class="text-muted">Assigned: @feature.AssignedTo</small>
+                        <span class="badge bg-success">Working</span>
                     }
                 }
                 else if (Card is KanbanTask task)
@@ -44,9 +46,9 @@
                         <span class="badge @task.Priority.GetBadgeClass()">@task.Priority</span>
                         <small class="text-muted">@task.ActualHours/@task.EstimatedHours h</small>
                     </div>
-                    @if (!string.IsNullOrEmpty(task.AssignedTo))
+                    @if (task.IsAssigned)
                     {
-                        <small class="text-muted">Assigned: @task.AssignedTo</small>
+                        <span class="badge bg-success">Working</span>
                     }
                 }
             }
@@ -59,6 +61,7 @@
     [Parameter] public string ColumnId { get; set; } = string.Empty;
     [Parameter] public BoardType BoardType { get; set; }
     [Parameter] public EventCallback<(Card card, string fromColumn, string toColumn)> OnCardMoved { get; set; }
+    [Parameter] public EventCallback<(Card workCard, Employee employee)> OnWorkAssigned { get; set; }
 
     private bool IsDragging => DragDropService.IsDragging && DragDropService.DraggedCard?.Id == Card.Id;
     private bool IsDraggable => !DragDropService.IsReadOnlyBoard(BoardType);
@@ -131,5 +134,39 @@
         // The OnDrop event in DroppableColumn will handle the actual movement
         DragDropService.ClearDrag();
         StateHasChanged();
+    }
+
+    private async void OnDrop(DragEventArgs e)
+    {
+        // Handle work assignment if dragging a task/feature onto an employee
+        if (DragDropService.IsDragging && DragDropService.DraggedCard != null)
+        {
+            var draggedCard = DragDropService.DraggedCard;
+            
+            // Check if we're dropping a task/feature onto an employee
+            if ((draggedCard is KanbanTask || draggedCard is Feature) && Card is Employee employee)
+            {
+                if (DragDropService.CanMoveWorkForward(BoardType, draggedCard, employee))
+                {
+                    // Move the work to the employee's column and assign it
+                    draggedCard.ColumnId = employee.ColumnId;
+                    DragDropService.AssignWorkToEmployee(draggedCard, employee);
+                    await OnWorkAssigned.InvokeAsync((draggedCard, employee));
+                    StateHasChanged();
+                }
+            }
+            // Check if we're dropping an employee onto a task/feature
+            else if (draggedCard is Employee draggedEmployee && (Card is KanbanTask || Card is Feature))
+            {
+                if (DragDropService.CanMoveWorkForward(BoardType, Card, draggedEmployee))
+                {
+                    // Move the work to the employee's column and assign it
+                    Card.ColumnId = draggedEmployee.ColumnId;
+                    DragDropService.AssignWorkToEmployee(Card, draggedEmployee);
+                    await OnWorkAssigned.InvokeAsync((Card, draggedEmployee));
+                    StateHasChanged();
+                }
+            }
+        }
     }
 } 

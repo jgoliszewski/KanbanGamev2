@@ -100,6 +100,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    position: relative;
 }
 
 .employee-avatar {
@@ -140,6 +141,22 @@
 .employee-status .badge {
     font-size: 0.65rem;
     padding: 2px 6px;
+}
+
+/* Assignment indicator for employee cards */
+.employee-card.assigned::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 20px;
+    background-image: url('../link.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 10;
 }
 
 /* Drag and Drop Styles */

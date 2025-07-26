@@ -46,6 +46,8 @@ public class EmployeeService : IEmployeeService
             existing.IsAvailable = employee.IsAvailable;
             existing.ColumnId = employee.ColumnId;
             existing.Order = employee.Order;
+            existing.AssignedTaskId = employee.AssignedTaskId;
+            existing.AssignedFeatureId = employee.AssignedFeatureId;
             existing.UpdatedAt = DateTime.Now;
             return existing;
         }
@@ -172,5 +174,18 @@ public class EmployeeService : IEmployeeService
     {
         _employees.Clear();
         SeedData();
+    }
+
+    public bool UnassignWorkFromEmployee(Guid id)
+    {
+        var employee = _employees.FirstOrDefault(e => e.Id == id);
+        if (employee != null)
+        {
+            employee.AssignedTaskId = null;
+            employee.AssignedFeatureId = null;
+            employee.UpdatedAt = DateTime.Now;
+            return true;
+        }
+        return false;
     }
 } 

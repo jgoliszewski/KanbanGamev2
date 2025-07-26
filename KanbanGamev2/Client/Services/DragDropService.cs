@@ -44,6 +44,18 @@ public class DragDropService : IDragDropService
         if (fromColumn == toColumn)
             return true;
 
+        // Working employees cannot be moved between columns
+        if (card is Employee employee && employee.IsWorking)
+            return false;
+
+        // For work items (tasks/features), only backward moves are allowed via column drops
+        // Forward moves must be done by dropping on employees
+        if (card is KanbanTask || card is Feature)
+        {
+            return IsValidBackwardMove(boardType, card, fromColumn, toColumn);
+        }
+
+        // For employees, use the existing validation
         switch (boardType)
         {
             case BoardType.Analysis:
@@ -53,6 +65,155 @@ public class DragDropService : IDragDropService
                 return IsValidDevBoardMove(card, fromColumn, toColumn);
             default:
                 return false;
+        }
+    }
+
+    private bool IsValidBackwardMove(BoardType boardType, Card card, string fromColumn, string toColumn)
+    {
+        switch (boardType)
+        {
+            case BoardType.Analysis:
+                // Analysis board: only backward moves allowed
+                // "analysis1" -> "backlog"
+                // "analysis2" -> "waiting"
+                return (fromColumn == "analysis1" && toColumn == "backlog") ||
+                       (fromColumn == "analysis2" && toColumn == "waiting");
+            case BoardType.Backend:
+            case BoardType.Frontend:
+                // Development boards: only backward moves allowed
+                // "backend-analysis"/"frontend-analysis" -> "backend-backlog"/"frontend-backlog"
+                // "backend-dev-doing"/"frontend-dev-doing" -> "backend-dev-waiting"/"frontend-dev-waiting"
+                // "backend-test-doing"/"frontend-test-doing" -> "backend-test-waiting"/"frontend-test-waiting"
+                return (fromColumn == "backend-analysis" && toColumn == "backend-backlog") ||
+                       (fromColumn == "frontend-analysis" && toColumn == "frontend-backlog") ||
+                       (fromColumn == "backend-dev-doing" && toColumn == "backend-dev-waiting") ||
+                       (fromColumn == "frontend-dev-doing" && toColumn == "frontend-dev-waiting") ||
+                       (fromColumn == "backend-test-doing" && toColumn == "backend-test-waiting") ||
+                       (fromColumn == "frontend-test-doing" && toColumn == "frontend-test-waiting");
+            default:
+                return false;
+        }
+    }
+
+    public bool CanAssignWork(Card workCard, Employee employee)
+    {
+        // Check if the work card is a task or feature
+        if (workCard is not KanbanTask && workCard is not Feature)
+            return false;
+            
+        // Check if employee is already working on something
+        if (employee.IsWorking)
+            return false;
+            
+        // Check if the work is already assigned to someone
+        if (workCard is KanbanTask task && task.IsAssigned)
+            return false;
+        if (workCard is Feature feature && feature.IsAssigned)
+            return false;
+            
+        return true;
+    }
+
+    public bool CanMoveWorkForward(BoardType boardType, Card workCard, Employee employee)
+    {
+        if (!CanAssignWork(workCard, employee))
+            return false;
+
+        // Check if this would be a valid forward move
+        if (workCard is KanbanTask || workCard is Feature)
+        {
+            return IsValidForwardMove(boardType, workCard, employee.ColumnId);
+        }
+
+        return false;
+    }
+
+    private bool IsValidForwardMove(BoardType boardType, Card workCard, string targetColumn)
+    {
+        var currentColumn = workCard.ColumnId;
+
+        switch (boardType)
+        {
+            case BoardType.Analysis:
+                // Analysis board forward moves:
+                // "backlog" -> "analysis1" (via employee in analysis1)
+                // "waiting" -> "analysis2" (via employee in analysis2)
+                return (currentColumn == "backlog" && targetColumn == "analysis1") ||
+                       (currentColumn == "waiting" && targetColumn == "analysis2");
+            case BoardType.Backend:
+            case BoardType.Frontend:
+                // Development board forward moves:
+                // "backend-backlog"/"frontend-backlog" -> "backend-analysis"/"frontend-analysis"
+                // "backend-dev-waiting"/"frontend-dev-waiting" -> "backend-dev-doing"/"frontend-dev-doing"
+                // "backend-test-waiting"/"frontend-test-waiting" -> "backend-test-doing"/"frontend-test-doing"
+                return (currentColumn == "backend-backlog" && targetColumn == "backend-analysis") ||
+                       (currentColumn == "frontend-backlog" && targetColumn == "frontend-analysis") ||
+                       (currentColumn == "backend-dev-waiting" && targetColumn == "backend-dev-doing") ||
+                       (currentColumn == "frontend-dev-waiting" && targetColumn == "frontend-dev-doing") ||
+                       (currentColumn == "backend-test-waiting" && targetColumn == "backend-test-doing") ||
+                       (currentColumn == "frontend-test-waiting" && targetColumn == "frontend-test-doing");
+            default:
+                return false;
+        }
+    }
+
+    public void AssignWorkToEmployee(Card workCard, Employee employee)
+    {
+        if (!CanAssignWork(workCard, employee))
+            return;
+            
+        if (workCard is KanbanTask task)
+        {
+            task.AssignedToEmployeeId = employee.Id;
+            employee.AssignedTaskId = task.Id;
+        }
+        else if (workCard is Feature feature)
+        {
+            feature.AssignedToEmployeeId = employee.Id;
+            employee.AssignedFeatureId = feature.Id;
+        }
+    }
+
+    public void UnassignWorkFromEmployee(Employee employee)
+    {
+        if (employee.AssignedTaskId.HasValue)
+        {
+            // Find and unassign the task
+            // This will be handled by the service layer
+            employee.AssignedTaskId = null;
+        }
+        
+        if (employee.AssignedFeatureId.HasValue)
+        {
+            // Find and unassign the feature
+            // This will be handled by the service layer
+            employee.AssignedFeatureId = null;
+        }
+    }
+
+    public void UnassignWorkFromCard(Card card)
+    {
+        if (card is KanbanTask task)
+        {
+            task.AssignedToEmployeeId = null;
+        }
+        else if (card is Feature feature)
+        {
+            feature.AssignedToEmployeeId = null;
+        }
+    }
+
+    public void UnassignWorkWhenMoved(Card card)
+    {
+        if (card is Employee employee)
+        {
+            // If employee is moved, unassign their current work
+            UnassignWorkFromEmployee(employee);
+        }
+        else if (card is KanbanTask || card is Feature)
+        {
+            // If work is moved, unassign it from the employee
+            UnassignWorkFromCard(card);
         }
     }
 

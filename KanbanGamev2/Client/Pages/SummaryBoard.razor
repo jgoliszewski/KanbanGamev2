@@ -14,7 +14,8 @@
         Description="High-level overview of all features across the development lifecycle"
         BoardType="@BoardType.Summary"
         Columns="@summaryColumns"
-        OnCardMoved="@OnCardMoved" />
+        OnCardMoved="@OnCardMoved"
+        OnWorkAssigned="@OnWorkAssigned" />
 </div>
 
 @code {
@@ -65,20 +66,9 @@
 
     private async Task OnCardMoved((Card card, string fromColumn, string toColumn) moveInfo)
     {
-        var (card, fromColumn, toColumn) = moveInfo;
-        
-        // Update the card's column
-        card.ColumnId = toColumn;
-        card.UpdatedAt = DateTime.Now;
+    }
 
-        // Update the feature in the service
-        if (card is Feature feature)
-        {
-            await FeatureService.UpdateFeature(feature);
-        }
-
-        // Reorganize columns to reflect the change
-        OrganizeColumns();
-        StateHasChanged();
+    private async Task OnWorkAssigned((Card workCard, Employee employee) assignmentInfo)
+    {
     }
 } 

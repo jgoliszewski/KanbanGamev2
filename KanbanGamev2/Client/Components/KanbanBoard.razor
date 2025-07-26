@@ -17,7 +17,8 @@
                         ColumnId="@column.ColumnId"
                         BoardType="@BoardType"
                         Cards="@column.Cards" 
-                        OnCardMoved="@OnCardMoved" />
+                        OnCardMoved="@OnCardMoved"
+                        OnWorkAssigned="@OnWorkAssigned" />
                 </div>
             }
         </div>
@@ -30,6 +31,7 @@
     [Parameter] public BoardType BoardType { get; set; }
     [Parameter] public List<KanbanColumnData> Columns { get; set; } = new();
     [Parameter] public EventCallback<(Card card, string fromColumn, string toColumn)> OnCardMoved { get; set; }
+    [Parameter] public EventCallback<(Card workCard, Employee employee)> OnWorkAssigned { get; set; }
 
     public class KanbanColumnData
     {

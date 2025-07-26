@@ -70,4 +70,13 @@ public class EmployeeController : ControllerBase
             return NotFound();
         return NoContent();
     }
+
+    [HttpPut("{id}/unassign")]
+    public ActionResult UnassignWorkFromEmployee(Guid id)
+    {
+        var success = _employeeService.UnassignWorkFromEmployee(id);
+        if (!success)
+            return NotFound();
+        return NoContent();
+    }
 } 

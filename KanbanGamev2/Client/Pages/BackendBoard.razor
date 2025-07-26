@@ -15,7 +15,8 @@
         Description="Track backend tasks and employee assignments through the development process"
         BoardType="@BoardType.Backend"
         Columns="@backendColumns"
-        OnCardMoved="@OnCardMoved" />
+        OnCardMoved="@OnCardMoved"
+        OnWorkAssigned="@OnWorkAssigned" />
 </div>
 
 @code {
@@ -94,7 +95,46 @@
         var employees = EmployeeService.Employees.Where(e => e.ColumnId == columnId).ToList();
         cards.AddRange(employees);
         
-        return cards;
+        // Sort cards so employees appear above their assigned work
+        return SortCardsWithEmployeesFirst(cards);
+    }
+
+    private List<Card> SortCardsWithEmployeesFirst(List<Card> cards)
+    {
+        var sortedCards = new List<Card>();
+        var employees = cards.OfType<Employee>().ToList();
+        var workItems = cards.Where(c => c is Feature || c is KanbanTask).ToList();
+
+        // Add employees first
+        sortedCards.AddRange(employees);
+
+        // Add work items, placing assigned work right after their assigned employee
+        foreach (var employee in employees)
+        {
+            if (employee.AssignedTaskId.HasValue)
+            {
+                var assignedTask = workItems.OfType<KanbanTask>().FirstOrDefault(t => t.Id == employee.AssignedTaskId.Value);
+                if (assignedTask != null)
+                {
+                    sortedCards.Add(assignedTask);
+                    workItems.Remove(assignedTask);
+                }
+            }
+            else if (employee.AssignedFeatureId.HasValue)
+            {
+                var assignedFeature = workItems.OfType<Feature>().FirstOrDefault(f => f.Id == employee.AssignedFeatureId.Value);
+                if (assignedFeature != null)
+                {
+                    sortedCards.Add(assignedFeature);
+                    workItems.Remove(assignedFeature);
+                }
+            }
+        }
+
+        // Add remaining unassigned work items
+        sortedCards.AddRange(workItems);
+
+        return sortedCards;
     }
 
     private async Task OnCardMoved((Card card, string fromColumn, string toColumn) moveInfo)
@@ -112,9 +152,44 @@
         }
         else if (card is KanbanTask task)
         {
+            // If this is a work item being moved, unassign the employee
+            if (task.AssignedToEmployeeId.HasValue)
+            {
+                var cardsInFromColumn = GetCardsByColumn(fromColumn);
+                var assignedEmployee = cardsInFromColumn.FirstOrDefault(x => x.Id == task.AssignedToEmployeeId.Value && x is Employee);
+                if (assignedEmployee is not null)
+                {
+                    (assignedEmployee! as Employee).AssignedTaskId = null;
+                }
+
+                task.AssignedToEmployeeId = null;
+            }
+
             await TaskService.UpdateTask(task);
         }
 
+        // Reorganize columns to reflect the change
+        OrganizeColumns();
+        StateHasChanged();
+    }
+
+    private async Task OnWorkAssigned((Card workCard, Employee employee) assignmentInfo)
+    {
+        var (workCard, employee) = assignmentInfo;
+        
+        // Update the work card (it has already been moved to the employee's column)
+        if (workCard is Feature feature)
+        {
+            // Note: We'll need to inject IFeatureService if we want to update features
+        }
+        else if (workCard is KanbanTask task)
+        {
+            await TaskService.UpdateTask(task);
+        }
+        
+        // Update the employee
+        await EmployeeService.UpdateEmployee(employee);
+        
         // Reorganize columns to reflect the change
         OrganizeColumns();
         StateHasChanged();

@@ -11,4 +11,5 @@ public interface IEmployeeService
     Task<Employee> UpdateEmployee(Employee employee);
     Task<bool> DeleteEmployee(Guid id);
     Task<List<Employee>> GetAvailableEmployees();
+    Task<bool> UnassignWorkFromEmployee(Guid employeeId);
 } 

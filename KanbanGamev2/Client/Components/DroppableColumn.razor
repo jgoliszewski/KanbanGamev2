@@ -18,7 +18,8 @@
                 Card="@card"
                 ColumnId="@ColumnId"
                 BoardType="@BoardType"
-                OnCardMoved="@OnCardMoved" />
+                OnCardMoved="@OnCardMoved"
+                OnWorkAssigned="@OnWorkAssigned" />
         }
     </div>
 </div>
@@ -29,6 +30,7 @@
     [Parameter] public BoardType BoardType { get; set; }
     [Parameter] public List<Card> Cards { get; set; } = new();
     [Parameter] public EventCallback<(Card card, string fromColumn, string toColumn)> OnCardMoved { get; set; }
+    [Parameter] public EventCallback<(Card workCard, Employee employee)> OnWorkAssigned { get; set; }
 
     private bool IsDragOver => DragDropService.IsDragging && 
                                DragDropService.TargetColumnId == ColumnId && 
@@ -55,13 +57,34 @@
     {
         if (DragDropService.IsDragging && DragDropService.SourceColumnId != ColumnId && IsValidDropTarget())
         {
-            // Handle the card movement
-            await OnCardMoved.InvokeAsync((DragDropService.DraggedCard!, DragDropService.SourceColumnId!, ColumnId));
+            var draggedCard = DragDropService.DraggedCard!;
+            
+            // Handle the card movement (unassignment will be handled in the board pages)
+            await OnCardMoved.InvokeAsync((draggedCard, DragDropService.SourceColumnId!, ColumnId));
             
             // Add a small delay before clearing drag state to ensure proper cleanup
             await Task.Delay(100);
             DragDropService.ClearDrag();
             StateHasChanged();
         }
+    }
+
+    private bool IsBackwardMove(Card card, string targetColumn)
+    {
+        var fromColumn = DragDropService.SourceColumnId!;
+        
+        // Analysis board backward moves
+        if (fromColumn == "analysis1" && targetColumn == "backlog") return true;
+        if (fromColumn == "analysis2" && targetColumn == "waiting") return true;
+        
+        // Development board backward moves
+        if (fromColumn == "backend-analysis" && targetColumn == "backend-backlog") return true;
+        if (fromColumn == "frontend-analysis" && targetColumn == "frontend-backlog") return true;
+        if (fromColumn == "backend-dev-doing" && targetColumn == "backend-dev-waiting") return true;
+        if (fromColumn == "frontend-dev-doing" && targetColumn == "frontend-dev-waiting") return true;
+        if (fromColumn == "backend-test-doing" && targetColumn == "backend-test-waiting") return true;
+        if (fromColumn == "frontend-test-doing" && targetColumn == "frontend-test-waiting") return true;
+        
+        return false;
     }
 } 

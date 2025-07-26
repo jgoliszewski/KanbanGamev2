@@ -5,9 +5,9 @@
 
 <PageTitle>Tasks</PageTitle>
 
-<h1>Tasks</h1>
+<h3>Tasks</h3>
 
-@if (TaskService.Tasks.Count == 0)
+@if (TaskService.Tasks == null || !TaskService.Tasks.Any())
 {
     <p>Loading tasks...</p>
 }
@@ -21,16 +21,17 @@ else
                     <div class="card-body">
                         <h5 class="card-title">@task.Title</h5>
                         <p class="card-text">@task.Description</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="badge @task.Priority.GetBadgeClass()">@task.Priority</span>
-                            <span class="badge @task.Status.GetBadgeClass()">@task.Status</span>
-                        </div>
-                        <div class="mt-2">
-                            <small class="text-muted">
-                                <strong>Assigned:</strong> @(string.IsNullOrEmpty(task.AssignedTo) ? "Unassigned" : task.AssignedTo)<br/>
-                                <strong>Hours:</strong> @task.ActualHours/@task.EstimatedHours<br/>
-                                <strong>Due:</strong> @(task.DueDate?.ToString("MM/dd/yyyy") ?? "No due date")
-                            </small>
+                        <div class="card-text">
+                            <strong>Priority:</strong> <span class="badge @task.Priority.GetBadgeClass()">@task.Priority</span><br/>
+                            <strong>Status:</strong> <span class="badge @task.Status.GetBadgeClass()">@task.Status</span><br/>
+                            <strong>Hours:</strong> @task.ActualHours/@task.EstimatedHours<br/>
+                            <strong>Assigned:</strong> @(task.IsAssigned ? "Assigned" : "Unassigned")<br/>
+                            @if (task.DueDate.HasValue)
+                            {
+                                <strong>Due Date:</strong> @task.DueDate.Value.ToShortDateString()<br/>
+                            }
+                            <strong>Column:</strong> @task.ColumnId<br/>
+                            <strong>Created:</strong> @task.CreatedAt.ToShortDateString()
                         </div>
                     </div>
                 </div>

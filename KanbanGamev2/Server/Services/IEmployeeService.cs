@@ -12,4 +12,5 @@ public interface IEmployeeService
     bool DeleteEmployee(Guid id);
     List<Employee> GetEmployeesByColumn(string columnId);
     void ResetData();
+    bool UnassignWorkFromEmployee(Guid id);
 } 

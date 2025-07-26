@@ -15,7 +15,8 @@
         Description="Track features and employee assignments through the analysis process"
         BoardType="@BoardType.Analysis"
         Columns="@analysisColumns"
-        OnCardMoved="@OnCardMoved" />
+        OnCardMoved="@OnCardMoved"
+        OnWorkAssigned="@OnWorkAssigned" />
 </div>
 
 @code {
@@ -73,22 +74,61 @@
     private List<Card> GetCardsByColumn(string columnId)
     {
         var cards = new List<Card>();
-        
+
         // Add features for this column
         var features = FeatureService.Features.Where(f => f.ColumnId == columnId).ToList();
         cards.AddRange(features);
-        
+
         // Add employees for this column
         var employees = EmployeeService.Employees.Where(e => e.ColumnId == columnId).ToList();
         cards.AddRange(employees);
-        
-        return cards;
+
+        // Sort cards so employees appear above their assigned work
+        return SortCardsWithEmployeesFirst(cards);
+    }
+
+    private List<Card> SortCardsWithEmployeesFirst(List<Card> cards)
+    {
+        var sortedCards = new List<Card>();
+        var employees = cards.OfType<Employee>().ToList();
+        var workItems = cards.Where(c => c is Feature || c is KanbanTask).ToList();
+
+        // Add employees first
+        sortedCards.AddRange(employees);
+
+        // Add work items, placing assigned work right after their assigned employee
+        foreach (var employee in employees)
+        {
+            if (employee.AssignedTaskId.HasValue)
+            {
+                var assignedTask = workItems.OfType<KanbanTask>().FirstOrDefault(t => t.Id == employee.AssignedTaskId.Value);
+                if (assignedTask != null)
+                {
+                    sortedCards.Add(assignedTask);
+                    workItems.Remove(assignedTask);
+                }
+            }
+            else if (employee.AssignedFeatureId.HasValue)
+            {
+                var assignedFeature = workItems.OfType<Feature>().FirstOrDefault(f => f.Id == employee.AssignedFeatureId.Value);
+                if (assignedFeature != null)
+                {
+                    sortedCards.Add(assignedFeature);
+                    workItems.Remove(assignedFeature);
+                }
+            }
+        }
+
+        // Add remaining unassigned work items
+        sortedCards.AddRange(workItems);
+
+        return sortedCards;
     }
 
     private async Task OnCardMoved((Card card, string fromColumn, string toColumn) moveInfo)
     {
         var (card, fromColumn, toColumn) = moveInfo;
-        
+
         // Update the card's column
         card.ColumnId = toColumn;
         card.UpdatedAt = DateTime.Now;
@@ -100,9 +140,47 @@
         }
         else if (card is Feature feature)
         {
+            // If this is a work item being moved, unassign the employee
+            if (feature.AssignedToEmployeeId.HasValue)
+            {
+                var cardsInFromColumn = GetCardsByColumn(fromColumn);
+                var assignedEmployee = cardsInFromColumn.FirstOrDefault(x => x.Id == feature.AssignedToEmployeeId.Value && x is Employee);
+                if (assignedEmployee is not null)
+                {
+                    (assignedEmployee! as Employee).AssignedFeatureId = null;
+                    await EmployeeService.UpdateEmployee(assignedEmployee as Employee);
+                }
+
+
+                feature.AssignedToEmployeeId = null;
+            }
+
             await FeatureService.UpdateFeature(feature);
         }
 
+        // Reorganize columns to reflect the change
+        OrganizeColumns();
+        StateHasChanged();
+    }
+
+    private async Task OnWorkAssigned((Card workCard, Employee employee) assignmentInfo)
+    {
+        var (workCard, employee) = assignmentInfo;
+        
+        // Update the work card (it has already been moved to the employee's column)
+        if (workCard is Feature feature)
+        {
+            await FeatureService.UpdateFeature(feature);
+        }
+        else if (workCard is KanbanTask task)
+        {
+            // Note: We'll need to inject ITaskService if we want to update tasks
+            // For now, just update the employee
+        }
+        
+        // Update the employee
+        await EmployeeService.UpdateEmployee(employee);
+        
         // Reorganize columns to reflect the change
         OrganizeColumns();
         StateHasChanged();
