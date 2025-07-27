@@ -62,9 +62,9 @@
             {
                 // Load the current game state from the server
                 await GameStateService.LoadGameState();
-                
-                // Connect to SignalR
-                await SignalRService.ConnectAsync();
+
+        // Connect to SignalR
+        await SignalRService.ConnectAsync();
             }
             catch (Exception ex)
             {
@@ -89,8 +89,8 @@
             // Simulate work for the day
             await WorkSimulationService.SimulateWorkDay();
             
-            await SignalRService.AdvanceToNextDayAsync();
-            await GameStateService.AdvanceToNextDay();
+        await SignalRService.AdvanceToNextDayAsync();
+        await GameStateService.AdvanceToNextDay();
             
             // Add a small delay to show the loader and make the transition feel more natural
             await Task.Delay(1000);
@@ -119,48 +119,48 @@
     private void OnConnectedCountChanged(int count)
     {
         if (!disposed)
-        {
-            InvokeAsync(StateHasChanged);
+    {
+        InvokeAsync(StateHasChanged);
         }
     }
 
     private void OnReadyCountChanged(int count)
     {
         if (!disposed)
-        {
-            InvokeAsync(StateHasChanged);
+    {
+        InvokeAsync(StateHasChanged);
         }
     }
 
     private void OnUserConnected(UserInfo userInfo)
     {
         if (!disposed)
-        {
-            InvokeAsync(StateHasChanged);
+    {
+        InvokeAsync(StateHasChanged);
         }
     }
 
     private void OnUserDisconnected(string connectionId)
     {
         if (!disposed)
-        {
-            InvokeAsync(StateHasChanged);
+    {
+        InvokeAsync(StateHasChanged);
         }
     }
 
     private void OnUserReadyStatusChanged(string connectionId, bool isReady)
     {
         if (!disposed)
-        {
-            InvokeAsync(StateHasChanged);
+    {
+        InvokeAsync(StateHasChanged);
         }
     }
 
     private void OnDayChanged(int newDay)
     {
         if (!disposed)
-        {
-            InvokeAsync(StateHasChanged);
+    {
+        InvokeAsync(StateHasChanged);
         }
     }
 
@@ -169,7 +169,7 @@
         // Could show a toast notification here
         if (!disposed)
         {
-            InvokeAsync(StateHasChanged);
+        InvokeAsync(StateHasChanged);
         }
     }
 

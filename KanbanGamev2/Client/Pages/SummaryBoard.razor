@@ -28,11 +28,11 @@
         {
             GlobalLoaderService.Show("Loading Summary Board", "Initializing board data and connecting to real-time updates...");
             
-            await LoadData();
-            OrganizeColumns();
-            
-            // Subscribe to real-time board updates
-            SignalRService.BoardUpdated += OnBoardUpdated;
+        await LoadData();
+        OrganizeColumns();
+        
+        // Subscribe to real-time board updates
+        SignalRService.BoardUpdated += OnBoardUpdated;
         }
         finally
         {

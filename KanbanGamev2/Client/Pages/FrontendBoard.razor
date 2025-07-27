@@ -31,10 +31,10 @@
         {
             GlobalLoaderService.Show("Loading Frontend Board", "Initializing board data and connecting to real-time updates...");
             
-            await LoadData();
-            OrganizeColumns();
-            
-                    // Subscribe to real-time board updates
+        await LoadData();
+        OrganizeColumns();
+        
+        // Subscribe to real-time board updates
         SignalRService.BoardUpdated += OnBoardUpdated;
         SignalRService.RefreshAllBoards += OnRefreshAllBoards;
         }

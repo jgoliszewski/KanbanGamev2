@@ -4,6 +4,7 @@
 @inject ISignalRService SignalRService
 
 <div class="kanban-column @(IsDragOver ? "drag-over" : "")"
+     data-column-id="@ColumnId"
      @ondragover="OnDragOver"
      @ondragover:preventDefault
      @ondrop="OnDrop"

@@ -180,4 +180,4 @@ public class SignalRService : ISignalRService, IAsyncDisposable
     {
         await DisconnectAsync();
     }
-}
+} 
