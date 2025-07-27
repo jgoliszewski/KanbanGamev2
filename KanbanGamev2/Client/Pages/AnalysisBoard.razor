@@ -5,6 +5,7 @@
 @inject IEmployeeService EmployeeService
 @inject IFeatureService FeatureService
 @inject ISignalRService SignalRService
+@inject IGlobalLoaderService GlobalLoaderService
 @implements IDisposable
 
 <PageTitle>High Level Analysis Board</PageTitle>
@@ -26,11 +27,20 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadData();
-        OrganizeColumns();
-        
-        // Subscribe to real-time board updates
-        SignalRService.BoardUpdated += OnBoardUpdated;
+        try
+        {
+            GlobalLoaderService.Show("Loading Analysis Board", "Initializing board data and connecting to real-time updates...");
+            
+            await LoadData();
+            OrganizeColumns();
+            
+            // Subscribe to real-time board updates
+            SignalRService.BoardUpdated += OnBoardUpdated;
+        }
+        finally
+        {
+            GlobalLoaderService.Hide();
+        }
     }
 
     private async Task LoadData()

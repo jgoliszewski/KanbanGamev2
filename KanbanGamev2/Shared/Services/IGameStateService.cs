@@ -10,6 +10,7 @@ public interface IGameStateService
     event Action<Achievement>? AchievementUnlocked;
     
     Task AdvanceToNextDay();
+    Task LoadGameState();
     Task UnlockAchievement(Achievement achievement);
     Task<bool> IsAchievementUnlocked(string achievementId);
 }

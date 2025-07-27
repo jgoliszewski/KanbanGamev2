@@ -2,6 +2,7 @@
 @using KanbanGamev2.Shared.Services
 @inject ISignalRService SignalRService
 @inject IGameStateService GameStateService
+@inject IGlobalLoaderService GlobalLoaderService
 @implements IDisposable
 
 <div class="game-status">
@@ -33,7 +34,7 @@
 @code {
     private bool IsReady { get; set; } = false;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         // Subscribe to SignalR events
         SignalRService.ConnectedCountChanged += OnConnectedCountChanged;
@@ -43,13 +44,32 @@
         SignalRService.UserReadyStatusChanged += OnUserReadyStatusChanged;
         SignalRService.AllPlayersReady += OnAllPlayersReady;
         SignalRService.NextDayStarted += OnNextDayStarted;
+        SignalRService.ReloadGameState += OnReloadGameState;
+        SignalRService.ShowLoader += OnShowLoader;
+        SignalRService.HideLoader += OnHideLoader;
 
         // Subscribe to game state events
         GameStateService.DayChanged += OnDayChanged;
         GameStateService.AchievementUnlocked += OnAchievementUnlocked;
+    }
 
-        // Connect to SignalR
-        await SignalRService.ConnectAsync();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                // Load the current game state from the server
+                await GameStateService.LoadGameState();
+                
+                // Connect to SignalR
+                await SignalRService.ConnectAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GameStatus initialization: {ex.Message}");
+            }
+        }
     }
 
     private async void ToggleReadyStatus()
@@ -61,14 +81,26 @@
 
     private async Task AdvanceToNextDay()
     {
-        await SignalRService.AdvanceToNextDayAsync();
-        await GameStateService.AdvanceToNextDay();
+        try
+        {
+            GlobalLoaderService.Show("Advancing to Next Day", "Updating game state and synchronizing with other players...");
+            
+            await SignalRService.AdvanceToNextDayAsync();
+            await GameStateService.AdvanceToNextDay();
+            
+            // Add a small delay to show the loader and make the transition feel more natural
+            await Task.Delay(1000);
+        }
+        finally
+        {
+            GlobalLoaderService.Hide();
+        }
     }
 
-    private void OnAllPlayersReady()
+    private async void OnAllPlayersReady()
     {
         // Automatically advance to next day when all players are ready
-        _ = AdvanceToNextDay();
+        await AdvanceToNextDay();
     }
 
     private void OnNextDayStarted()
@@ -78,44 +110,99 @@
         StateHasChanged();
     }
 
+    private bool disposed = false;
+
     private void OnConnectedCountChanged(int count)
     {
-        InvokeAsync(StateHasChanged);
+        if (!disposed)
+        {
+            InvokeAsync(StateHasChanged);
+        }
     }
 
     private void OnReadyCountChanged(int count)
     {
-        InvokeAsync(StateHasChanged);
+        if (!disposed)
+        {
+            InvokeAsync(StateHasChanged);
+        }
     }
 
     private void OnUserConnected(UserInfo userInfo)
     {
-        InvokeAsync(StateHasChanged);
+        if (!disposed)
+        {
+            InvokeAsync(StateHasChanged);
+        }
     }
 
     private void OnUserDisconnected(string connectionId)
     {
-        InvokeAsync(StateHasChanged);
+        if (!disposed)
+        {
+            InvokeAsync(StateHasChanged);
+        }
     }
 
     private void OnUserReadyStatusChanged(string connectionId, bool isReady)
     {
-        InvokeAsync(StateHasChanged);
+        if (!disposed)
+        {
+            InvokeAsync(StateHasChanged);
+        }
     }
 
     private void OnDayChanged(int newDay)
     {
-        InvokeAsync(StateHasChanged);
+        if (!disposed)
+        {
+            InvokeAsync(StateHasChanged);
+        }
     }
 
     private void OnAchievementUnlocked(Achievement achievement)
     {
         // Could show a toast notification here
-        InvokeAsync(StateHasChanged);
+        if (!disposed)
+        {
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void OnShowLoader(string title, string message)
+    {
+        if (!disposed)
+        {
+            GlobalLoaderService.Show(title, message);
+        }
+    }
+
+    private void OnHideLoader()
+    {
+        if (!disposed)
+        {
+            GlobalLoaderService.Hide();
+        }
+    }
+
+    private async void OnReloadGameState()
+    {
+        if (!disposed)
+        {
+            try
+            {
+                await GameStateService.LoadGameState();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reloading game state: {ex.Message}");
+            }
+        }
     }
 
     public void Dispose()
     {
+        disposed = true;
         SignalRService.ConnectedCountChanged -= OnConnectedCountChanged;
         SignalRService.ReadyCountChanged -= OnReadyCountChanged;
         SignalRService.UserConnected -= OnUserConnected;
@@ -123,6 +210,9 @@
         SignalRService.UserReadyStatusChanged -= OnUserReadyStatusChanged;
         SignalRService.AllPlayersReady -= OnAllPlayersReady;
         SignalRService.NextDayStarted -= OnNextDayStarted;
+        SignalRService.ReloadGameState -= OnReloadGameState;
+        SignalRService.ShowLoader -= OnShowLoader;
+        SignalRService.HideLoader -= OnHideLoader;
 
         GameStateService.DayChanged -= OnDayChanged;
         GameStateService.AchievementUnlocked -= OnAchievementUnlocked;

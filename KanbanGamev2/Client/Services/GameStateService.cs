@@ -1,25 +1,33 @@
 using KanbanGamev2.Shared.Services;
-using System.Text.Json;
+using System.Net.Http.Json;
 
 namespace KanbanGamev2.Client.Services;
 
 public class GameStateService : IGameStateService
 {
     private readonly HttpClient _httpClient;
-    private int _currentDay = 1;
-    private DateTime _gameStartDate = DateTime.Now;
-    private readonly List<Achievement> _unlockedAchievements = new();
+    private readonly IGameStateManager _gameStateManager;
 
-    public int CurrentDay => _currentDay;
-    public DateTime GameStartDate => _gameStartDate;
-    public List<Achievement> UnlockedAchievements => _unlockedAchievements.ToList();
+    public int CurrentDay => _gameStateManager.CurrentDay;
+    public DateTime GameStartDate => _gameStateManager.GameStartDate;
+    public List<Achievement> UnlockedAchievements => _gameStateManager.UnlockedAchievements.ToList();
 
-    public event Action<int>? DayChanged;
-    public event Action<Achievement>? AchievementUnlocked;
+    public event Action<int>? DayChanged
+    {
+        add => _gameStateManager.DayChanged += value;
+        remove => _gameStateManager.DayChanged -= value;
+    }
+    
+    public event Action<Achievement>? AchievementUnlocked
+    {
+        add => _gameStateManager.AchievementUnlocked += value;
+        remove => _gameStateManager.AchievementUnlocked -= value;
+    }
 
-    public GameStateService(HttpClient httpClient)
+    public GameStateService(HttpClient httpClient, IGameStateManager gameStateManager)
     {
         _httpClient = httpClient;
+        _gameStateManager = gameStateManager;
     }
 
     public async Task AdvanceToNextDay()
@@ -29,8 +37,8 @@ public class GameStateService : IGameStateService
             var response = await _httpClient.PostAsync("api/gamestate/nextday", null);
             if (response.IsSuccessStatusCode)
             {
-                _currentDay++;
-                DayChanged?.Invoke(_currentDay);
+                // Get the updated game state from the server
+                await LoadGameState();
             }
         }
         catch (Exception ex)
@@ -39,19 +47,45 @@ public class GameStateService : IGameStateService
         }
     }
 
-    public async Task UnlockAchievement(Achievement achievement)
+    public async Task LoadGameState()
     {
-        if (!_unlockedAchievements.Any(a => a.Id == achievement.Id))
+        try
         {
-            _unlockedAchievements.Add(achievement);
-            AchievementUnlocked?.Invoke(achievement);
+            var response = await _httpClient.GetAsync("api/gamestate");
+            if (response.IsSuccessStatusCode)
+            {
+                var gameState = await response.Content.ReadFromJsonAsync<GameStateResponse>();
+                if (gameState != null)
+                {
+                    _gameStateManager.UpdateFromServer(
+                        gameState.CurrentDay, 
+                        gameState.GameStartDate, 
+                        gameState.UnlockedAchievements
+                    );
+                }
+            }
         }
-        
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to load game state: {ex.Message}");
+        }
+    }
+
+    private class GameStateResponse
+    {
+        public int CurrentDay { get; set; }
+        public DateTime GameStartDate { get; set; }
+        public List<Achievement> UnlockedAchievements { get; set; } = new();
+    }
+
+        public async Task UnlockAchievement(Achievement achievement)
+    {
+        _gameStateManager.NotifyAchievementUnlocked(achievement);
         await Task.CompletedTask;
     }
 
     public async Task<bool> IsAchievementUnlocked(string achievementId)
     {
-        return await Task.FromResult(_unlockedAchievements.Any(a => a.Id == achievementId));
+        return await Task.FromResult(_gameStateManager.UnlockedAchievements.Any(a => a.Id == achievementId));
     }
-} 
+}

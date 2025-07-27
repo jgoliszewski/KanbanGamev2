@@ -26,6 +26,13 @@ public class GameStateService : IGameStateService
         await Task.CompletedTask;
     }
 
+    public async Task LoadGameState()
+    {
+        // This method is mainly for client-side use
+        // The server already has the current state
+        await Task.CompletedTask;
+    }
+
     public async Task UnlockAchievement(Achievement achievement)
     {
         if (!_unlockedAchievements.Any(a => a.Id == achievement.Id))

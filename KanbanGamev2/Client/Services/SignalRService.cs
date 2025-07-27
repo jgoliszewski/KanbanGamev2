@@ -20,7 +20,10 @@ public class SignalRService : ISignalRService, IAsyncDisposable
     public event Action<string, bool>? UserReadyStatusChanged;
     public event Action? AllPlayersReady;
     public event Action? NextDayStarted;
+    public event Action? ReloadGameState;
     public event Action<string, string, object>? BoardUpdated;
+    public event Action<string, string>? ShowLoader;
+    public event Action? HideLoader;
 
     public SignalRService(string baseUrl)
     {
@@ -72,7 +75,15 @@ public class SignalRService : ISignalRService, IAsyncDisposable
 
         _hubConnection.On("NextDayStarted", () =>
         {
+            ShowLoader?.Invoke("Day Advanced", "The game day has been advanced. Updating your view...");
             NextDayStarted?.Invoke();
+            // Hide loader after a short delay
+            Task.Delay(2000).ContinueWith(_ => HideLoader?.Invoke());
+        });
+
+        _hubConnection.On("ReloadGameState", () =>
+        {
+            ReloadGameState?.Invoke();
         });
 
         _hubConnection.On<string, string, object>("BoardUpdated", (boardType, columnId, cardData) =>
@@ -101,6 +112,7 @@ public class SignalRService : ISignalRService, IAsyncDisposable
 
         try
         {
+            ShowLoader?.Invoke("Connecting to Game Server", "Establishing real-time connection...");
             await _hubConnection.StartAsync();
             Console.WriteLine($"SignalR connected successfully to {_baseUrl}gamehub");
             await GetCurrentStatsAsync();
@@ -109,6 +121,10 @@ public class SignalRService : ISignalRService, IAsyncDisposable
         {
             Console.WriteLine($"SignalR connection failed: {ex.Message}");
             Console.WriteLine($"Attempted to connect to: {_baseUrl}gamehub");
+        }
+        finally
+        {
+            HideLoader?.Invoke();
         }
     }
 

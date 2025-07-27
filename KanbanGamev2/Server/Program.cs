@@ -1,5 +1,6 @@
 using KanbanGamev2.Server.Services;
 using KanbanGamev2.Server.SignalR;
+using KanbanGamev2.Shared.Services;
 using Microsoft.AspNetCore.ResponseCompression;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,7 +13,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddSingleton<IEmployeeService, EmployeeService>();
 builder.Services.AddSingleton<IFeatureService, FeatureService>();
 builder.Services.AddSingleton<ITaskService, TaskService>();
-builder.Services.AddSingleton<KanbanGamev2.Shared.Services.IGameStateService, GameStateService>();
+builder.Services.AddSingleton<IGameStateService, GameStateService>();
 
 // Add SignalR (for future real-time updates)
 builder.Services.AddSignalR();

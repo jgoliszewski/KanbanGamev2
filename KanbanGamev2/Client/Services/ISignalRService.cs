@@ -9,7 +9,10 @@ public interface ISignalRService
     event Action<string, bool>? UserReadyStatusChanged;
     event Action? AllPlayersReady;
     event Action? NextDayStarted;
+    event Action? ReloadGameState;
     event Action<string, string, object>? BoardUpdated;
+    event Action<string, string>? ShowLoader;
+    event Action? HideLoader;
     
     bool IsConnected { get; }
     int ConnectedCount { get; }

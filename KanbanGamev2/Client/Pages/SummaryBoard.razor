@@ -4,6 +4,7 @@
 @using KanbanGamev2.Client.Components
 @inject IFeatureService FeatureService
 @inject ISignalRService SignalRService
+@inject IGlobalLoaderService GlobalLoaderService
 @implements IDisposable
 
 <PageTitle>Summary Board</PageTitle>
@@ -23,11 +24,20 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadData();
-        OrganizeColumns();
-        
-        // Subscribe to real-time board updates
-        SignalRService.BoardUpdated += OnBoardUpdated;
+        try
+        {
+            GlobalLoaderService.Show("Loading Summary Board", "Initializing board data and connecting to real-time updates...");
+            
+            await LoadData();
+            OrganizeColumns();
+            
+            // Subscribe to real-time board updates
+            SignalRService.BoardUpdated += OnBoardUpdated;
+        }
+        finally
+        {
+            GlobalLoaderService.Hide();
+        }
     }
 
     private async Task LoadData()

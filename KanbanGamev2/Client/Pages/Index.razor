@@ -1,5 +1,7 @@
 ﻿@page "/"
+@using KanbanGamev2.Shared.Services
 @using KanbanGamev2.Client.Components
+@inject KanbanGamev2.Shared.Services.IGameStateService GameStateService
 
 <PageTitle>KanbanGamev2 - Project Management</PageTitle>
 
@@ -10,6 +12,12 @@
                 <h1 class="display-4">Welcome to KanbanGamev2</h1>
                 <p class="lead">A comprehensive project management system with real-time Kanban boards</p>
             </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <GameCalendar />
         </div>
     </div>
 
@@ -68,7 +76,7 @@
     </div>
 
     <div class="row mt-5">
-        <div class="col-md-8">
+        <div class="col-12">
             <div class="card">
                 <div class="card-header">
                     <h5>Quick Access</h5>
@@ -87,24 +95,21 @@
                             <h6>Board Features</h6>
                             <ul class="list-unstyled">
                                 <li>✅ Real-time updates</li>
-                                <li>🔄 Drag & drop</li>
+                                <li>🔄 Drag & drop (coming soon)</li>
                                 <li>📊 Progress tracking</li>
                             </ul>
                         </div>
                         <div class="col-md-4">
-                            <h6>Game Features</h6>
+                            <h6>Next Steps</h6>
                             <ul class="list-unstyled">
                                 <li>🔧 SignalR integration</li>
-                                <li>🎯 Multiplayer ready</li>
-                                <li>📱 Real-time collaboration</li>
+                                <li>🎯 Reset functionality</li>
+                                <li>📱 Mobile optimization</li>
                             </ul>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <GameCalendar />
         </div>
     </div>
 </div>

@@ -27,4 +27,10 @@ builder.Services.AddScoped<ISignalRService>(sp =>
 // Register game state service
 builder.Services.AddScoped<KanbanGamev2.Shared.Services.IGameStateService, GameStateService>();
 
+// Register game state manager (singleton for persistence)
+builder.Services.AddSingleton<IGameStateManager, GameStateManager>();
+
+// Register global loader service
+builder.Services.AddScoped<IGlobalLoaderService, GlobalLoaderService>();
+
 await builder.Build().RunAsync();
