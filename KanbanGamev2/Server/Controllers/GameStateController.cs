@@ -21,7 +21,9 @@ public class GameStateController : ControllerBase
         {
             CurrentDay = _gameStateService.CurrentDay,
             GameStartDate = _gameStateService.GameStartDate,
-            UnlockedAchievements = _gameStateService.UnlockedAchievements
+            UnlockedAchievements = _gameStateService.UnlockedAchievements,
+            CompanyMoney = _gameStateService.CompanyMoney,
+            MoneyTransactions = _gameStateService.MoneyTransactions
         });
     }
 
@@ -30,6 +32,20 @@ public class GameStateController : ControllerBase
     {
         await _gameStateService.AdvanceToNextDay();
         return Ok(new { CurrentDay = _gameStateService.CurrentDay });
+    }
+
+    [HttpPost("addmoney/{amount}")]
+    public async Task<IActionResult> AddMoney(decimal amount)
+    {
+        await _gameStateService.AddMoney(amount);
+        return Ok(new { CompanyMoney = _gameStateService.CompanyMoney });
+    }
+
+    [HttpPost("setmoney/{amount}")]
+    public async Task<IActionResult> SetMoney(decimal amount)
+    {
+        await _gameStateService.SetMoney(amount);
+        return Ok(new { CompanyMoney = _gameStateService.CompanyMoney });
     }
 
     [HttpPost("achievement")]

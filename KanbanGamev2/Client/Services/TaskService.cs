@@ -70,10 +70,11 @@ public class TaskService : ITaskService
         
         foreach (var task in tasks)
         {
-            Console.WriteLine($"  Task '{task.Title}': LaborLeft={task.LaborLeft:F2}, IsCompleted={task.IsCompleted}, ColumnId={task.ColumnId}, IsInDoneColumn={task.IsInDoneColumn}");
+            Console.WriteLine($"  Task '{task.Title}': ColumnId={task.ColumnId}, IsInDoneColumn={task.IsInDoneColumn}");
         }
         
-        // Check if ALL tasks are in the done column (not just completed)
+        // Check if ALL tasks are in the done column
+        // Note: LaborLeft gets reset when moving to new columns, so we only check column position
         var allInDoneColumn = tasks.All(t => t.IsInDoneColumn);
         Console.WriteLine($"All tasks in done column: {allInDoneColumn}");
         return allInDoneColumn;

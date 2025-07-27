@@ -24,7 +24,6 @@ else
                         <div class="card-text">
                             <strong>Priority:</strong> <span class="badge @task.Priority.GetBadgeClass()">@task.Priority</span><br/>
                             <strong>Status:</strong> <span class="badge @task.Status.GetBadgeClass()">@task.Status</span><br/>
-                            <strong>Hours:</strong> @task.ActualHours/@task.EstimatedHours<br/>
                             <strong>Assigned:</strong> @(task.IsAssigned ? "Assigned" : "Unassigned")<br/>
                             @if (task.DueDate.HasValue)
                             {

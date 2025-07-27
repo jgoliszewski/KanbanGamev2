@@ -1,5 +1,7 @@
-using KanbanGamev2.Shared.Services;
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Components;
+using KanbanGame.Shared;
+using KanbanGamev2.Shared.Services;
 
 namespace KanbanGamev2.Client.Services;
 
@@ -12,6 +14,7 @@ public class GameStateService : IGameStateService
     public DateTime GameStartDate => _gameStateManager.GameStartDate;
     public List<Achievement> UnlockedAchievements => _gameStateManager.UnlockedAchievements.ToList();
     public decimal CompanyMoney => _gameStateManager.CompanyMoney;
+    public List<MoneyTransaction> MoneyTransactions => _gameStateManager.MoneyTransactions.ToList();
 
     public event Action<int>? DayChanged
     {
@@ -68,7 +71,8 @@ public class GameStateService : IGameStateService
                         gameState.CurrentDay, 
                         gameState.GameStartDate, 
                         gameState.UnlockedAchievements,
-                        gameState.CompanyMoney
+                        gameState.CompanyMoney,
+                        gameState.MoneyTransactions
                     );
                 }
             }
@@ -79,10 +83,24 @@ public class GameStateService : IGameStateService
         }
     }
 
-    public async Task AddMoney(decimal amount)
+    public async Task AddMoney(decimal amount, string description = "Feature completed")
     {
-        _gameStateManager.AddMoney(amount);
-        await Task.CompletedTask;
+        try
+        {
+            // Update local state first
+            _gameStateManager.AddMoney(amount);
+            
+            // Persist to server
+            var response = await _httpClient.PostAsync($"api/gamestate/addmoney/{amount}", null);
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Failed to persist money change to server: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to add money: {ex.Message}");
+        }
     }
 
     public async Task SetMoney(decimal amount)
@@ -97,6 +115,7 @@ public class GameStateService : IGameStateService
         public DateTime GameStartDate { get; set; }
         public List<Achievement> UnlockedAchievements { get; set; } = new();
         public decimal CompanyMoney { get; set; }
+        public List<MoneyTransaction> MoneyTransactions { get; set; } = new();
     }
 
     public async Task UnlockAchievement(Achievement achievement)

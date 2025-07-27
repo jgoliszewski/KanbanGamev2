@@ -89,14 +89,14 @@ public class WorkSimulationService : IWorkSimulationService
         // Check for completed features and handle task cleanup
         await CheckForCompletedFeatures();
 
-        Console.WriteLine("Work simulation completed. Updating services...");
+        Console.WriteLine("Work simulation completed.");
 
-        // Update all services
-        await _employeeService.UpdateEmployees();
-        await _taskService.UpdateTasks();
-        await _featureService.UpdateFeatures();
+        // Refresh data from server to ensure consistency
+        await _employeeService.GetEmployees();
+        await _taskService.GetTasks();
+        await _featureService.GetFeatures();
 
-        Console.WriteLine("All services updated.");
+        Console.WriteLine("All services refreshed from server.");
     }
 
     private async Task CheckForCompletedFeatures()
@@ -124,7 +124,7 @@ public class WorkSimulationService : IWorkSimulationService
                 await _featureService.UpdateFeature(feature);
 
                 // Add profit to company money
-                await _gameStateService.AddMoney(feature.Profit);
+                await _gameStateService.AddMoney(feature.Profit, $"Feature completed: {feature.Title}");
 
                 // Delete all tasks for this feature
                 await _taskService.DeleteTasks(feature.GeneratedTaskIds);
@@ -156,7 +156,6 @@ public class WorkSimulationService : IWorkSimulationService
         if (workItem is KanbanTask kanbanTask)
         {
             kanbanTask.LaborLeft = Math.Max(0, kanbanTask.LaborLeft - workDone);
-            kanbanTask.ActualHours += (int)(workDone * kanbanTask.EstimatedHours);
 
             Console.WriteLine($"Task '{kanbanTask.Title}' labor left reduced from {kanbanTask.LaborLeft + workDone:F2} to {kanbanTask.LaborLeft:F2} by {employee.Name} (efficiency: {employee.Efficiency:P0})");
 
@@ -235,32 +234,16 @@ public class WorkSimulationService : IWorkSimulationService
             workItem.ColumnId = nextColumn;
             workItem.UpdatedAt = DateTime.Now;
 
-            // Only reset LaborLeft if the work item is not completed
-            if ((workItem is KanbanTask task && task.LaborLeft > 0) || 
-                (workItem is Feature feature && feature.LaborLeft > 0))
+            // Always reset LaborLeft when moving to a new column
+            if (workItem is KanbanTask movedTask)
             {
-                if (workItem is KanbanTask movedTask)
-                {
-                    movedTask.LaborLeft = movedTask.LaborIntensity;
-                    Console.WriteLine($"Task '{movedTask.Title}' moved from {oldColumn} to {nextColumn}, labor left reset to {movedTask.LaborLeft:F2}");
-                }
-                else if (workItem is Feature movedFeature)
-                {
-                    movedFeature.LaborLeft = movedFeature.LaborIntensity;
-                    Console.WriteLine($"Feature '{movedFeature.Title}' moved from {oldColumn} to {nextColumn}, labor left reset to {movedFeature.LaborLeft:F2}");
-                }
+                movedTask.LaborLeft = movedTask.LaborIntensity;
+                Console.WriteLine($"Task '{movedTask.Title}' moved from {oldColumn} to {nextColumn}, labor left reset to {movedTask.LaborLeft:F2}");
             }
-            else
+            else if (workItem is Feature movedFeature)
             {
-                // Work item is completed, don't reset labor
-                if (workItem is KanbanTask movedTask)
-                {
-                    Console.WriteLine($"Completed task '{movedTask.Title}' moved from {oldColumn} to {nextColumn}");
-                }
-                else if (workItem is Feature movedFeature)
-                {
-                    Console.WriteLine($"Completed feature '{movedFeature.Title}' moved from {oldColumn} to {nextColumn}");
-                }
+                movedFeature.LaborLeft = movedFeature.LaborIntensity;
+                Console.WriteLine($"Feature '{movedFeature.Title}' moved from {oldColumn} to {nextColumn}, labor left reset to {movedFeature.LaborLeft:F2}");
             }
         }
         else

@@ -8,8 +8,7 @@ public class KanbanTask : Card
     public Status Status { get; set; } = Status.ToDo;
     public Guid? AssignedToEmployeeId { get; set; }
     public DateTime? DueDate { get; set; }
-    public int EstimatedHours { get; set; }
-    public int ActualHours { get; set; }
+    public int StoryPoints { get; set; } = 1; // Story points for the task
     public double LaborIntensity { get; set; } = 1.0; // Original labor intensity (0-1 scale)
     public double LaborLeft { get; set; } = 1.0; // Remaining work (0-1 scale)
     

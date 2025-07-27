@@ -1,3 +1,4 @@
+using KanbanGame.Shared;
 using KanbanGamev2.Shared.Services;
 
 namespace KanbanGamev2.Server.Services;
@@ -8,11 +9,13 @@ public class GameStateService : IGameStateService
     private readonly DateTime _gameStartDate = DateTime.Now;
     private readonly List<Achievement> _unlockedAchievements = new();
     private decimal _companyMoney = 10000; // Starting money
+    private readonly List<MoneyTransaction> _moneyTransactions = new();
 
     public int CurrentDay => _currentDay;
     public DateTime GameStartDate => _gameStartDate;
     public List<Achievement> UnlockedAchievements => _unlockedAchievements.ToList();
     public decimal CompanyMoney => _companyMoney;
+    public List<MoneyTransaction> MoneyTransactions => _moneyTransactions.ToList();
 
     public event Action<int>? DayChanged;
     public event Action<Achievement>? AchievementUnlocked;
@@ -51,9 +54,19 @@ public class GameStateService : IGameStateService
         return await Task.FromResult(_unlockedAchievements.Any(a => a.Id == achievementId));
     }
 
-    public async Task AddMoney(decimal amount)
+    public async Task AddMoney(decimal amount, string description = "Feature completed")
     {
         _companyMoney += amount;
+        
+        // Record the transaction
+        var transaction = new MoneyTransaction
+        {
+            Amount = amount,
+            Description = description,
+            Type = TransactionType.Income
+        };
+        _moneyTransactions.Add(transaction);
+        
         MoneyChanged?.Invoke(_companyMoney);
         await Task.CompletedTask;
     }

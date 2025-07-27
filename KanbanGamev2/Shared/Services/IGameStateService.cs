@@ -1,3 +1,5 @@
+using KanbanGame.Shared;
+
 namespace KanbanGamev2.Shared.Services;
 
 public interface IGameStateService
@@ -6,6 +8,7 @@ public interface IGameStateService
     DateTime GameStartDate { get; }
     List<Achievement> UnlockedAchievements { get; }
     decimal CompanyMoney { get; }
+    List<MoneyTransaction> MoneyTransactions { get; }
     
     event Action<int>? DayChanged;
     event Action<Achievement>? AchievementUnlocked;
@@ -15,7 +18,7 @@ public interface IGameStateService
     Task LoadGameState();
     Task UnlockAchievement(Achievement achievement);
     Task<bool> IsAchievementUnlocked(string achievementId);
-    Task AddMoney(decimal amount);
+    Task AddMoney(decimal amount, string description = "Feature completed");
     Task SetMoney(decimal amount);
 }
 

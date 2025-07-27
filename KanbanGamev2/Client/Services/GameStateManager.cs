@@ -1,3 +1,4 @@
+using KanbanGame.Shared;
 using KanbanGamev2.Shared.Services;
 
 namespace KanbanGamev2.Client.Services;
@@ -8,12 +9,13 @@ public interface IGameStateManager
     DateTime GameStartDate { get; set; }
     List<Achievement> UnlockedAchievements { get; set; }
     decimal CompanyMoney { get; set; }
+    List<MoneyTransaction> MoneyTransactions { get; set; }
     
     event Action<int>? DayChanged;
     event Action<Achievement>? AchievementUnlocked;
     event Action<decimal>? MoneyChanged;
     
-    void UpdateFromServer(int currentDay, DateTime gameStartDate, List<Achievement> achievements, decimal companyMoney);
+    void UpdateFromServer(int currentDay, DateTime gameStartDate, List<Achievement> achievements, decimal companyMoney, List<MoneyTransaction> moneyTransactions);
     void NotifyDayChanged(int newDay);
     void NotifyAchievementUnlocked(Achievement achievement);
     void AddMoney(decimal amount);
@@ -26,6 +28,7 @@ public class GameStateManager : IGameStateManager
     private DateTime _gameStartDate = DateTime.Now;
     private List<Achievement> _unlockedAchievements = new();
     private decimal _companyMoney = 10000;
+    private List<MoneyTransaction> _moneyTransactions = new();
 
     public int CurrentDay 
     { 
@@ -50,17 +53,24 @@ public class GameStateManager : IGameStateManager
         get => _companyMoney;
         set => _companyMoney = value;
     }
+    
+    public List<MoneyTransaction> MoneyTransactions
+    {
+        get => _moneyTransactions;
+        set => _moneyTransactions = value;
+    }
 
     public event Action<int>? DayChanged;
     public event Action<Achievement>? AchievementUnlocked;
     public event Action<decimal>? MoneyChanged;
 
-    public void UpdateFromServer(int currentDay, DateTime gameStartDate, List<Achievement> achievements, decimal companyMoney)
+    public void UpdateFromServer(int currentDay, DateTime gameStartDate, List<Achievement> achievements, decimal companyMoney, List<MoneyTransaction> moneyTransactions)
     {
         _currentDay = currentDay;
         _gameStartDate = gameStartDate;
         _unlockedAchievements = achievements ?? new List<Achievement>();
         _companyMoney = companyMoney;
+        _moneyTransactions = moneyTransactions ?? new List<MoneyTransaction>();
         DayChanged?.Invoke(_currentDay);
         MoneyChanged?.Invoke(_companyMoney);
     }

@@ -1,0 +1,87 @@
+@using KanbanGame.Shared
+@inject KanbanGamev2.Shared.Services.IGameStateService GameStateService
+
+<div class="money-history">
+    <h5 class="mb-3">Money History</h5>
+    @if (GameStateService.MoneyTransactions.Any())
+    {
+        <div class="transaction-list">
+            @foreach (var transaction in GameStateService.MoneyTransactions.OrderByDescending(t => t.Timestamp))
+            {
+                <div class="transaction-item @(transaction.Type == TransactionType.Income ? "income" : "expense")">
+                    <div class="transaction-amount @(transaction.Type == TransactionType.Income ? "text-success" : "text-danger")">
+                        @(transaction.Type == TransactionType.Income ? "+" : "-")$@transaction.Amount.ToString("N0")
+                    </div>
+                    <div class="transaction-details">
+                        <div class="transaction-description">@transaction.Description</div>
+                        <div class="transaction-date">@transaction.Timestamp.ToString("MMM dd, yyyy HH:mm")</div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-muted">No transactions yet.</div>
+    }
+</div>
+
+<style>
+    .money-history {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .transaction-list {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .transaction-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem;
+        border-bottom: 1px solid #eee;
+        transition: background-color 0.2s;
+    }
+
+    .transaction-item:last-child {
+        border-bottom: none;
+    }
+
+    .transaction-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .transaction-amount {
+        font-weight: bold;
+        font-size: 1.1rem;
+        min-width: 100px;
+        text-align: right;
+        margin-right: 1rem;
+    }
+
+    .transaction-details {
+        flex: 1;
+    }
+
+    .transaction-description {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+
+    .transaction-date {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .income {
+        border-left: 4px solid #28a745;
+    }
+
+    .expense {
+        border-left: 4px solid #dc3545;
+    }
+</style> 

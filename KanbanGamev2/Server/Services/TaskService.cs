@@ -40,8 +40,6 @@ public class TaskService : ITaskService
             existing.Status = task.Status;
             existing.AssignedToEmployeeId = task.AssignedToEmployeeId;
             existing.DueDate = task.DueDate;
-            existing.EstimatedHours = task.EstimatedHours;
-            existing.ActualHours = task.ActualHours;
             existing.LaborIntensity = task.LaborIntensity;
             existing.LaborLeft = task.LaborLeft;
             existing.ColumnId = task.ColumnId;
@@ -83,7 +81,7 @@ public class TaskService : ITaskService
     public async Task<bool> AreAllTasksCompleted(List<Guid> taskIds)
     {
         if (!taskIds.Any()) return true;
-        
+
         var tasks = _tasks.Where(t => taskIds.Contains(t.Id)).ToList();
         return tasks.All(t => t.IsCompleted);
     }
@@ -104,4 +102,4 @@ public class TaskService : ITaskService
         // In a real application, this would save to a database
         await Task.CompletedTask;
     }
-} 
+}

@@ -4,48 +4,59 @@
 
 <div class="game-calendar">
     <div class="calendar-header">
-        <h3>Game Calendar</h3>
-        <div class="current-day-info">
-            <span class="day-label">Current Day:</span>
-            <span class="day-number">@GameStateService.CurrentDay</span>
+        <h3 class="mb-3">
+            <span class="oi oi-calendar"></span>
+            Game Calendar
+        </h3>
+        <div class="current-day-badge">
+            <span class="badge bg-primary fs-5">Day @GameStateService.CurrentDay</span>
         </div>
     </div>
     
     <div class="calendar-body">
-        <div class="calendar-controls">
-            <label for="game-date" class="form-label">Game Date:</label>
-            <input type="date" 
-                   id="game-date" 
-                   class="form-control" 
-                   value="@GetGameDate().ToString("yyyy-MM-dd")" 
-                   readonly />
-        </div>
-        
-        <div class="game-progress">
-            <div class="progress mb-3">
-                <div class="progress-bar" 
-                     role="progressbar" 
-                     style="width: @(Math.Min(GameStateService.CurrentDay * 3.33, 100))%" 
-                     aria-valuenow="@GameStateService.CurrentDay" 
-                     aria-valuemin="0" 
-                     aria-valuemax="30">
-                    Day @GameStateService.CurrentDay
-                </div>
+        <div class="calendar-grid">
+            <div class="calendar-weekdays">
+                <div class="weekday">Sun</div>
+                <div class="weekday">Mon</div>
+                <div class="weekday">Tue</div>
+                <div class="weekday">Wed</div>
+                <div class="weekday">Thu</div>
+                <div class="weekday">Fri</div>
+                <div class="weekday">Sat</div>
+            </div>
+            
+            <div class="calendar-days">
+                @foreach (var day in GetCalendarDays())
+                {
+                    <div class="calendar-day @GetDayClass(day)">
+                        <span class="day-number">@day.Day</span>
+                        @if (day.IsGameDay)
+                        {
+                            <span class="game-day-indicator">@day.GameDay</span>
+                        }
+                    </div>
+                }
             </div>
         </div>
     </div>
     
     <div class="calendar-footer">
         <div class="game-info">
-            <p><strong>Game Start Date:</strong> @GameStateService.GameStartDate.ToString("MMM dd, yyyy")</p>
-            <p><strong>Days Played:</strong> @(GameStateService.CurrentDay - 1)</p>
-            <p><strong>Current Date:</strong> @GetGameDate().ToString("MMM dd, yyyy")</p>
+            <div class="info-item">
+                <strong>Game Start:</strong> @GameStateService.GameStartDate.ToString("MMM dd, yyyy")
+            </div>
+            <div class="info-item">
+                <strong>Current Date:</strong> @GetGameDate().ToString("MMM dd, yyyy")
+            </div>
+            <div class="info-item">
+                <strong>Days Played:</strong> @(GameStateService.CurrentDay - 1)
+            </div>
         </div>
         
         @if (GameStateService.UnlockedAchievements.Any())
         {
             <div class="achievements-section">
-                <h4>Recent Achievements</h4>
+                <h5 class="mb-2">Recent Achievements</h5>
                 <div class="achievements-list">
                     @foreach (var achievement in GameStateService.UnlockedAchievements.TakeLast(3))
                     {
@@ -53,7 +64,7 @@
                             <span class="achievement-icon">@achievement.Icon</span>
                             <div class="achievement-info">
                                 <div class="achievement-name">@achievement.Name</div>
-                                <div class="achievement-description">@achievement.Description</div>
+                                <div class="achievement-date"> @achievement.UnlockedAt ? @achievement.UnlockedAt.ToString("MMM dd") : ""</div>
                             </div>
                         </div>
                     }
@@ -62,6 +73,168 @@
         }
     </div>
 </div>
+
+<style>
+    .game-calendar {
+        background: white;
+        border-radius: 8px;
+        padding: 0.6rem; /* Reduced from 1.5rem */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        max-width: 400px; /* Added max-width to make it smaller */
+        margin: 0 auto;
+    }
+
+    .calendar-header {
+        text-align: center;
+        margin-bottom: 0.6rem; /* Reduced from 1.5rem */
+    }
+
+    .calendar-header h3 {
+        color: #495057;
+        margin-bottom: 0.25rem; /* Reduced from 0.5rem */
+        font-size: 1.1rem; /* Reduced from default */
+    }
+
+    .current-day-badge {
+        margin-top: 0.25rem; /* Reduced from 0.5rem */
+    }
+
+    .calendar-grid {
+        margin-bottom: 0.6rem; /* Reduced from 1.5rem */
+    }
+
+    .calendar-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 1px; /* Reduced from 2px */
+        margin-bottom: 0.25rem; /* Reduced from 0.5rem */
+    }
+
+    .weekday {
+        text-align: center;
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 0.7rem; /* Reduced from 0.875rem */
+        padding: 0.25rem; /* Reduced from 0.5rem */
+    }
+
+    .calendar-days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 1px; /* Reduced from 2px */
+    }
+
+    .calendar-day {
+        aspect-ratio: 1;
+        border: 1px solid #e9ecef;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        background: #f8f9fa;
+        transition: all 0.2s;
+        min-height: 30px; /* Added min-height to make squares smaller */
+    }
+
+    .calendar-day:hover {
+        background: #e9ecef;
+    }
+
+    .calendar-day.other-month {
+        color: #adb5bd;
+        background: #f8f9fa;
+    }
+
+    .calendar-day.current-game-day {
+        background: #007bff;
+        color: white;
+        border-color: #0056b3;
+        font-weight: bold;
+    }
+
+    .calendar-day.past-game-day {
+        background: #28a745;
+        color: white;
+        border-color: #1e7e34;
+    }
+
+    .calendar-day.future-game-day {
+        background: #ffc107;
+        color: #212529;
+        border-color: #e0a800;
+    }
+
+    .day-number {
+        font-size: 0.7rem; /* Reduced from 0.875rem */
+        font-weight: 500;
+    }
+
+    .game-day-indicator {
+        font-size: 0.5rem; /* Reduced from 0.625rem */
+        font-weight: bold;
+        margin-top: 0.0625rem; /* Reduced from 0.125rem */
+    }
+
+    .calendar-footer {
+        border-top: 1px solid #e9ecef;
+        padding-top: 0.4rem; /* Reduced from 1rem */
+    }
+
+    .game-info {
+        margin-bottom: 0.4rem; /* Reduced from 1rem */
+    }
+
+    .info-item {
+        margin-bottom: 0.25rem; /* Reduced from 0.5rem */
+        font-size: 0.7rem; /* Reduced from 0.875rem */
+        color: #6c757d;
+    }
+
+    .achievements-section {
+        border-top: 1px solid #e9ecef;
+        padding-top: 0.4rem; /* Reduced from 1rem */
+    }
+
+    .achievements-section h5 {
+        font-size: 0.9rem; /* Reduced from default */
+        margin-bottom: 0.1rem; /* Reduced from 0.2rem */
+    }
+
+    .achievements-list {
+        max-height: 90px; /* Reduced from 150px */
+        overflow-y: auto;
+    }
+
+    .achievement-item {
+        display: flex;
+        align-items: center;
+        padding: 0.25rem; /* Reduced from 0.5rem */
+        border-radius: 4px;
+        margin-bottom: 0.25rem; /* Reduced from 0.5rem */
+        background: #f8f9fa;
+    }
+
+    .achievement-icon {
+        font-size: 1rem; /* Reduced from 1.25rem */
+        margin-right: 0.375rem; /* Reduced from 0.75rem */
+    }
+
+    .achievement-info {
+        flex: 1;
+    }
+
+    .achievement-name {
+        font-weight: 500;
+        font-size: 0.7rem; /* Reduced from 0.875rem */
+        margin-bottom: 0.0625rem; /* Reduced from 0.125rem */
+    }
+
+    .achievement-date {
+        font-size: 0.6rem; /* Reduced from 0.75rem */
+        color: #6c757d;
+    }
+</style>
 
 @code {
     protected override void OnInitialized()
@@ -76,7 +249,6 @@
         {
             try
             {
-                // Load the current game state from the server
                 await GameStateService.LoadGameState();
             }
             catch (Exception ex)
@@ -89,6 +261,54 @@
     private DateTime GetGameDate()
     {
         return GameStateService.GameStartDate.AddDays(GameStateService.CurrentDay - 1);
+    }
+
+    private List<CalendarDay> GetCalendarDays()
+    {
+        var days = new List<CalendarDay>();
+        var currentDate = GetGameDate();
+        var firstDayOfMonth = new DateTime(currentDate.Year, currentDate.Month, 1);
+        var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+        
+        // Get the first day to display (previous month's days)
+        var firstDisplayDay = firstDayOfMonth.AddDays(-(int)firstDayOfMonth.DayOfWeek);
+        
+        for (int i = 0; i < 42; i++) // 6 weeks * 7 days
+        {
+            var dayDate = firstDisplayDay.AddDays(i);
+            var gameDay = (dayDate - GameStateService.GameStartDate).Days + 1;
+            
+            days.Add(new CalendarDay
+            {
+                Date = dayDate,
+                Day = dayDate.Day,
+                IsGameDay = gameDay >= 1 && gameDay <= GameStateService.CurrentDay + 7, // Show current + 7 future days
+                GameDay = gameDay >= 1 ? gameDay.ToString() : null,
+                IsCurrentGameDay = gameDay == GameStateService.CurrentDay,
+                IsPastGameDay = gameDay >= 1 && gameDay < GameStateService.CurrentDay,
+                IsFutureGameDay = gameDay > GameStateService.CurrentDay,
+                IsOtherMonth = dayDate.Month != currentDate.Month
+            });
+        }
+        
+        return days;
+    }
+
+    private string GetDayClass(CalendarDay day)
+    {
+        var classes = new List<string>();
+        
+        if (day.IsOtherMonth)
+            classes.Add("other-month");
+        
+        if (day.IsCurrentGameDay)
+            classes.Add("current-game-day");
+        else if (day.IsPastGameDay)
+            classes.Add("past-game-day");
+        else if (day.IsFutureGameDay)
+            classes.Add("future-game-day");
+        
+        return string.Join(" ", classes);
     }
 
     private void OnDayChanged(int newDay)
@@ -114,5 +334,17 @@
         disposed = true;
         GameStateService.DayChanged -= OnDayChanged;
         GameStateService.AchievementUnlocked -= OnAchievementUnlocked;
+    }
+
+    private class CalendarDay
+    {
+        public DateTime Date { get; set; }
+        public int Day { get; set; }
+        public bool IsGameDay { get; set; }
+        public string? GameDay { get; set; }
+        public bool IsCurrentGameDay { get; set; }
+        public bool IsPastGameDay { get; set; }
+        public bool IsFutureGameDay { get; set; }
+        public bool IsOtherMonth { get; set; }
     }
 } 
