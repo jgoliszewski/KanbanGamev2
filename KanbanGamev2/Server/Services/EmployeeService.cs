@@ -48,6 +48,7 @@ public class EmployeeService : IEmployeeService
             existing.Order = employee.Order;
             existing.AssignedTaskId = employee.AssignedTaskId;
             existing.AssignedFeatureId = employee.AssignedFeatureId;
+            existing.Seniority = employee.Seniority;
             existing.UpdatedAt = DateTime.Now;
             return existing;
         }
@@ -74,7 +75,7 @@ public class EmployeeService : IEmployeeService
     {
         _employees = new List<Employee>
         {
-            // Analysis Board - Employees can only be in analysis1 and analysis2
+            // Analysis Board - 2 employees in each worker column
             new Employee
             {
                 Id = Guid.NewGuid(),
@@ -84,7 +85,8 @@ public class EmployeeService : IEmployeeService
                 Email = "alex.turner@company.com",
                 IsAvailable = true,
                 ColumnId = "analysis1",
-                Order = 1
+                Order = 1,
+                Seniority = Seniority.Senior
             },
             new Employee
             {
@@ -94,11 +96,36 @@ public class EmployeeService : IEmployeeService
                 Department = Department.Product,
                 Email = "emma.davis@company.com",
                 IsAvailable = true,
+                ColumnId = "analysis1",
+                Order = 2,
+                Seniority = Seniority.Mid
+            },
+            new Employee
+            {
+                Id = Guid.NewGuid(),
+                Name = "Ivy Rodriguez",
+                Role = Role.BusinessAnalyst,
+                Department = Department.Product,
+                Email = "ivy.rodriguez@company.com",
+                IsAvailable = true,
                 ColumnId = "analysis2",
-                Order = 1
+                Order = 1,
+                Seniority = Seniority.Senior
+            },
+            new Employee
+            {
+                Id = Guid.NewGuid(),
+                Name = "Jack Thompson",
+                Role = Role.Developer,
+                Department = Department.Engineering,
+                Email = "jack.thompson@company.com",
+                IsAvailable = true,
+                ColumnId = "analysis2",
+                Order = 2,
+                Seniority = Seniority.Junior
             },
             
-            // Backend Board - Employees can only be in analysis, backend-dev-doing, backend-test-doing
+            // Backend Board - 2 employees in each worker column
             new Employee
             {
                 Id = Guid.NewGuid(),
@@ -106,9 +133,46 @@ public class EmployeeService : IEmployeeService
                 Role = Role.LeadDeveloper,
                 Department = Department.Engineering,
                 Email = "beth.cooper@company.com",
-                IsAvailable = false,
+                IsAvailable = true,
+                ColumnId = "backend-analysis",
+                Order = 1,
+                Seniority = Seniority.Senior
+            },
+            new Employee
+            {
+                Id = Guid.NewGuid(),
+                Name = "Kevin O'Brien",
+                Role = Role.Developer,
+                Department = Department.Engineering,
+                Email = "kevin.obrien@company.com",
+                IsAvailable = true,
+                ColumnId = "backend-analysis",
+                Order = 2,
+                Seniority = Seniority.Mid
+            },
+            new Employee
+            {
+                Id = Guid.NewGuid(),
+                Name = "Liam Anderson",
+                Role = Role.Developer,
+                Department = Department.Engineering,
+                Email = "liam.anderson@company.com",
+                IsAvailable = true,
                 ColumnId = "backend-dev-doing",
-                Order = 1
+                Order = 1,
+                Seniority = Seniority.Senior
+            },
+            new Employee
+            {
+                Id = Guid.NewGuid(),
+                Name = "Mark Taylor",
+                Role = Role.Developer,
+                Department = Department.Engineering,
+                Email = "mark.taylor@company.com",
+                IsAvailable = true,
+                ColumnId = "backend-dev-doing",
+                Order = 2,
+                Seniority = Seniority.Junior
             },
             new Employee
             {
@@ -119,21 +183,23 @@ public class EmployeeService : IEmployeeService
                 Email = "david.brown@company.com",
                 IsAvailable = true,
                 ColumnId = "backend-test-doing",
-                Order = 1
+                Order = 1,
+                Seniority = Seniority.Mid
             },
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Name = "Henry Chen",
-                Role = Role.DevOpsEngineer,
-                Department = Department.Engineering,
-                Email = "henry.chen@company.com",
+                Name = "Nathan Garcia",
+                Role = Role.QAEngineer,
+                Department = Department.QualityAssurance,
+                Email = "nathan.garcia@company.com",
                 IsAvailable = true,
-                ColumnId = "backend-analysis",
-                Order = 1
+                ColumnId = "backend-test-doing",
+                Order = 2,
+                Seniority = Seniority.Junior
             },
             
-            // Frontend Board - Employees can only be in frontend-analysis, frontend-dev-doing, frontend-test-doing
+            // Frontend Board - 2 employees in each worker column
             new Employee
             {
                 Id = Guid.NewGuid(),
@@ -142,8 +208,21 @@ public class EmployeeService : IEmployeeService
                 Department = Department.Engineering,
                 Email = "claire.bennett@company.com",
                 IsAvailable = true,
-                ColumnId = "frontend-dev-doing",
-                Order = 1
+                ColumnId = "frontend-analysis",
+                Order = 1,
+                Seniority = Seniority.Mid
+            },
+            new Employee
+            {
+                Id = Guid.NewGuid(),
+                Name = "Oliver Martinez",
+                Role = Role.Developer,
+                Department = Department.Engineering,
+                Email = "oliver.martinez@company.com",
+                IsAvailable = true,
+                ColumnId = "frontend-analysis",
+                Order = 2,
+                Seniority = Seniority.Junior
             },
             new Employee
             {
@@ -153,8 +232,21 @@ public class EmployeeService : IEmployeeService
                 Department = Department.Design,
                 Email = "frank.miller@company.com",
                 IsAvailable = true,
-                ColumnId = "frontend-analysis",
-                Order = 1
+                ColumnId = "frontend-dev-doing",
+                Order = 1,
+                Seniority = Seniority.Senior
+            },
+            new Employee
+            {
+                Id = Guid.NewGuid(),
+                Name = "Paul Robinson",
+                Role = Role.Developer,
+                Department = Department.Engineering,
+                Email = "paul.robinson@company.com",
+                IsAvailable = true,
+                ColumnId = "frontend-dev-doing",
+                Order = 2,
+                Seniority = Seniority.Mid
             },
             new Employee
             {
@@ -163,9 +255,22 @@ public class EmployeeService : IEmployeeService
                 Role = Role.UXDesigner,
                 Department = Department.Design,
                 Email = "grace.lee@company.com",
-                IsAvailable = false,
+                IsAvailable = true,
                 ColumnId = "frontend-test-doing",
-                Order = 1
+                Order = 1,
+                Seniority = Seniority.Senior
+            },
+            new Employee
+            {
+                Id = Guid.NewGuid(),
+                Name = "Quentin White",
+                Role = Role.QAEngineer,
+                Department = Department.QualityAssurance,
+                Email = "quentin.white@company.com",
+                IsAvailable = true,
+                ColumnId = "frontend-test-doing",
+                Order = 2,
+                Seniority = Seniority.Junior
             }
         };
     }
@@ -187,5 +292,12 @@ public class EmployeeService : IEmployeeService
             return true;
         }
         return false;
+    }
+
+    public async Task UpdateEmployees()
+    {
+        // This method is called after work simulation to persist changes
+        // In a real application, this would save to a database
+        await Task.CompletedTask;
     }
 } 

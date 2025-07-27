@@ -11,4 +11,5 @@ public interface ITaskService
     Task<KanbanTask> UpdateTask(KanbanTask task);
     Task<bool> DeleteTask(Guid id);
     Task<List<KanbanTask>> GetTasksByColumn(string columnId);
+    Task UpdateTasks();
 } 

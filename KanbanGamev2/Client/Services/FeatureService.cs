@@ -54,4 +54,10 @@ public class FeatureService : IFeatureService
         var result = await _http.GetFromJsonAsync<List<Feature>>($"api/feature/column/{columnId}");
         return result ?? new List<Feature>();
     }
+
+    public async Task UpdateFeatures()
+    {
+        // This method is called after work simulation to persist changes
+        await Task.CompletedTask;
+    }
 } 

@@ -19,7 +19,14 @@
                     <img src="@GetEmployeeAvatar(employee.Name)" alt="@employee.Name" class="employee-avatar" />
                     <div class="employee-info">
                         <div class="employee-name">@employee.Name</div>
-                        <div class="employee-seniority">@employee.Role.GetDisplayName()</div>
+                        <div class="employee-seniority">
+                            <span class="badge @GetSeniorityBadgeClass(employee.Seniority)">
+                                @employee.Seniority.GetDisplayName()
+                            </span>
+                        </div>
+                        <div class="employee-efficiency">
+                            <small class="text-muted">Efficiency: @(employee.Efficiency.ToString("P0"))</small>
+                        </div>
                         <div class="employee-status">
                             <span class="badge @(employee.IsWorking ? "bg-danger" : "bg-success")">
                                 @(employee.IsWorking ? "Working" : "Free")
@@ -38,6 +45,12 @@
                         <span class="badge @feature.Priority.GetBadgeClass()">@feature.Priority</span>
                         <small class="text-muted">@feature.StoryPoints SP</small>
                     </div>
+                    @if (!feature.IsInReadyDevColumn)
+                    {
+                        <div class="labor-intensity">
+                            <small class="text-muted">Labor Left: @(feature.LaborLeft.ToString("P0"))</small>
+                        </div>
+                    }
                     @if (feature.IsAssigned)
                     {
                         <span class="badge bg-success">Assigned</span>
@@ -49,6 +62,12 @@
                         <span class="badge @task.Priority.GetBadgeClass()">@task.Priority</span>
                         <small class="text-muted">@task.ActualHours/@task.EstimatedHours h</small>
                     </div>
+                    @if (!task.IsInDoneColumn)
+                    {
+                        <div class="labor-intensity">
+                            <small class="text-muted">Labor Left: @(task.LaborLeft.ToString("P0"))</small>
+                        </div>
+                    }
                     @if (task.IsAssigned)
                     {
                         <span class="badge bg-success">Assigned</span>
@@ -202,5 +221,27 @@
                 }
             }
         }
+    }
+
+    private string GetPriorityBadgeClass(Priority priority)
+    {
+        return priority switch
+        {
+            Priority.High => "bg-danger",
+            Priority.Medium => "bg-warning",
+            Priority.Low => "bg-info",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetSeniorityBadgeClass(Seniority seniority)
+    {
+        return seniority switch
+        {
+            Seniority.Junior => "bg-info",
+            Seniority.Mid => "bg-warning",
+            Seniority.Senior => "bg-success",
+            _ => "bg-secondary"
+        };
     }
 } 

@@ -30,6 +30,9 @@ builder.Services.AddScoped<KanbanGamev2.Shared.Services.IGameStateService, GameS
 // Register game state manager (singleton for persistence)
 builder.Services.AddSingleton<IGameStateManager, GameStateManager>();
 
+// Register work simulation service
+builder.Services.AddScoped<IWorkSimulationService, WorkSimulationService>();
+
 // Register global loader service
 builder.Services.AddScoped<IGlobalLoaderService, GlobalLoaderService>();
 

@@ -11,4 +11,5 @@ public interface IFeatureService
     Task<Feature> UpdateFeature(Feature feature);
     Task<bool> DeleteFeature(Guid id);
     Task<List<Feature>> GetFeaturesByColumn(string columnId);
+    Task UpdateFeatures();
 } 

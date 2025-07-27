@@ -41,6 +41,8 @@ public class FeatureService : IFeatureService
             existing.AssignedToEmployeeId = feature.AssignedToEmployeeId;
             existing.DueDate = feature.DueDate;
             existing.StoryPoints = feature.StoryPoints;
+            existing.LaborIntensity = feature.LaborIntensity;
+            existing.LaborLeft = feature.LaborLeft;
             existing.ColumnId = feature.ColumnId;
             existing.Order = feature.Order;
             existing.UpdatedAt = DateTime.Now;
@@ -69,18 +71,21 @@ public class FeatureService : IFeatureService
     {
         _features = new List<Feature>
         {
+            // Analysis Backlog Features
             new Feature
             {
                 Id = Guid.NewGuid(),
                 Title = "User Authentication",
                 Description = "Implement secure user authentication system",
                 Priority = Priority.High,
-                Status = Status.InProgress,
-                AssignedToEmployeeId = null, // Will be assigned via drag and drop
+                Status = Status.ToDo,
+                AssignedToEmployeeId = null,
                 DueDate = DateTime.Now.AddDays(7),
                 StoryPoints = 8,
-                ColumnId = "analysis1",
-                Order = 1
+                ColumnId = "backlog",
+                Order = 1,
+                LaborIntensity = 1.0,
+                LaborLeft = 1.0
             },
             new Feature
             {
@@ -93,20 +98,9 @@ public class FeatureService : IFeatureService
                 DueDate = DateTime.Now.AddDays(14),
                 StoryPoints = 13,
                 ColumnId = "backlog",
-                Order = 1
-            },
-            new Feature
-            {
-                Id = Guid.NewGuid(),
-                Title = "Email Notifications",
-                Description = "Add email notification system for important events",
-                Priority = Priority.Low,
-                Status = Status.Done,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(-2),
-                StoryPoints = 5,
-                ColumnId = "done",
-                Order = 1
+                Order = 2,
+                LaborIntensity = 1.0,
+                LaborLeft = 1.0
             },
             new Feature
             {
@@ -114,12 +108,14 @@ public class FeatureService : IFeatureService
                 Title = "Payment Integration",
                 Description = "Integrate payment gateway for subscription management",
                 Priority = Priority.High,
-                Status = Status.InProgress,
+                Status = Status.ToDo,
                 AssignedToEmployeeId = null,
                 DueDate = DateTime.Now.AddDays(10),
                 StoryPoints = 21,
-                ColumnId = "development",
-                Order = 1
+                ColumnId = "backlog",
+                Order = 3,
+                LaborIntensity = 1.0,
+                LaborLeft = 1.0
             },
             new Feature
             {
@@ -132,7 +128,69 @@ public class FeatureService : IFeatureService
                 DueDate = DateTime.Now.AddDays(30),
                 StoryPoints = 34,
                 ColumnId = "backlog",
-                Order = 2
+                Order = 4,
+                LaborIntensity = 1.0,
+                LaborLeft = 1.0
+            },
+            new Feature
+            {
+                Id = Guid.NewGuid(),
+                Title = "Real-time Chat",
+                Description = "Implement real-time messaging system",
+                Priority = Priority.High,
+                Status = Status.ToDo,
+                AssignedToEmployeeId = null,
+                DueDate = DateTime.Now.AddDays(12),
+                StoryPoints = 13,
+                ColumnId = "backlog",
+                Order = 5,
+                LaborIntensity = 1.0,
+                LaborLeft = 1.0
+            },
+            new Feature
+            {
+                Id = Guid.NewGuid(),
+                Title = "File Upload System",
+                Description = "Create secure file upload and storage system",
+                Priority = Priority.Medium,
+                Status = Status.ToDo,
+                AssignedToEmployeeId = null,
+                DueDate = DateTime.Now.AddDays(8),
+                StoryPoints = 8,
+                ColumnId = "backlog",
+                Order = 6,
+                LaborIntensity = 1.0,
+                LaborLeft = 1.0
+            },
+            new Feature
+            {
+                Id = Guid.NewGuid(),
+                Title = "Email Notifications",
+                Description = "Add email notification system for important events",
+                Priority = Priority.Low,
+                Status = Status.ToDo,
+                AssignedToEmployeeId = null,
+                DueDate = DateTime.Now.AddDays(5),
+                StoryPoints = 5,
+                ColumnId = "backlog",
+                Order = 7,
+                LaborIntensity = 1.0,
+                LaborLeft = 1.0
+            },
+            new Feature
+            {
+                Id = Guid.NewGuid(),
+                Title = "Search Functionality",
+                Description = "Implement advanced search with filters",
+                Priority = Priority.Medium,
+                Status = Status.ToDo,
+                AssignedToEmployeeId = null,
+                DueDate = DateTime.Now.AddDays(15),
+                StoryPoints = 13,
+                ColumnId = "backlog",
+                Order = 8,
+                LaborIntensity = 1.0,
+                LaborLeft = 1.0
             }
         };
     }
@@ -141,5 +199,12 @@ public class FeatureService : IFeatureService
     {
         _features.Clear();
         SeedData();
+    }
+
+    public async Task UpdateFeatures()
+    {
+        // This method is called after work simulation to persist changes
+        // In a real application, this would save to a database
+        await Task.CompletedTask;
     }
 } 

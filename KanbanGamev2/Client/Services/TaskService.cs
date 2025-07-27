@@ -54,4 +54,10 @@ public class TaskService : ITaskService
         var result = await _http.GetFromJsonAsync<List<KanbanTask>>($"api/task/column/{columnId}");
         return result ?? new List<KanbanTask>();
     }
+
+    public async Task UpdateTasks()
+    {
+        // This method is called after work simulation to persist changes
+        await Task.CompletedTask;
+    }
 } 

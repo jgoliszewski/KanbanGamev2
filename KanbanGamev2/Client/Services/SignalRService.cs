@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.SignalR.Client;
-using System.Text.Json;
 
 namespace KanbanGamev2.Client.Services;
 
@@ -24,6 +23,7 @@ public class SignalRService : ISignalRService, IAsyncDisposable
     public event Action<string, string, object>? BoardUpdated;
     public event Action<string, string>? ShowLoader;
     public event Action? HideLoader;
+    public event Action? RefreshAllBoards;
 
     public SignalRService(string baseUrl)
     {
@@ -84,6 +84,11 @@ public class SignalRService : ISignalRService, IAsyncDisposable
         _hubConnection.On("ReloadGameState", () =>
         {
             ReloadGameState?.Invoke();
+        });
+
+        _hubConnection.On("RefreshAllBoards", () =>
+        {
+            RefreshAllBoards?.Invoke();
         });
 
         _hubConnection.On<string, string, object>("BoardUpdated", (boardType, columnId, cardData) =>
@@ -175,4 +180,4 @@ public class SignalRService : ISignalRService, IAsyncDisposable
     {
         await DisconnectAsync();
     }
-} 
+}

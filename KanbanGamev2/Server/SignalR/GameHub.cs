@@ -78,8 +78,9 @@ public class GameHub : Hub
         await Clients.All.SendAsync("NextDayStarted");
         await Clients.All.SendAsync("UpdateReadyCount", 0);
         
-        // Notify all clients to reload their game state
+        // Notify all clients to reload their game state and refresh boards
         await Clients.All.SendAsync("ReloadGameState");
+        await Clients.All.SendAsync("RefreshAllBoards");
     }
 
     public async Task NotifyBoardUpdate(string boardType, string columnId, object cardData)

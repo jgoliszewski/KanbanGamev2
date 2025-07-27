@@ -34,8 +34,9 @@
             await LoadData();
             OrganizeColumns();
             
-            // Subscribe to real-time board updates
-            SignalRService.BoardUpdated += OnBoardUpdated;
+                    // Subscribe to real-time board updates
+        SignalRService.BoardUpdated += OnBoardUpdated;
+        SignalRService.RefreshAllBoards += OnRefreshAllBoards;
         }
         finally
         {
@@ -177,8 +178,17 @@
         }
     }
 
+    private async void OnRefreshAllBoards()
+    {
+        // Reload data from services to ensure we have the latest state
+        await LoadData();
+        OrganizeColumns();
+        StateHasChanged();
+    }
+
     public void Dispose()
     {
         SignalRService.BoardUpdated -= OnBoardUpdated;
+        SignalRService.RefreshAllBoards -= OnRefreshAllBoards;
     }
 } 

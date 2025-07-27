@@ -10,6 +10,7 @@ public interface ISignalRService
     event Action? AllPlayersReady;
     event Action? NextDayStarted;
     event Action? ReloadGameState;
+    event Action? RefreshAllBoards;
     event Action<string, string, object>? BoardUpdated;
     event Action<string, string>? ShowLoader;
     event Action? HideLoader;

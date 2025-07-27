@@ -60,4 +60,10 @@ public class EmployeeService : IEmployeeService
         var response = await _http.PutAsync($"api/employee/{employeeId}/unassign", null);
         return response.IsSuccessStatusCode;
     }
+
+    public async Task UpdateEmployees()
+    {
+        // This method is called after work simulation to persist changes
+        await Task.CompletedTask;
+    }
 }

@@ -3,6 +3,7 @@
 @inject ISignalRService SignalRService
 @inject IGameStateService GameStateService
 @inject IGlobalLoaderService GlobalLoaderService
+@inject IWorkSimulationService WorkSimulationService
 @implements IDisposable
 
 <div class="game-status">
@@ -83,7 +84,10 @@
     {
         try
         {
-            GlobalLoaderService.Show("Advancing to Next Day", "Updating game state and synchronizing with other players...");
+            GlobalLoaderService.Show("Advancing to Next Day", "Simulating work progress and updating game state...");
+            
+            // Simulate work for the day
+            await WorkSimulationService.SimulateWorkDay();
             
             await SignalRService.AdvanceToNextDayAsync();
             await GameStateService.AdvanceToNextDay();
