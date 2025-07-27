@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
 using KanbanGame.Shared;
+using KanbanGamev2.Client.Services;
 
 namespace KanbanGamev2.Client.Services;
 
@@ -8,13 +9,17 @@ public class FeatureService : IFeatureService
 {
     private readonly HttpClient _http;
     private readonly NavigationManager _navigationManager;
+    private readonly ITaskService _taskService;
+    private readonly ISignalRService _signalRService;
 
     public List<Feature> Features { get; set; } = new();
 
-    public FeatureService(HttpClient http, NavigationManager navigationManager)
+    public FeatureService(HttpClient http, NavigationManager navigationManager, ITaskService taskService, ISignalRService signalRService)
     {
         _http = http;
         _navigationManager = navigationManager;
+        _taskService = taskService;
+        _signalRService = signalRService;
     }
 
     public async Task GetFeatures()
@@ -59,5 +64,22 @@ public class FeatureService : IFeatureService
     {
         // This method is called after work simulation to persist changes
         await Task.CompletedTask;
+    }
+
+    public async Task SendFeatureToDevelopment(Feature feature)
+    {
+        // Call the API endpoint to send feature to development
+        var response = await _http.PostAsync($"api/feature/{feature.Id}/send-to-development", null);
+        response.EnsureSuccessStatusCode();
+        
+        // Refresh features and tasks
+        await GetFeatures();
+        await _taskService.GetTasks();
+        
+        // Notify other users about the feature being sent to development
+        await _signalRService.NotifyBoardUpdateAsync("Analysis", "ready-dev", feature);
+        await _signalRService.NotifyBoardUpdateAsync("Summary", "development", feature);
+        
+        Console.WriteLine($"Feature '{feature.Title}' sent to development and boards refreshed");
     }
 } 

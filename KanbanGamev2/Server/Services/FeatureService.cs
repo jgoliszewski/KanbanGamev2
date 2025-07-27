@@ -5,9 +5,11 @@ namespace KanbanGamev2.Server.Services;
 public class FeatureService : IFeatureService
 {
     private List<Feature> _features = new();
+    private readonly ITaskService _taskService;
 
-    public FeatureService()
+    public FeatureService(ITaskService taskService)
     {
+        _taskService = taskService;
         SeedData();
     }
 
@@ -45,6 +47,8 @@ public class FeatureService : IFeatureService
             existing.LaborLeft = feature.LaborLeft;
             existing.ColumnId = feature.ColumnId;
             existing.Order = feature.Order;
+            existing.Profit = feature.Profit;
+            existing.GeneratedTaskIds = feature.GeneratedTaskIds;
             existing.UpdatedAt = DateTime.Now;
             return existing;
         }
@@ -67,6 +71,139 @@ public class FeatureService : IFeatureService
         return _features.Where(f => f.ColumnId == columnId).OrderBy(f => f.Order).ToList();
     }
 
+    public async Task SendFeatureToDevelopment(Feature feature)
+    {
+        // Move feature to development column in summary board
+        feature.ColumnId = "development";
+        feature.Status = Status.InProgress;
+        UpdateFeature(feature);
+
+        // Create frontend tasks
+        var frontendTasks = CreateFrontendTasks(feature);
+        foreach (var task in frontendTasks)
+        {
+            var createdTask = _taskService.CreateTask(task);
+            feature.GeneratedTaskIds.Add(createdTask.Id);
+        }
+
+        // Create backend tasks
+        var backendTasks = CreateBackendTasks(feature);
+        foreach (var task in backendTasks)
+        {
+            var createdTask = _taskService.CreateTask(task);
+            feature.GeneratedTaskIds.Add(createdTask.Id);
+        }
+
+        // Update feature with task references
+        UpdateFeature(feature);
+    }
+
+    private List<KanbanTask> CreateFrontendTasks(Feature feature)
+    {
+        var tasks = new List<KanbanTask>();
+        var baseStoryPoints = feature.StoryPoints / 2; // Split between frontend and backend
+
+        // UI Design task
+        tasks.Add(new KanbanTask
+        {
+            Title = $"{feature.Title} - UI Design",
+            Description = $"Design user interface for {feature.Title}",
+            Priority = feature.Priority,
+            Status = Status.ToDo,
+            EstimatedHours = Math.Max(4, baseStoryPoints * 2),
+            ActualHours = 0,
+            ColumnId = "frontend-backlog",
+            Order = 1,
+            LaborIntensity = 1.0,
+            LaborLeft = 1.0
+        });
+
+        // Component Development task
+        tasks.Add(new KanbanTask
+        {
+            Title = $"{feature.Title} - Component Development",
+            Description = $"Develop React components for {feature.Title}",
+            Priority = feature.Priority,
+            Status = Status.ToDo,
+            EstimatedHours = Math.Max(8, baseStoryPoints * 3),
+            ActualHours = 0,
+            ColumnId = "frontend-backlog",
+            Order = 2,
+            LaborIntensity = 1.0,
+            LaborLeft = 1.0
+        });
+
+        // Integration task
+        tasks.Add(new KanbanTask
+        {
+            Title = $"{feature.Title} - Frontend Integration",
+            Description = $"Integrate {feature.Title} with backend APIs",
+            Priority = feature.Priority,
+            Status = Status.ToDo,
+            EstimatedHours = Math.Max(6, baseStoryPoints * 2),
+            ActualHours = 0,
+            ColumnId = "frontend-backlog",
+            Order = 3,
+            LaborIntensity = 1.0,
+            LaborLeft = 1.0
+        });
+
+        return tasks;
+    }
+
+    private List<KanbanTask> CreateBackendTasks(Feature feature)
+    {
+        var tasks = new List<KanbanTask>();
+        var baseStoryPoints = feature.StoryPoints / 2; // Split between frontend and backend
+
+        // API Design task
+        tasks.Add(new KanbanTask
+        {
+            Title = $"{feature.Title} - API Design",
+            Description = $"Design REST API endpoints for {feature.Title}",
+            Priority = feature.Priority,
+            Status = Status.ToDo,
+            EstimatedHours = Math.Max(4, baseStoryPoints * 2),
+            ActualHours = 0,
+            ColumnId = "backend-backlog",
+            Order = 1,
+            LaborIntensity = 1.0,
+            LaborLeft = 1.0
+        });
+
+        // Backend Implementation task
+        tasks.Add(new KanbanTask
+        {
+            Title = $"{feature.Title} - Backend Implementation",
+            Description = $"Implement backend logic for {feature.Title}",
+            Priority = feature.Priority,
+            Status = Status.ToDo,
+            EstimatedHours = Math.Max(10, baseStoryPoints * 4),
+            ActualHours = 0,
+            ColumnId = "backend-backlog",
+            Order = 2,
+            LaborIntensity = 1.0,
+            LaborLeft = 1.0
+        });
+
+        // Database task
+        tasks.Add(new KanbanTask
+        {
+            Title = $"{feature.Title} - Database Schema",
+            Description = $"Create database schema for {feature.Title}",
+            Priority = feature.Priority,
+            Status = Status.ToDo,
+            EstimatedHours = Math.Max(6, baseStoryPoints * 2),
+            ActualHours = 0,
+            ColumnId = "backend-backlog",
+            Order = 3,
+            LaborIntensity = 1.0,
+            LaborLeft = 1.0
+        });
+
+        return tasks;
+    }
+
     private void SeedData()
     {
         _features = new List<Feature>
@@ -85,7 +222,8 @@ public class FeatureService : IFeatureService
                 ColumnId = "backlog",
                 Order = 1,
                 LaborIntensity = 1.0,
-                LaborLeft = 1.0
+                LaborLeft = 1.0,
+                Profit = 15000
             },
             new Feature
             {
@@ -100,7 +238,8 @@ public class FeatureService : IFeatureService
                 ColumnId = "backlog",
                 Order = 2,
                 LaborIntensity = 1.0,
-                LaborLeft = 1.0
+                LaborLeft = 1.0,
+                Profit = 25000
             },
             new Feature
             {
@@ -115,7 +254,8 @@ public class FeatureService : IFeatureService
                 ColumnId = "backlog",
                 Order = 3,
                 LaborIntensity = 1.0,
-                LaborLeft = 1.0
+                LaborLeft = 1.0,
+                Profit = 35000
             },
             new Feature
             {
@@ -130,7 +270,8 @@ public class FeatureService : IFeatureService
                 ColumnId = "backlog",
                 Order = 4,
                 LaborIntensity = 1.0,
-                LaborLeft = 1.0
+                LaborLeft = 1.0,
+                Profit = 50000
             },
             new Feature
             {
@@ -145,7 +286,8 @@ public class FeatureService : IFeatureService
                 ColumnId = "backlog",
                 Order = 5,
                 LaborIntensity = 1.0,
-                LaborLeft = 1.0
+                LaborLeft = 1.0,
+                Profit = 30000
             },
             new Feature
             {
@@ -160,7 +302,8 @@ public class FeatureService : IFeatureService
                 ColumnId = "backlog",
                 Order = 6,
                 LaborIntensity = 1.0,
-                LaborLeft = 1.0
+                LaborLeft = 1.0,
+                Profit = 20000
             },
             new Feature
             {
@@ -175,7 +318,8 @@ public class FeatureService : IFeatureService
                 ColumnId = "backlog",
                 Order = 7,
                 LaborIntensity = 1.0,
-                LaborLeft = 1.0
+                LaborLeft = 1.0,
+                Profit = 12000
             },
             new Feature
             {
@@ -190,7 +334,8 @@ public class FeatureService : IFeatureService
                 ColumnId = "backlog",
                 Order = 8,
                 LaborIntensity = 1.0,
-                LaborLeft = 1.0
+                LaborLeft = 1.0,
+                Profit = 28000
             }
         };
     }

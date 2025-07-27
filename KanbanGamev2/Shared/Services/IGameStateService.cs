@@ -5,14 +5,18 @@ public interface IGameStateService
     int CurrentDay { get; }
     DateTime GameStartDate { get; }
     List<Achievement> UnlockedAchievements { get; }
+    decimal CompanyMoney { get; }
     
     event Action<int>? DayChanged;
     event Action<Achievement>? AchievementUnlocked;
+    event Action<decimal>? MoneyChanged;
     
     Task AdvanceToNextDay();
     Task LoadGameState();
     Task UnlockAchievement(Achievement achievement);
     Task<bool> IsAchievementUnlocked(string achievementId);
+    Task AddMoney(decimal amount);
+    Task SetMoney(decimal amount);
 }
 
 public class Achievement

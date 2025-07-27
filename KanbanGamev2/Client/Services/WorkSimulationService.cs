@@ -1,4 +1,5 @@
 using KanbanGame.Shared;
+using KanbanGamev2.Shared.Services;
 
 namespace KanbanGamev2.Client.Services;
 
@@ -12,15 +13,18 @@ public class WorkSimulationService : IWorkSimulationService
     private readonly IEmployeeService _employeeService;
     private readonly ITaskService _taskService;
     private readonly IFeatureService _featureService;
+    private readonly KanbanGamev2.Shared.Services.IGameStateService _gameStateService;
 
     public WorkSimulationService(
         IEmployeeService employeeService,
         ITaskService taskService,
-        IFeatureService featureService)
+        IFeatureService featureService,
+        KanbanGamev2.Shared.Services.IGameStateService gameStateService)
     {
         _employeeService = employeeService;
         _taskService = taskService;
         _featureService = featureService;
+        _gameStateService = gameStateService;
     }
 
     public async Task SimulateWorkDay()
@@ -82,6 +86,9 @@ public class WorkSimulationService : IWorkSimulationService
             }
         }
 
+        // Check for completed features and handle task cleanup
+        await CheckForCompletedFeatures();
+
         Console.WriteLine("Work simulation completed. Updating services...");
 
         // Update all services
@@ -92,34 +99,93 @@ public class WorkSimulationService : IWorkSimulationService
         Console.WriteLine("All services updated.");
     }
 
+    private async Task CheckForCompletedFeatures()
+    {
+        // Check all features that have generated tasks (sent to development)
+        var featuresWithTasks = _featureService.Features.Where(f => f.GeneratedTaskIds.Any()).ToList();
+        
+        Console.WriteLine($"Checking {featuresWithTasks.Count} features with generated tasks for completion...");
+
+        foreach (var feature in featuresWithTasks)
+        {
+            Console.WriteLine($"Checking feature '{feature.Title}' with {feature.GeneratedTaskIds.Count} tasks...");
+            
+            var allTasksCompleted = await _taskService.AreAllTasksCompleted(feature.GeneratedTaskIds);
+            
+            Console.WriteLine($"Feature '{feature.Title}' - All tasks completed: {allTasksCompleted}");
+
+            if (allTasksCompleted)
+            {
+                Console.WriteLine($"All tasks completed for feature: {feature.Title}. Moving to delivered and adding profit.");
+
+                // Move feature to delivered
+                feature.ColumnId = "done";
+                feature.Status = Status.Done;
+                await _featureService.UpdateFeature(feature);
+
+                // Add profit to company money
+                await _gameStateService.AddMoney(feature.Profit);
+
+                // Delete all tasks for this feature
+                await _taskService.DeleteTasks(feature.GeneratedTaskIds);
+                feature.GeneratedTaskIds.Clear();
+                await _featureService.UpdateFeature(feature);
+
+                // Unlock achievement for feature completion
+                var achievement = new Achievement
+                {
+                    Id = $"feature_completed_{feature.Id}",
+                    Name = $"Feature Completed: {feature.Title}",
+                    Description = $"Successfully completed feature '{feature.Title}' and earned ${feature.Profit:N0}",
+                    Icon = "🎉",
+                    Type = AchievementType.Milestone
+                };
+                await _gameStateService.UnlockAchievement(achievement);
+
+                Console.WriteLine($"Feature {feature.Title} delivered! Added ${feature.Profit:N0} to company money.");
+            }
+        }
+    }
+
     private async Task ProcessWorkItem(Card workItem, Employee employee)
     {
         bool isCompleted = false;
+        double workDone = employee.Efficiency * 2; // 20% of efficiency per day
 
-        if (workItem is KanbanTask task)
+
+        if (workItem is KanbanTask kanbanTask)
         {
-            // Reduce labor left by employee efficiency
-            task.LaborLeft = Math.Max(0, task.LaborLeft - employee.Efficiency);
-            isCompleted = task.IsCompleted;
+            kanbanTask.LaborLeft = Math.Max(0, kanbanTask.LaborLeft - workDone);
+            kanbanTask.ActualHours += (int)(workDone * kanbanTask.EstimatedHours);
 
-            Console.WriteLine($"Task '{task.Title}' labor left reduced from {task.LaborLeft + employee.Efficiency:F2} to {task.LaborLeft:F2} by {employee.Name} (efficiency: {employee.Efficiency:P0})");
+            Console.WriteLine($"Task '{kanbanTask.Title}' labor left reduced from {kanbanTask.LaborLeft + workDone:F2} to {kanbanTask.LaborLeft:F2} by {employee.Name} (efficiency: {employee.Efficiency:P0})");
+
+            if (kanbanTask.LaborLeft <= 0)
+            {
+                kanbanTask.LaborLeft = 0;
+                kanbanTask.Status = Status.Done;
+                isCompleted = true;
+                Console.WriteLine($"Task '{kanbanTask.Title}' completed by {employee.Name}");
+            }
         }
         else if (workItem is Feature feature)
         {
-            // Reduce labor left by employee efficiency
-            feature.LaborLeft = Math.Max(0, feature.LaborLeft - employee.Efficiency);
-            isCompleted = feature.IsCompleted;
+            feature.LaborLeft = Math.Max(0, feature.LaborLeft - workDone);
 
-            Console.WriteLine($"Feature '{feature.Title}' labor left reduced from {feature.LaborLeft + employee.Efficiency:F2} to {feature.LaborLeft:F2} by {employee.Name} (efficiency: {employee.Efficiency:P0})");
+            Console.WriteLine($"Feature '{feature.Title}' labor left reduced from {feature.LaborLeft + workDone:F2} to {feature.LaborLeft:F2} by {employee.Name} (efficiency: {employee.Efficiency:P0})");
+
+            if (feature.LaborLeft <= 0)
+            {
+                feature.LaborLeft = 0;
+                feature.Status = Status.Done;
+                isCompleted = true;
+                Console.WriteLine($"Feature '{feature.Title}' completed by {employee.Name}");
+            }
         }
 
-        // If work is completed, move to next column
+        // If work is completed, unassign the employee and move to next column
         if (isCompleted)
         {
-            Console.WriteLine($"Work item '{workItem.Title}' completed! Moving to next column.");
-            await MoveToNextColumn(workItem);
-
-            // Unassign from employee
             if (workItem is KanbanTask completedTask)
             {
                 completedTask.AssignedToEmployeeId = null;
@@ -130,12 +196,14 @@ public class WorkSimulationService : IWorkSimulationService
                 completedFeature.AssignedToEmployeeId = null;
                 employee.AssignedFeatureId = null;
             }
+
+            // Move completed work item to next column
+            await MoveToNextColumn(workItem);
         }
     }
 
     private async Task MoveToNextColumn(Card workItem)
     {
-        // Define column progression for different board types
         var columnProgression = new Dictionary<string, string>
         {
             // Analysis Board progression
@@ -163,20 +231,41 @@ public class WorkSimulationService : IWorkSimulationService
 
         if (columnProgression.TryGetValue(workItem.ColumnId, out var nextColumn))
         {
+            var oldColumn = workItem.ColumnId;
             workItem.ColumnId = nextColumn;
             workItem.UpdatedAt = DateTime.Now;
 
-            // Reset LaborLeft to original LaborIntensity when moving to next column
-            if (workItem is KanbanTask task)
+            // Only reset LaborLeft if the work item is not completed
+            if ((workItem is KanbanTask task && task.LaborLeft > 0) || 
+                (workItem is Feature feature && feature.LaborLeft > 0))
             {
-                task.LaborLeft = task.LaborIntensity;
-                Console.WriteLine($"Task '{task.Title}' moved to {nextColumn}, labor left reset to {task.LaborLeft:F2}");
+                if (workItem is KanbanTask movedTask)
+                {
+                    movedTask.LaborLeft = movedTask.LaborIntensity;
+                    Console.WriteLine($"Task '{movedTask.Title}' moved from {oldColumn} to {nextColumn}, labor left reset to {movedTask.LaborLeft:F2}");
+                }
+                else if (workItem is Feature movedFeature)
+                {
+                    movedFeature.LaborLeft = movedFeature.LaborIntensity;
+                    Console.WriteLine($"Feature '{movedFeature.Title}' moved from {oldColumn} to {nextColumn}, labor left reset to {movedFeature.LaborLeft:F2}");
+                }
             }
-            else if (workItem is Feature feature)
+            else
             {
-                feature.LaborLeft = feature.LaborIntensity;
-                Console.WriteLine($"Feature '{feature.Title}' moved to {nextColumn}, labor left reset to {feature.LaborLeft:F2}");
+                // Work item is completed, don't reset labor
+                if (workItem is KanbanTask movedTask)
+                {
+                    Console.WriteLine($"Completed task '{movedTask.Title}' moved from {oldColumn} to {nextColumn}");
+                }
+                else if (workItem is Feature movedFeature)
+                {
+                    Console.WriteLine($"Completed feature '{movedFeature.Title}' moved from {oldColumn} to {nextColumn}");
+                }
             }
+        }
+        else
+        {
+            Console.WriteLine($"No progression found for {workItem.GetType().Name} '{workItem.Title}' in column '{workItem.ColumnId}'");
         }
     }
 }

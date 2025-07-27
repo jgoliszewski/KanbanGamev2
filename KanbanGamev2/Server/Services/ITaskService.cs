@@ -11,4 +11,6 @@ public interface ITaskService
     bool DeleteTask(Guid id);
     List<KanbanTask> GetTasksByColumn(string columnId);
     void ResetData();
+    Task<bool> AreAllTasksCompleted(List<Guid> taskIds);
+    Task DeleteTasks(List<Guid> taskIds);
 } 

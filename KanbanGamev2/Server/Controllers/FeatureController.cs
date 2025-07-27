@@ -70,4 +70,15 @@ public class FeatureController : ControllerBase
             return NotFound();
         return NoContent();
     }
+
+    [HttpPost("{id}/send-to-development")]
+    public async Task<ActionResult> SendFeatureToDevelopment(Guid id)
+    {
+        var feature = _featureService.GetFeature(id);
+        if (feature == null)
+            return NotFound();
+
+        await _featureService.SendFeatureToDevelopment(feature);
+        return Ok();
+    }
 } 

@@ -21,6 +21,20 @@
         </div>
     </div>
 
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3 class="card-title">
+                        <span class="oi oi-dollar"></span>
+                        Company Money: $@GameStateService.CompanyMoney.ToString("N0")
+                    </h3>
+                    <p class="card-text">Complete features to earn money for your company!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-md-6 col-lg-3 mb-4">
             <div class="card h-100">
@@ -113,3 +127,10 @@
         </div>
     </div>
 </div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await GameStateService.LoadGameState();
+    }
+}

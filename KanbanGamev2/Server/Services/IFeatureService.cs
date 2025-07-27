@@ -11,4 +11,5 @@ public interface IFeatureService
     bool DeleteFeature(Guid id);
     List<Feature> GetFeaturesByColumn(string columnId);
     void ResetData();
+    Task SendFeatureToDevelopment(Feature feature);
 } 

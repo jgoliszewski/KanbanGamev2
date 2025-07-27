@@ -2,6 +2,9 @@
 @using KanbanGamev2.Client.Services
 @inject IDragDropService DragDropService
 @inject ISignalRService SignalRService
+@inject IFeatureService FeatureService
+@inject ITaskService TaskService
+@inject KanbanGamev2.Shared.Services.IGameStateService GameStateService
 
 <div class="draggable-card @(IsDragging ? "dragging" : "") @(IsAssignedWorkItem ? "assigned-work-item" : "") @(IsDragOverEmployee ? "drag-over-employee" : "")"
      draggable="true"
@@ -45,7 +48,16 @@
                         <span class="badge @feature.Priority.GetBadgeClass()">@feature.Priority</span>
                         <small class="text-muted">@feature.StoryPoints SP</small>
                     </div>
-                    @if (!feature.IsInReadyDevColumn)
+                    @if (feature.IsInReadyDevColumn)
+                    {
+                        <div class="mt-2">
+                            <div class="text-success fw-bold">Profit: $@feature.Profit.ToString("N0")</div>
+                            <button class="btn btn-primary btn-sm w-100 mt-1" @onclick="async () => await SendToDevelopment(feature)" @onclick:stopPropagation="true">
+                                Send to Development
+                            </button>
+                        </div>
+                    }
+                    else if (!feature.IsInReadyDevColumn)
                     {
                         <div class="labor-intensity">
                             <small class="text-muted">Labor Left: @(feature.LaborLeft.ToString("P0"))</small>
@@ -243,5 +255,13 @@
             Seniority.Senior => "bg-success",
             _ => "bg-secondary"
         };
+    }
+
+    private async Task SendToDevelopment(Feature feature)
+    {
+        await FeatureService.SendFeatureToDevelopment(feature);
+        
+        // Force a UI refresh
+        StateHasChanged();
     }
 } 

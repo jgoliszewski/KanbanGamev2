@@ -11,6 +11,7 @@ public class GameStateService : IGameStateService
     public int CurrentDay => _gameStateManager.CurrentDay;
     public DateTime GameStartDate => _gameStateManager.GameStartDate;
     public List<Achievement> UnlockedAchievements => _gameStateManager.UnlockedAchievements.ToList();
+    public decimal CompanyMoney => _gameStateManager.CompanyMoney;
 
     public event Action<int>? DayChanged
     {
@@ -22,6 +23,12 @@ public class GameStateService : IGameStateService
     {
         add => _gameStateManager.AchievementUnlocked += value;
         remove => _gameStateManager.AchievementUnlocked -= value;
+    }
+
+    public event Action<decimal>? MoneyChanged
+    {
+        add => _gameStateManager.MoneyChanged += value;
+        remove => _gameStateManager.MoneyChanged -= value;
     }
 
     public GameStateService(HttpClient httpClient, IGameStateManager gameStateManager)
@@ -60,7 +67,8 @@ public class GameStateService : IGameStateService
                     _gameStateManager.UpdateFromServer(
                         gameState.CurrentDay, 
                         gameState.GameStartDate, 
-                        gameState.UnlockedAchievements
+                        gameState.UnlockedAchievements,
+                        gameState.CompanyMoney
                     );
                 }
             }
@@ -71,14 +79,27 @@ public class GameStateService : IGameStateService
         }
     }
 
+    public async Task AddMoney(decimal amount)
+    {
+        _gameStateManager.AddMoney(amount);
+        await Task.CompletedTask;
+    }
+
+    public async Task SetMoney(decimal amount)
+    {
+        _gameStateManager.SetMoney(amount);
+        await Task.CompletedTask;
+    }
+
     private class GameStateResponse
     {
         public int CurrentDay { get; set; }
         public DateTime GameStartDate { get; set; }
         public List<Achievement> UnlockedAchievements { get; set; } = new();
+        public decimal CompanyMoney { get; set; }
     }
 
-        public async Task UnlockAchievement(Achievement achievement)
+    public async Task UnlockAchievement(Achievement achievement)
     {
         _gameStateManager.NotifyAchievementUnlocked(achievement);
         await Task.CompletedTask;

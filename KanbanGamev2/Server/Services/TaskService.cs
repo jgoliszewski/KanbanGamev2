@@ -70,178 +70,32 @@ public class TaskService : ITaskService
 
     private void SeedData()
     {
-        _tasks = new List<KanbanTask>
-        {
-            // Backend Backlog Tasks
-            new KanbanTask
-            {
-                Id = Guid.NewGuid(),
-                Title = "Setup Database Schema",
-                Description = "Create initial database tables and relationships",
-                Priority = Priority.High,
-                Status = Status.ToDo,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(3),
-                EstimatedHours = 8,
-                ActualHours = 0,
-                ColumnId = "backend-backlog",
-                Order = 1,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0
-            },
-            new KanbanTask
-            {
-                Id = Guid.NewGuid(),
-                Title = "Implement API Endpoints",
-                Description = "Create REST API endpoints for user management",
-                Priority = Priority.High,
-                Status = Status.ToDo,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(5),
-                EstimatedHours = 12,
-                ActualHours = 0,
-                ColumnId = "backend-backlog",
-                Order = 2,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0
-            },
-            new KanbanTask
-            {
-                Id = Guid.NewGuid(),
-                Title = "Database Migration Scripts",
-                Description = "Create migration scripts for database versioning",
-                Priority = Priority.Medium,
-                Status = Status.ToDo,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(4),
-                EstimatedHours = 6,
-                ActualHours = 0,
-                ColumnId = "backend-backlog",
-                Order = 3,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0
-            },
-            new KanbanTask
-            {
-                Id = Guid.NewGuid(),
-                Title = "Authentication Service",
-                Description = "Implement JWT-based authentication system",
-                Priority = Priority.High,
-                Status = Status.ToDo,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(6),
-                EstimatedHours = 10,
-                ActualHours = 0,
-                ColumnId = "backend-backlog",
-                Order = 4,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0
-            },
-            new KanbanTask
-            {
-                Id = Guid.NewGuid(),
-                Title = "Logging Infrastructure",
-                Description = "Setup centralized logging and monitoring",
-                Priority = Priority.Low,
-                Status = Status.ToDo,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(8),
-                EstimatedHours = 4,
-                ActualHours = 0,
-                ColumnId = "backend-backlog",
-                Order = 5,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0
-            },
-            
-            // Frontend Backlog Tasks
-            new KanbanTask
-            {
-                Id = Guid.NewGuid(),
-                Title = "Design User Interface",
-                Description = "Create wireframes and mockups for the main dashboard",
-                Priority = Priority.Medium,
-                Status = Status.ToDo,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(7),
-                EstimatedHours = 6,
-                ActualHours = 0,
-                ColumnId = "frontend-backlog",
-                Order = 1,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0
-            },
-            new KanbanTask
-            {
-                Id = Guid.NewGuid(),
-                Title = "Responsive Layout",
-                Description = "Implement responsive design for mobile devices",
-                Priority = Priority.High,
-                Status = Status.ToDo,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(5),
-                EstimatedHours = 8,
-                ActualHours = 0,
-                ColumnId = "frontend-backlog",
-                Order = 2,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0
-            },
-            new KanbanTask
-            {
-                Id = Guid.NewGuid(),
-                Title = "State Management",
-                Description = "Setup Redux store and state management",
-                Priority = Priority.High,
-                Status = Status.ToDo,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(4),
-                EstimatedHours = 10,
-                ActualHours = 0,
-                ColumnId = "frontend-backlog",
-                Order = 3,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0
-            },
-            new KanbanTask
-            {
-                Id = Guid.NewGuid(),
-                Title = "Component Library",
-                Description = "Create reusable UI components",
-                Priority = Priority.Medium,
-                Status = Status.ToDo,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(6),
-                EstimatedHours = 12,
-                ActualHours = 0,
-                ColumnId = "frontend-backlog",
-                Order = 4,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0
-            },
-            new KanbanTask
-            {
-                Id = Guid.NewGuid(),
-                Title = "Form Validation",
-                Description = "Implement client-side form validation",
-                Priority = Priority.Low,
-                Status = Status.ToDo,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(3),
-                EstimatedHours = 4,
-                ActualHours = 0,
-                ColumnId = "frontend-backlog",
-                Order = 5,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0
-            }
-        };
+        _tasks = new List<KanbanTask>();
+        // Tasks will be generated from features when they are sent to development
     }
 
     public void ResetData()
     {
         _tasks.Clear();
         SeedData();
+    }
+
+    public async Task<bool> AreAllTasksCompleted(List<Guid> taskIds)
+    {
+        if (!taskIds.Any()) return true;
+        
+        var tasks = _tasks.Where(t => taskIds.Contains(t.Id)).ToList();
+        return tasks.All(t => t.IsCompleted);
+    }
+
+    public async Task DeleteTasks(List<Guid> taskIds)
+    {
+        var tasksToDelete = _tasks.Where(t => taskIds.Contains(t.Id)).ToList();
+        foreach (var task in tasksToDelete)
+        {
+            _tasks.Remove(task);
+        }
+        await Task.CompletedTask;
     }
 
     public async Task UpdateTasks()

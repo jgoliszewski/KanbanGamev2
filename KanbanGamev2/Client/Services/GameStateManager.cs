@@ -7,13 +7,17 @@ public interface IGameStateManager
     int CurrentDay { get; set; }
     DateTime GameStartDate { get; set; }
     List<Achievement> UnlockedAchievements { get; set; }
+    decimal CompanyMoney { get; set; }
     
     event Action<int>? DayChanged;
     event Action<Achievement>? AchievementUnlocked;
+    event Action<decimal>? MoneyChanged;
     
-    void UpdateFromServer(int currentDay, DateTime gameStartDate, List<Achievement> achievements);
+    void UpdateFromServer(int currentDay, DateTime gameStartDate, List<Achievement> achievements, decimal companyMoney);
     void NotifyDayChanged(int newDay);
     void NotifyAchievementUnlocked(Achievement achievement);
+    void AddMoney(decimal amount);
+    void SetMoney(decimal amount);
 }
 
 public class GameStateManager : IGameStateManager
@@ -21,6 +25,7 @@ public class GameStateManager : IGameStateManager
     private int _currentDay = 1;
     private DateTime _gameStartDate = DateTime.Now;
     private List<Achievement> _unlockedAchievements = new();
+    private decimal _companyMoney = 10000;
 
     public int CurrentDay 
     { 
@@ -40,15 +45,24 @@ public class GameStateManager : IGameStateManager
         set => _unlockedAchievements = value; 
     }
 
+    public decimal CompanyMoney
+    {
+        get => _companyMoney;
+        set => _companyMoney = value;
+    }
+
     public event Action<int>? DayChanged;
     public event Action<Achievement>? AchievementUnlocked;
+    public event Action<decimal>? MoneyChanged;
 
-    public void UpdateFromServer(int currentDay, DateTime gameStartDate, List<Achievement> achievements)
+    public void UpdateFromServer(int currentDay, DateTime gameStartDate, List<Achievement> achievements, decimal companyMoney)
     {
         _currentDay = currentDay;
         _gameStartDate = gameStartDate;
         _unlockedAchievements = achievements ?? new List<Achievement>();
+        _companyMoney = companyMoney;
         DayChanged?.Invoke(_currentDay);
+        MoneyChanged?.Invoke(_companyMoney);
     }
 
     public void NotifyDayChanged(int newDay)
@@ -64,5 +78,17 @@ public class GameStateManager : IGameStateManager
             _unlockedAchievements.Add(achievement);
             AchievementUnlocked?.Invoke(achievement);
         }
+    }
+
+    public void AddMoney(decimal amount)
+    {
+        _companyMoney += amount;
+        MoneyChanged?.Invoke(_companyMoney);
+    }
+
+    public void SetMoney(decimal amount)
+    {
+        _companyMoney = amount;
+        MoneyChanged?.Invoke(_companyMoney);
     }
 } 

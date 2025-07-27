@@ -60,4 +60,32 @@ public class TaskService : ITaskService
         // This method is called after work simulation to persist changes
         await Task.CompletedTask;
     }
+
+    public async Task<bool> AreAllTasksCompleted(List<Guid> taskIds)
+    {
+        if (!taskIds.Any()) return true;
+        
+        var tasks = Tasks.Where(t => taskIds.Contains(t.Id)).ToList();
+        Console.WriteLine($"Checking {tasks.Count} tasks for completion:");
+        
+        foreach (var task in tasks)
+        {
+            Console.WriteLine($"  Task '{task.Title}': LaborLeft={task.LaborLeft:F2}, IsCompleted={task.IsCompleted}, ColumnId={task.ColumnId}, IsInDoneColumn={task.IsInDoneColumn}");
+        }
+        
+        // Check if ALL tasks are in the done column (not just completed)
+        var allInDoneColumn = tasks.All(t => t.IsInDoneColumn);
+        Console.WriteLine($"All tasks in done column: {allInDoneColumn}");
+        return allInDoneColumn;
+    }
+
+    public async Task DeleteTasks(List<Guid> taskIds)
+    {
+        foreach (var taskId in taskIds)
+        {
+            await DeleteTask(taskId);
+        }
+        // Refresh the tasks list
+        await GetTasks();
+    }
 } 

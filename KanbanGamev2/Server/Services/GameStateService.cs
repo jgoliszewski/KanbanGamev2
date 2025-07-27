@@ -7,22 +7,23 @@ public class GameStateService : IGameStateService
     private int _currentDay = 1;
     private readonly DateTime _gameStartDate = DateTime.Now;
     private readonly List<Achievement> _unlockedAchievements = new();
+    private decimal _companyMoney = 10000; // Starting money
 
     public int CurrentDay => _currentDay;
     public DateTime GameStartDate => _gameStartDate;
     public List<Achievement> UnlockedAchievements => _unlockedAchievements.ToList();
+    public decimal CompanyMoney => _companyMoney;
 
     public event Action<int>? DayChanged;
     public event Action<Achievement>? AchievementUnlocked;
+    public event Action<decimal>? MoneyChanged;
 
     public async Task AdvanceToNextDay()
     {
         _currentDay++;
         DayChanged?.Invoke(_currentDay);
         
-        // Check for daily achievements
-        await CheckDailyAchievements();
-        
+        // No more daily achievements - only feature completion achievements
         await Task.CompletedTask;
     }
 
@@ -50,18 +51,17 @@ public class GameStateService : IGameStateService
         return await Task.FromResult(_unlockedAchievements.Any(a => a.Id == achievementId));
     }
 
-    private async Task CheckDailyAchievements()
+    public async Task AddMoney(decimal amount)
     {
-        // Example daily achievement for completing a day
-        var dailyAchievement = new Achievement
-        {
-            Id = $"daily_complete_{_currentDay}",
-            Name = $"Day {_currentDay} Complete",
-            Description = $"Successfully completed day {_currentDay}",
-            Icon = "📅",
-            Type = AchievementType.Daily
-        };
+        _companyMoney += amount;
+        MoneyChanged?.Invoke(_companyMoney);
+        await Task.CompletedTask;
+    }
 
-        await UnlockAchievement(dailyAchievement);
+    public async Task SetMoney(decimal amount)
+    {
+        _companyMoney = amount;
+        MoneyChanged?.Invoke(_companyMoney);
+        await Task.CompletedTask;
     }
 } 
