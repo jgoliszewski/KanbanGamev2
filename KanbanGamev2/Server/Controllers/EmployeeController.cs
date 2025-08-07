@@ -79,4 +79,13 @@ public class EmployeeController : ControllerBase
             return NotFound();
         return NoContent();
     }
+
+    [HttpPut("{id}/move")]
+    public ActionResult MoveEmployee(Guid id, [FromQuery] BoardType boardType, [FromQuery] string columnId)
+    {
+        var success = _employeeService.MoveEmployee(id, boardType, columnId);
+        if (!success)
+            return NotFound();
+        return NoContent();
+    }
 } 

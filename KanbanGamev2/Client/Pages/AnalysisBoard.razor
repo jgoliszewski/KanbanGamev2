@@ -25,6 +25,7 @@
 @code {
     private List<KanbanBoard.KanbanColumnData> analysisColumns = new();
 
+
     protected override async Task OnInitializedAsync()
     {
         try
@@ -37,6 +38,7 @@
         // Subscribe to real-time board updates
         SignalRService.BoardUpdated += OnBoardUpdated;
         SignalRService.RefreshAllBoards += OnRefreshAllBoards;
+        SignalRService.EmployeeMoved += OnEmployeeMoved;
         }
         finally
         {
@@ -186,9 +188,22 @@
         StateHasChanged();
     }
 
+    private async void OnEmployeeMoved(Employee employee, BoardType destinationBoardType, string columnId, BoardType originalBoardType)
+    {
+        // Refresh this board if it's either the original or destination board
+        if (BoardType.Analysis == originalBoardType || BoardType.Analysis == destinationBoardType)
+        {
+            // Reload data to reflect the employee move
+            await LoadData();
+            OrganizeColumns();
+            StateHasChanged();
+        }
+    }
+
     public void Dispose()
     {
         SignalRService.BoardUpdated -= OnBoardUpdated;
         SignalRService.RefreshAllBoards -= OnRefreshAllBoards;
+        SignalRService.EmployeeMoved -= OnEmployeeMoved;
     }
 } 

@@ -13,4 +13,5 @@ public interface IEmployeeService
     Task<List<Employee>> GetAvailableEmployees();
     Task<bool> UnassignWorkFromEmployee(Guid employeeId);
     Task UpdateEmployees();
+    Task<bool> MoveEmployee(Guid employeeId, BoardType boardType, string columnId);
 } 

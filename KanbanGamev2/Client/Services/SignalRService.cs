@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.SignalR.Client;
+using KanbanGame.Shared;
 
 namespace KanbanGamev2.Client.Services;
 
@@ -21,6 +22,7 @@ public class SignalRService : ISignalRService, IAsyncDisposable
     public event Action? NextDayStarted;
     public event Action? ReloadGameState;
     public event Action<string, string, object>? BoardUpdated;
+    public event Action<Employee, BoardType, string, BoardType>? EmployeeMoved;
     public event Action<string, string>? ShowLoader;
     public event Action? HideLoader;
     public event Action? RefreshAllBoards;
@@ -94,6 +96,11 @@ public class SignalRService : ISignalRService, IAsyncDisposable
         _hubConnection.On<string, string, object>("BoardUpdated", (boardType, columnId, cardData) =>
         {
             BoardUpdated?.Invoke(boardType, columnId, cardData);
+        });
+
+        _hubConnection.On<Employee, BoardType, string, BoardType>("EmployeeMoved", (employee, boardType, columnId, originalBoardType) =>
+        {
+            EmployeeMoved?.Invoke(employee, boardType, columnId, originalBoardType);
         });
 
         // Handle connection state changes
@@ -173,6 +180,14 @@ public class SignalRService : ISignalRService, IAsyncDisposable
         if (_hubConnection?.State == HubConnectionState.Connected)
         {
             await _hubConnection.InvokeAsync("NotifyBoardUpdate", boardType, columnId, cardData);
+        }
+    }
+
+    public async Task NotifyEmployeeMoveAsync(Employee employee, BoardType boardType, string columnId, BoardType originalBoardType)
+    {
+        if (_hubConnection?.State == HubConnectionState.Connected)
+        {
+            await _hubConnection.InvokeAsync("NotifyEmployeeMove", employee, boardType, columnId, originalBoardType);
         }
     }
 

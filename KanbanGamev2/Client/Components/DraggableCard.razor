@@ -4,6 +4,7 @@
 @inject ISignalRService SignalRService
 @inject IFeatureService FeatureService
 @inject ITaskService TaskService
+@inject IEmployeeService EmployeeService
 @inject KanbanGamev2.Shared.Services.IGameStateService GameStateService
 
 <div class="draggable-card @(IsDragging ? "dragging" : "") @(IsAssignedWorkItem ? "assigned-work-item" : "") @(IsDragOverEmployee ? "drag-over-employee" : "")"
@@ -34,6 +35,9 @@
                             <span class="badge @(employee.IsWorking ? "bg-danger" : "bg-success")">
                                 @(employee.IsWorking ? "Working" : "Free")
                             </span>
+                            <button class="btn btn-sm btn-outline-primary ms-2" @onclick="() => ShowMoveModal(employee)" title="Move Employee">
+                                <i class="oi oi-arrow-right"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -98,6 +102,13 @@
         </div>
     </div>
 </div>
+
+<MoveEmployeeModal 
+    IsVisible="@showMoveModal"
+    Employee="@selectedEmployee"
+    CurrentBoardType="@BoardType"
+    OnCancel="@(() => showMoveModal = false)"
+    OnConfirm="@OnEmployeeMoveConfirmed" />
 
 @code {
     [Parameter] public Card Card { get; set; } = null!;
@@ -272,5 +283,39 @@
         
         // Force a UI refresh
         StateHasChanged();
+    }
+
+    // Employee move functionality
+    private bool showMoveModal = false;
+    private Employee? selectedEmployee = null;
+
+    private void ShowMoveModal(Employee employee)
+    {
+        selectedEmployee = employee;
+        showMoveModal = true;
+        StateHasChanged();
+    }
+
+    private async Task OnEmployeeMoveConfirmed((Employee employee, BoardType boardType, string columnId) moveData)
+    {
+        try
+        {
+            // Store the original board type before moving
+            var originalBoardType = BoardType;
+            
+            await EmployeeService.MoveEmployee(moveData.employee.Id, moveData.boardType, moveData.columnId);
+            
+            // Notify other players about the employee move - include original board info
+            await SignalRService.NotifyEmployeeMoveAsync(moveData.employee, moveData.boardType, moveData.columnId, originalBoardType);
+            
+            showMoveModal = false;
+            selectedEmployee = null;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            // Handle error - you might want to show a toast notification
+            Console.WriteLine($"Error moving employee: {ex.Message}");
+        }
     }
 } 

@@ -243,6 +243,27 @@
     background-color: #e3f2fd;
 }
 
+/* Employee move button styling */
+.employee-status .btn {
+    padding: 2px 6px;
+    font-size: 0.7rem;
+    border-radius: 3px;
+}
+
+.employee-status .btn:hover {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+}
+
+/* Modal styling */
+.modal-backdrop {
+    z-index: 1040;
+}
+
+.modal {
+    z-index: 1050;
+}
+
 /* Read-only board indicator */
 .board-header.read-only::after {
     content: " (Read Only)";

@@ -1,0 +1,144 @@
+@using KanbanGame.Shared
+
+<div class="modal fade @(IsVisible ? "show" : "")" style="display: @(IsVisible ? "block" : "none");" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Move Employee</h5>
+                <button type="button" class="btn-close" @onclick="OnCancel"></button>
+            </div>
+            <div class="modal-body">
+                <p>Move <strong>@Employee?.Name</strong> to a different board and column.</p>
+                
+                <div class="mb-3">
+                    <label for="boardSelect" class="form-label">Select Board:</label>
+                    <select id="boardSelect" class="form-select" @bind="SelectedBoardType">
+                        <option value="">Choose a board...</option>
+                        @foreach (var boardType in AvailableBoardTypes)
+                        {
+                            <option value="@boardType">@GetBoardDisplayName(boardType)</option>
+                        }
+                    </select>
+                </div>
+                
+                @if (!string.IsNullOrEmpty(SelectedBoardType))
+                {
+                    <div class="mb-3">
+                        <label for="columnSelect" class="form-label">Select Column:</label>
+                        <select id="columnSelect" class="form-select" @bind="SelectedColumnId">
+                            <option value="">Choose a column...</option>
+                            @foreach (var column in AvailableColumns)
+                            {
+                                <option value="@column.Id">@column.Title</option>
+                            }
+                        </select>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
+                <button type="button" class="btn btn-primary" @onclick="OnConfirmClicked" disabled="@(!CanConfirm)">Move Employee</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (IsVisible)
+{
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public Employee? Employee { get; set; }
+    [Parameter] public BoardType CurrentBoardType { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback<(Employee employee, BoardType boardType, string columnId)> OnConfirm { get; set; }
+
+    private string SelectedBoardType { get; set; } = string.Empty;
+    private string SelectedColumnId { get; set; } = string.Empty;
+
+    private List<string> AvailableBoardTypes => new List<string>
+    {
+        BoardType.Analysis.ToString(),
+        BoardType.Backend.ToString(),
+        BoardType.Frontend.ToString()
+    }.Where(bt => bt != CurrentBoardType.ToString()).ToList();
+
+    private List<ColumnOption> AvailableColumns
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(SelectedBoardType))
+                return new List<ColumnOption>();
+
+            return GetColumnsForBoard(SelectedBoardType);
+        }
+    }
+
+    private bool CanConfirm => !string.IsNullOrEmpty(SelectedBoardType) && !string.IsNullOrEmpty(SelectedColumnId);
+
+    protected override void OnParametersSet()
+    {
+        if (!IsVisible)
+        {
+            SelectedBoardType = string.Empty;
+            SelectedColumnId = string.Empty;
+        }
+    }
+
+    private string GetBoardDisplayName(string boardType)
+    {
+        return boardType switch
+        {
+            nameof(BoardType.Analysis) => "Analysis Board",
+            nameof(BoardType.Backend) => "Backend Board",
+            nameof(BoardType.Frontend) => "Frontend Board",
+            _ => boardType
+        };
+    }
+
+    private List<ColumnOption> GetColumnsForBoard(string boardType)
+    {
+        return boardType switch
+        {
+            nameof(BoardType.Analysis) => new List<ColumnOption>
+            {
+                new ColumnOption { Id = "analysis1", Title = "Analysis 1" },
+                new ColumnOption { Id = "analysis2", Title = "Analysis 2" }
+            },
+            nameof(BoardType.Backend) => new List<ColumnOption>
+            {
+                new ColumnOption { Id = "backend-analysis", Title = "Analysis" },
+                new ColumnOption { Id = "backend-dev-waiting", Title = "Development Waiting" },
+                new ColumnOption { Id = "backend-dev-doing", Title = "Development Doing" },
+                new ColumnOption { Id = "backend-test-waiting", Title = "Testing Waiting" },
+                new ColumnOption { Id = "backend-test-doing", Title = "Testing Doing" }
+            },
+            nameof(BoardType.Frontend) => new List<ColumnOption>
+            {
+                new ColumnOption { Id = "frontend-analysis", Title = "Analysis" },
+                new ColumnOption { Id = "frontend-dev-waiting", Title = "Development Waiting" },
+                new ColumnOption { Id = "frontend-dev-doing", Title = "Development Doing" },
+                new ColumnOption { Id = "frontend-test-waiting", Title = "Testing Waiting" },
+                new ColumnOption { Id = "frontend-test-doing", Title = "Testing Doing" }
+            },
+            _ => new List<ColumnOption>()
+        };
+    }
+
+    private async Task OnConfirmClicked()
+    {
+        if (Employee != null && !string.IsNullOrEmpty(SelectedBoardType) && !string.IsNullOrEmpty(SelectedColumnId))
+        {
+            var boardType = Enum.Parse<BoardType>(SelectedBoardType);
+            await OnConfirm.InvokeAsync((Employee, boardType, SelectedColumnId));
+        }
+    }
+
+    public class ColumnOption
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+    }
+} 

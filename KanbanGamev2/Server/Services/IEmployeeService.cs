@@ -13,4 +13,5 @@ public interface IEmployeeService
     List<Employee> GetEmployeesByColumn(string columnId);
     void ResetData();
     bool UnassignWorkFromEmployee(Guid id);
+    bool MoveEmployee(Guid id, BoardType boardType, string columnId);
 } 

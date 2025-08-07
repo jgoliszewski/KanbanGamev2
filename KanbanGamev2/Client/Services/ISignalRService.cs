@@ -1,3 +1,5 @@
+using KanbanGame.Shared;
+
 namespace KanbanGamev2.Client.Services;
 
 public interface ISignalRService
@@ -12,6 +14,7 @@ public interface ISignalRService
     event Action? ReloadGameState;
     event Action? RefreshAllBoards;
     event Action<string, string, object>? BoardUpdated;
+    event Action<Employee, BoardType, string, BoardType>? EmployeeMoved;
     event Action<string, string>? ShowLoader;
     event Action? HideLoader;
     
@@ -25,6 +28,7 @@ public interface ISignalRService
     Task GetCurrentStatsAsync();
     Task AdvanceToNextDayAsync();
     Task NotifyBoardUpdateAsync(string boardType, string columnId, object cardData);
+    Task NotifyEmployeeMoveAsync(Employee employee, BoardType boardType, string columnId, BoardType originalBoardType);
 }
 
 public class UserInfo

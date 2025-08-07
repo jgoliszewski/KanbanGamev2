@@ -66,4 +66,10 @@ public class EmployeeService : IEmployeeService
         // This method is called after work simulation to persist changes
         await Task.CompletedTask;
     }
+
+    public async Task<bool> MoveEmployee(Guid employeeId, BoardType boardType, string columnId)
+    {
+        var response = await _http.PutAsync($"api/employee/{employeeId}/move?boardType={boardType}&columnId={columnId}", null);
+        return response.IsSuccessStatusCode;
+    }
 }

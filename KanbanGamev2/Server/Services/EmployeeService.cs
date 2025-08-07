@@ -300,4 +300,16 @@ public class EmployeeService : IEmployeeService
         // In a real application, this would save to a database
         await Task.CompletedTask;
     }
+
+    public bool MoveEmployee(Guid id, BoardType boardType, string columnId)
+    {
+        var employee = _employees.FirstOrDefault(e => e.Id == id);
+        if (employee != null)
+        {
+            employee.ColumnId = columnId;
+            employee.UpdatedAt = DateTime.Now;
+            return true;
+        }
+        return false;
+    }
 } 

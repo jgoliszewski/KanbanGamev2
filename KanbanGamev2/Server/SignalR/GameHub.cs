@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
+using KanbanGame.Shared;
 
 namespace KanbanGamev2.Server.SignalR;
 
@@ -86,6 +87,11 @@ public class GameHub : Hub
     public async Task NotifyBoardUpdate(string boardType, string columnId, object cardData)
     {
         await Clients.All.SendAsync("BoardUpdated", boardType, columnId, cardData);
+    }
+
+    public async Task NotifyEmployeeMove(Employee employee, BoardType boardType, string columnId, BoardType originalBoardType)
+    {
+        await Clients.All.SendAsync("EmployeeMoved", employee, boardType, columnId, originalBoardType);
     }
 
     public static int GetConnectedCount() => _connectedUsers.Count;
