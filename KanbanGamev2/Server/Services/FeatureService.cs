@@ -202,21 +202,21 @@ public class FeatureService : IFeatureService
     {
         _features = new List<Feature>
         {
-            // Analysis Backlog Features
+            // Analysis Board - Features in progress
             new Feature
             {
                 Id = Guid.NewGuid(),
                 Title = "User Authentication",
                 Description = "Implement secure user authentication system",
                 Priority = Priority.High,
-                Status = Status.ToDo,
+                Status = Status.InProgress,
                 AssignedToEmployeeId = null,
                 DueDate = DateTime.Now.AddDays(7),
                 StoryPoints = 8,
-                ColumnId = "backlog",
+                ColumnId = "analysis1",
                 Order = 1,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0,
+                LaborIntensity = 0.6,
+                LaborLeft = 0.4,
                 Profit = 15000
             },
             new Feature
@@ -225,14 +225,14 @@ public class FeatureService : IFeatureService
                 Title = "Dashboard Analytics",
                 Description = "Create analytics dashboard with charts and metrics",
                 Priority = Priority.Medium,
-                Status = Status.ToDo,
+                Status = Status.InProgress,
                 AssignedToEmployeeId = null,
                 DueDate = DateTime.Now.AddDays(14),
                 StoryPoints = 13,
-                ColumnId = "backlog",
-                Order = 2,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0,
+                ColumnId = "analysis2",
+                Order = 1,
+                LaborIntensity = 0.7,
+                LaborLeft = 0.3,
                 Profit = 25000
             },
             new Feature
@@ -241,14 +241,14 @@ public class FeatureService : IFeatureService
                 Title = "Payment Integration",
                 Description = "Integrate payment gateway for subscription management",
                 Priority = Priority.High,
-                Status = Status.ToDo,
+                Status = Status.InProgress,
                 AssignedToEmployeeId = null,
                 DueDate = DateTime.Now.AddDays(10),
                 StoryPoints = 21,
-                ColumnId = "backlog",
-                Order = 3,
+                ColumnId = "ready-dev",
+                Order = 1,
                 LaborIntensity = 1.0,
-                LaborLeft = 1.0,
+                LaborLeft = 0.0,
                 Profit = 35000
             },
             new Feature
@@ -257,14 +257,14 @@ public class FeatureService : IFeatureService
                 Title = "Mobile App",
                 Description = "Develop mobile application for iOS and Android",
                 Priority = Priority.Medium,
-                Status = Status.ToDo,
+                Status = Status.InProgress,
                 AssignedToEmployeeId = null,
                 DueDate = DateTime.Now.AddDays(30),
                 StoryPoints = 34,
-                ColumnId = "backlog",
-                Order = 4,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0,
+                ColumnId = "backend-analysis",
+                Order = 1,
+                LaborIntensity = 0.4,
+                LaborLeft = 0.6,
                 Profit = 50000
             },
             new Feature
@@ -273,14 +273,14 @@ public class FeatureService : IFeatureService
                 Title = "Real-time Chat",
                 Description = "Implement real-time messaging system",
                 Priority = Priority.High,
-                Status = Status.ToDo,
+                Status = Status.InProgress,
                 AssignedToEmployeeId = null,
                 DueDate = DateTime.Now.AddDays(12),
                 StoryPoints = 13,
-                ColumnId = "backlog",
-                Order = 5,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0,
+                ColumnId = "frontend-analysis",
+                Order = 1,
+                LaborIntensity = 0.5,
+                LaborLeft = 0.5,
                 Profit = 30000
             },
             new Feature
@@ -289,14 +289,14 @@ public class FeatureService : IFeatureService
                 Title = "File Upload System",
                 Description = "Create secure file upload and storage system",
                 Priority = Priority.Medium,
-                Status = Status.ToDo,
+                Status = Status.InProgress,
                 AssignedToEmployeeId = null,
                 DueDate = DateTime.Now.AddDays(8),
                 StoryPoints = 8,
-                ColumnId = "backlog",
-                Order = 6,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0,
+                ColumnId = "backend-dev-doing",
+                Order = 1,
+                LaborIntensity = 0.3,
+                LaborLeft = 0.7,
                 Profit = 20000
             },
             new Feature
@@ -305,14 +305,14 @@ public class FeatureService : IFeatureService
                 Title = "Email Notifications",
                 Description = "Add email notification system for important events",
                 Priority = Priority.Low,
-                Status = Status.ToDo,
+                Status = Status.InProgress,
                 AssignedToEmployeeId = null,
                 DueDate = DateTime.Now.AddDays(5),
                 StoryPoints = 5,
-                ColumnId = "backlog",
-                Order = 7,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0,
+                ColumnId = "frontend-dev-doing",
+                Order = 1,
+                LaborIntensity = 0.8,
+                LaborLeft = 0.2,
                 Profit = 12000
             },
             new Feature
@@ -321,15 +321,48 @@ public class FeatureService : IFeatureService
                 Title = "Search Functionality",
                 Description = "Implement advanced search with filters",
                 Priority = Priority.Medium,
-                Status = Status.ToDo,
+                Status = Status.InProgress,
                 AssignedToEmployeeId = null,
                 DueDate = DateTime.Now.AddDays(15),
                 StoryPoints = 13,
+                ColumnId = "backend-test-doing",
+                Order = 1,
+                LaborIntensity = 0.2,
+                LaborLeft = 0.8,
+                Profit = 28000
+            },
+            // Add some features in backlog for variety
+            new Feature
+            {
+                Id = Guid.NewGuid(),
+                Title = "API Rate Limiting",
+                Description = "Implement rate limiting for API endpoints",
+                Priority = Priority.Medium,
+                Status = Status.ToDo,
+                AssignedToEmployeeId = null,
+                DueDate = DateTime.Now.AddDays(20),
+                StoryPoints = 5,
                 ColumnId = "backlog",
-                Order = 8,
+                Order = 1,
                 LaborIntensity = 1.0,
                 LaborLeft = 1.0,
-                Profit = 28000
+                Profit = 18000
+            },
+            new Feature
+            {
+                Id = Guid.NewGuid(),
+                Title = "Performance Monitoring",
+                Description = "Add performance monitoring and alerting",
+                Priority = Priority.Low,
+                Status = Status.ToDo,
+                AssignedToEmployeeId = null,
+                DueDate = DateTime.Now.AddDays(25),
+                StoryPoints = 8,
+                ColumnId = "backlog",
+                Order = 2,
+                LaborIntensity = 1.0,
+                LaborLeft = 1.0,
+                Profit = 22000
             }
         };
     }

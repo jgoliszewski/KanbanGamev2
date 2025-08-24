@@ -1,6 +1,6 @@
-using System.Net.Http.Json;
-using Microsoft.AspNetCore.Components;
 using KanbanGame.Shared;
+using Microsoft.AspNetCore.Components;
+using System.Net.Http.Json;
 
 namespace KanbanGamev2.Client.Services;
 
@@ -64,15 +64,15 @@ public class TaskService : ITaskService
     public async Task<bool> AreAllTasksCompleted(List<Guid> taskIds)
     {
         if (!taskIds.Any()) return true;
-        
+
         var tasks = Tasks.Where(t => taskIds.Contains(t.Id)).ToList();
         Console.WriteLine($"Checking {tasks.Count} tasks for completion:");
-        
+
         foreach (var task in tasks)
         {
             Console.WriteLine($"  Task '{task.Title}': ColumnId={task.ColumnId}, IsInDoneColumn={task.IsInDoneColumn}");
         }
-        
+
         // Check if ALL tasks are in the done column
         // Note: LaborLeft gets reset when moving to new columns, so we only check column position
         var allInDoneColumn = tasks.All(t => t.IsInDoneColumn);
@@ -89,4 +89,9 @@ public class TaskService : ITaskService
         // Refresh the tasks list
         await GetTasks();
     }
-} 
+
+    public void AssignTasksToEmployees(IEmployeeService employeeService)
+    {
+        throw new NotImplementedException();
+    }
+}

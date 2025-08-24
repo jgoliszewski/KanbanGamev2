@@ -11,6 +11,41 @@ public class GameStateService : IGameStateService
     private decimal _companyMoney = 10000; // Starting money
     private readonly List<MoneyTransaction> _moneyTransactions = new();
 
+    public GameStateService()
+    {
+        // Start with some progress already made
+        _currentDay = 5;
+        _companyMoney = 25000; // Starting with some money from completed work
+        
+        // Add some initial money transactions to simulate completed work
+        _moneyTransactions.Add(new MoneyTransaction
+        {
+            Id = Guid.NewGuid(),
+            Amount = 15000,
+            Description = "User Authentication Feature Completed",
+            Timestamp = DateTime.Now.AddDays(-3),
+            Type = TransactionType.Income
+        });
+        
+        _moneyTransactions.Add(new MoneyTransaction
+        {
+            Id = Guid.NewGuid(),
+            Amount = 8000,
+            Description = "Dashboard Analytics Feature Completed",
+            Timestamp = DateTime.Now.AddDays(-2),
+            Type = TransactionType.Income
+        });
+        
+        _moneyTransactions.Add(new MoneyTransaction
+        {
+            Id = Guid.NewGuid(),
+            Amount = -2000,
+            Description = "Employee Salaries",
+            Timestamp = DateTime.Now.AddDays(-1),
+            Type = TransactionType.Expense
+        });
+    }
+
     public int CurrentDay => _currentDay;
     public DateTime GameStartDate => _gameStartDate;
     public List<Achievement> UnlockedAchievements => _unlockedAchievements.ToList();

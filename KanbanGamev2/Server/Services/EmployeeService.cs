@@ -40,7 +40,8 @@ public class EmployeeService : IEmployeeService
         if (existing != null)
         {
             existing.Name = employee.Name;
-            existing.Role = employee.Role;
+            existing.LearnedRoles = employee.LearnedRoles;
+            existing.LearnableRoles = employee.LearnableRoles;
             existing.Department = employee.Department;
             existing.Email = employee.Email;
             existing.IsAvailable = employee.IsAvailable;
@@ -80,7 +81,8 @@ public class EmployeeService : IEmployeeService
             {
                 Id = Guid.NewGuid(),
                 Name = "Alex Turner",
-                Role = Role.SeniorDeveloper,
+                LearnedRoles = new List<Role> { Role.HighLevelAnalyst, Role.Analyst },
+                LearnableRoles = new List<Role> { Role.Tester },
                 Department = Department.Engineering,
                 Email = "alex.turner@company.com",
                 IsAvailable = true,
@@ -92,7 +94,8 @@ public class EmployeeService : IEmployeeService
             {
                 Id = Guid.NewGuid(),
                 Name = "Emma Davis",
-                Role = Role.ProductManager,
+                LearnedRoles = new List<Role> { Role.Analyst, Role.Tester },
+                LearnableRoles = new List<Role> { Role.HighLevelAnalyst },
                 Department = Department.Product,
                 Email = "emma.davis@company.com",
                 IsAvailable = true,
@@ -104,7 +107,8 @@ public class EmployeeService : IEmployeeService
             {
                 Id = Guid.NewGuid(),
                 Name = "Ivy Rodriguez",
-                Role = Role.BusinessAnalyst,
+                LearnedRoles = new List<Role> { Role.HighLevelAnalyst, Role.Analyst, Role.Developer },
+                LearnableRoles = new List<Role>(),
                 Department = Department.Product,
                 Email = "ivy.rodriguez@company.com",
                 IsAvailable = true,
@@ -116,7 +120,8 @@ public class EmployeeService : IEmployeeService
             {
                 Id = Guid.NewGuid(),
                 Name = "Jack Thompson",
-                Role = Role.Developer,
+                LearnedRoles = new List<Role> { Role.Analyst, Role.Developer },
+                LearnableRoles = new List<Role> { Role.HighLevelAnalyst },
                 Department = Department.Engineering,
                 Email = "jack.thompson@company.com",
                 IsAvailable = true,
@@ -130,7 +135,8 @@ public class EmployeeService : IEmployeeService
             {
                 Id = Guid.NewGuid(),
                 Name = "Beth Cooper",
-                Role = Role.LeadDeveloper,
+                LearnedRoles = new List<Role> { Role.Developer, Role.Analyst },
+                LearnableRoles = new List<Role> { Role.Tester },
                 Department = Department.Engineering,
                 Email = "beth.cooper@company.com",
                 IsAvailable = true,
@@ -142,7 +148,8 @@ public class EmployeeService : IEmployeeService
             {
                 Id = Guid.NewGuid(),
                 Name = "Kevin O'Brien",
-                Role = Role.Developer,
+                LearnedRoles = new List<Role> { Role.Developer, Role.Tester },
+                LearnableRoles = new List<Role> { Role.Analyst },
                 Department = Department.Engineering,
                 Email = "kevin.obrien@company.com",
                 IsAvailable = true,
@@ -154,7 +161,8 @@ public class EmployeeService : IEmployeeService
             {
                 Id = Guid.NewGuid(),
                 Name = "Liam Anderson",
-                Role = Role.Developer,
+                LearnedRoles = new List<Role> { Role.Developer, Role.Analyst, Role.Tester },
+                LearnableRoles = new List<Role>(),
                 Department = Department.Engineering,
                 Email = "liam.anderson@company.com",
                 IsAvailable = true,
@@ -166,7 +174,8 @@ public class EmployeeService : IEmployeeService
             {
                 Id = Guid.NewGuid(),
                 Name = "Mark Taylor",
-                Role = Role.Developer,
+                LearnedRoles = new List<Role> { Role.Developer },
+                LearnableRoles = new List<Role> { Role.Analyst, Role.Tester },
                 Department = Department.Engineering,
                 Email = "mark.taylor@company.com",
                 IsAvailable = true,
@@ -178,7 +187,8 @@ public class EmployeeService : IEmployeeService
             {
                 Id = Guid.NewGuid(),
                 Name = "David Brown",
-                Role = Role.QAEngineer,
+                LearnedRoles = new List<Role> { Role.Tester, Role.Analyst },
+                LearnableRoles = new List<Role> { Role.Developer },
                 Department = Department.QualityAssurance,
                 Email = "david.brown@company.com",
                 IsAvailable = true,
@@ -190,7 +200,8 @@ public class EmployeeService : IEmployeeService
             {
                 Id = Guid.NewGuid(),
                 Name = "Nathan Garcia",
-                Role = Role.QAEngineer,
+                LearnedRoles = new List<Role> { Role.Tester },
+                LearnableRoles = new List<Role> { Role.Analyst, Role.Developer },
                 Department = Department.QualityAssurance,
                 Email = "nathan.garcia@company.com",
                 IsAvailable = true,
@@ -204,7 +215,8 @@ public class EmployeeService : IEmployeeService
             {
                 Id = Guid.NewGuid(),
                 Name = "Claire Bennett",
-                Role = Role.Developer,
+                LearnedRoles = new List<Role> { Role.Analyst, Role.Developer },
+                LearnableRoles = new List<Role> { Role.HighLevelAnalyst },
                 Department = Department.Engineering,
                 Email = "claire.bennett@company.com",
                 IsAvailable = true,
@@ -216,7 +228,8 @@ public class EmployeeService : IEmployeeService
             {
                 Id = Guid.NewGuid(),
                 Name = "Oliver Martinez",
-                Role = Role.Developer,
+                LearnedRoles = new List<Role> { Role.Analyst, Role.HighLevelAnalyst },
+                LearnableRoles = new List<Role> { Role.Developer },
                 Department = Department.Engineering,
                 Email = "oliver.martinez@company.com",
                 IsAvailable = true,
@@ -228,7 +241,8 @@ public class EmployeeService : IEmployeeService
             {
                 Id = Guid.NewGuid(),
                 Name = "Frank Miller",
-                Role = Role.UIDesigner,
+                LearnedRoles = new List<Role> { Role.Developer, Role.Tester },
+                LearnableRoles = new List<Role> { Role.Analyst },
                 Department = Department.Design,
                 Email = "frank.miller@company.com",
                 IsAvailable = true,
@@ -240,7 +254,8 @@ public class EmployeeService : IEmployeeService
             {
                 Id = Guid.NewGuid(),
                 Name = "Paul Robinson",
-                Role = Role.Developer,
+                LearnedRoles = new List<Role> { Role.Developer, Role.Analyst },
+                LearnableRoles = new List<Role> { Role.Tester },
                 Department = Department.Engineering,
                 Email = "paul.robinson@company.com",
                 IsAvailable = true,
@@ -252,7 +267,8 @@ public class EmployeeService : IEmployeeService
             {
                 Id = Guid.NewGuid(),
                 Name = "Grace Lee",
-                Role = Role.UXDesigner,
+                LearnedRoles = new List<Role> { Role.Tester, Role.Analyst },
+                LearnableRoles = new List<Role> { Role.Developer },
                 Department = Department.Design,
                 Email = "grace.lee@company.com",
                 IsAvailable = true,
@@ -264,7 +280,8 @@ public class EmployeeService : IEmployeeService
             {
                 Id = Guid.NewGuid(),
                 Name = "Quentin White",
-                Role = Role.QAEngineer,
+                LearnedRoles = new List<Role> { Role.Tester, Role.Developer },
+                LearnableRoles = new List<Role> { Role.Analyst },
                 Department = Department.QualityAssurance,
                 Email = "quentin.white@company.com",
                 IsAvailable = true,

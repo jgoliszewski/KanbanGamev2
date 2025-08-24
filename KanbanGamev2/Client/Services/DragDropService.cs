@@ -111,12 +111,20 @@ public class DragDropService : IDragDropService
         if (workCard is Feature feature && feature.IsAssigned)
             return false;
             
+        // Check if employee can work in the current column of the work item
+        if (!employee.CanWorkInColumn(workCard.ColumnId))
+            return false;
+            
         return true;
     }
 
     public bool CanMoveWorkForward(BoardType boardType, Card workCard, Employee employee)
     {
         if (!CanAssignWork(workCard, employee))
+            return false;
+
+        // Check if employee can work in the target column
+        if (!employee.CanWorkInColumn(employee.ColumnId))
             return false;
 
         // Check if this would be a valid forward move

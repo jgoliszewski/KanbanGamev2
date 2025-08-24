@@ -2,15 +2,8 @@ namespace KanbanGame.Shared;
 
 public enum Role
 {
+    HighLevelAnalyst,
+    Analyst,
     Developer,
-    SeniorDeveloper,
-    LeadDeveloper,
-    UIDesigner,
-    UXDesigner,
-    ProductManager,
-    ProjectManager,
-    QAEngineer,
-    DevOpsEngineer,
-    BusinessAnalyst,
-    ScrumMaster
+    Tester
 } 

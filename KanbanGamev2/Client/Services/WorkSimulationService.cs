@@ -103,15 +103,15 @@ public class WorkSimulationService : IWorkSimulationService
     {
         // Check all features that have generated tasks (sent to development)
         var featuresWithTasks = _featureService.Features.Where(f => f.GeneratedTaskIds.Any()).ToList();
-        
+
         Console.WriteLine($"Checking {featuresWithTasks.Count} features with generated tasks for completion...");
 
         foreach (var feature in featuresWithTasks)
         {
             Console.WriteLine($"Checking feature '{feature.Title}' with {feature.GeneratedTaskIds.Count} tasks...");
-            
+
             var allTasksCompleted = await _taskService.AreAllTasksCompleted(feature.GeneratedTaskIds);
-            
+
             Console.WriteLine($"Feature '{feature.Title}' - All tasks completed: {allTasksCompleted}");
 
             if (allTasksCompleted)
@@ -150,7 +150,7 @@ public class WorkSimulationService : IWorkSimulationService
     private async Task ProcessWorkItem(Card workItem, Employee employee)
     {
         bool isCompleted = false;
-        double workDone = employee.Efficiency * 2; // 20% of efficiency per day
+        double workDone = employee.Efficiency;
 
 
         if (workItem is KanbanTask kanbanTask)

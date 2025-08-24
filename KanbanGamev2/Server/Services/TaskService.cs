@@ -68,8 +68,119 @@ public class TaskService : ITaskService
 
     private void SeedData()
     {
-        _tasks = new List<KanbanTask>();
-        // Tasks will be generated from features when they are sent to development
+        _tasks = new List<KanbanTask>
+        {
+            // Backend tasks in progress
+            new KanbanTask
+            {
+                Id = Guid.NewGuid(),
+                Title = "Mobile App - API Design",
+                Description = "Design REST API endpoints for mobile application",
+                Priority = Priority.Medium,
+                Status = Status.InProgress,
+                AssignedToEmployeeId = null,
+                DueDate = DateTime.Now.AddDays(15),
+                StoryPoints = 3,
+                ColumnId = "backend-analysis",
+                Order = 1,
+                LaborIntensity = 0.6,
+                LaborLeft = 0.4
+            },
+            new KanbanTask
+            {
+                Id = Guid.NewGuid(),
+                Title = "File Upload System - Backend Implementation",
+                Description = "Implement backend logic for file upload system",
+                Priority = Priority.Medium,
+                Status = Status.InProgress,
+                AssignedToEmployeeId = null,
+                DueDate = DateTime.Now.AddDays(5),
+                StoryPoints = 4,
+                ColumnId = "backend-dev-doing",
+                Order = 1,
+                LaborIntensity = 0.3,
+                LaborLeft = 0.7
+            },
+            new KanbanTask
+            {
+                Id = Guid.NewGuid(),
+                Title = "Search Functionality - Database Schema",
+                Description = "Create database schema for search functionality",
+                Priority = Priority.Medium,
+                Status = Status.InProgress,
+                AssignedToEmployeeId = null,
+                DueDate = DateTime.Now.AddDays(3),
+                StoryPoints = 2,
+                ColumnId = "backend-test-doing",
+                Order = 1,
+                LaborIntensity = 0.2,
+                LaborLeft = 0.8
+            },
+            
+            // Frontend tasks in progress
+            new KanbanTask
+            {
+                Id = Guid.NewGuid(),
+                Title = "Real-time Chat - Frontend Analysis",
+                Description = "Analyze frontend requirements for real-time chat",
+                Priority = Priority.High,
+                Status = Status.InProgress,
+                AssignedToEmployeeId = null,
+                DueDate = DateTime.Now.AddDays(8),
+                StoryPoints = 3,
+                ColumnId = "frontend-analysis",
+                Order = 1,
+                LaborIntensity = 0.5,
+                LaborLeft = 0.5
+            },
+            new KanbanTask
+            {
+                Id = Guid.NewGuid(),
+                Title = "Email Notifications - UI Components",
+                Description = "Create UI components for email notification system",
+                Priority = Priority.Low,
+                Status = Status.InProgress,
+                AssignedToEmployeeId = null,
+                DueDate = DateTime.Now.AddDays(3),
+                StoryPoints = 2,
+                ColumnId = "frontend-dev-doing",
+                Order = 1,
+                LaborIntensity = 0.8,
+                LaborLeft = 0.2
+            },
+            
+            // Some tasks in waiting columns
+            new KanbanTask
+            {
+                Id = Guid.NewGuid(),
+                Title = "Mobile App - Backend Implementation",
+                Description = "Implement backend logic for mobile application",
+                Priority = Priority.Medium,
+                Status = Status.ToDo,
+                AssignedToEmployeeId = null,
+                DueDate = DateTime.Now.AddDays(20),
+                StoryPoints = 8,
+                ColumnId = "backend-dev-waiting",
+                Order = 1,
+                LaborIntensity = 1.0,
+                LaborLeft = 1.0
+            },
+            new KanbanTask
+            {
+                Id = Guid.NewGuid(),
+                Title = "Real-time Chat - Frontend Development",
+                Description = "Implement frontend for real-time messaging system",
+                Priority = Priority.High,
+                Status = Status.ToDo,
+                AssignedToEmployeeId = null,
+                DueDate = DateTime.Now.AddDays(10),
+                StoryPoints = 5,
+                ColumnId = "frontend-dev-waiting",
+                Order = 1,
+                LaborIntensity = 1.0,
+                LaborLeft = 1.0
+            }
+        };
     }
 
     public void ResetData()

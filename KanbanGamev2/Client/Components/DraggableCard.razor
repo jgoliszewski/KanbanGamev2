@@ -20,26 +20,37 @@
             @if (Card is Employee employee)
             {
                 <div class="employee-card @(employee.IsWorking ? "assigned" : "")">
-                    <img src="@GetEmployeeAvatar(employee.Name)" alt="@employee.Name" class="employee-avatar" />
-                    <div class="employee-info">
-                        <div class="employee-name">@employee.Name</div>
-                        <div class="employee-seniority">
-                            <span class="badge @GetSeniorityBadgeClass(employee.Seniority)">
-                                @employee.Seniority.GetDisplayName()
-                            </span>
+                    <div class="employee-top">
+                        <div class="employee-left">
+                            <img src="@GetEmployeeAvatar(employee.Name)" alt="@employee.Name" class="employee-avatar" />
+                            <div class="employee-info-left">
+                                <div class="employee-name">@GetFirstName(employee.Name)</div>
+                                <div class="employee-seniority">
+                                    <span class="badge @GetSeniorityBadgeClass(employee.Seniority)">
+                                        @employee.Seniority.GetDisplayName()
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="employee-efficiency">
-                            <small class="text-muted">Efficiency: @(employee.Efficiency.ToString("P0"))</small>
-                        </div>
-                        <div class="employee-status">
-                            <span class="badge @(employee.IsWorking ? "bg-danger" : "bg-success")">
-                                @(employee.IsWorking ? "Working" : "Free")
-                            </span>
-                            <button class="btn btn-sm btn-outline-primary ms-2" @onclick="() => ShowMoveModal(employee)" title="Move Employee">
-                                <i class="oi oi-arrow-right"></i>
-                            </button>
+                        <div class="employee-right">
+                            <div class="employee-status">
+                                <span class="badge @(employee.IsWorking ? "bg-danger" : "bg-success")">
+                                    @(employee.IsWorking ? "Working" : "Free")
+                                </span>
+                            </div>
+                            <div class="employee-efficiency">
+                                <small class="text-muted">@(employee.Efficiency.ToString("P0"))</small>
+                            </div>
                         </div>
                     </div>
+                    <div class="employee-bottom">
+                        <div class="role-badges-container">
+                            <RoleBadges Employee="@employee" />
+                        </div>
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary move-employee-btn" @onclick="() => ShowMoveModal(employee)" title="Move Employee">
+                        <i class="oi oi-arrow-right"></i>
+                    </button>
                 </div>
             }
             else
@@ -190,6 +201,11 @@
         var defaultAvatars = new[] { "alex.png", "beth.png", "claire.png", "diana.png", "emma.png", "fiona.png", "grace.png", "hannah.png" };
         var defaultAvatar = defaultAvatars[hash % defaultAvatars.Length];
         return $"Avatars/{defaultAvatar}";
+    }
+
+    private string GetFirstName(string fullName)
+    {
+        return fullName.Split(' ').FirstOrDefault() ?? fullName;
     }
 
     private void OnDragStart(DragEventArgs e)

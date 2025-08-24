@@ -1,6 +1,7 @@
 @page "/employees"
 @using KanbanGame.Shared
 @using KanbanGamev2.Client.Services
+@using KanbanGamev2.Client.Components
 @inject IEmployeeService EmployeeService
 
 <PageTitle>Employees</PageTitle>
@@ -20,9 +21,13 @@ else
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">@employee.Name</h5>
+                        <div class="role-badges-container mb-2">
+                            <RoleBadges Employee="@employee" />
+                        </div>
                         <p class="card-text">
-                            <strong>Role:</strong> @employee.Role.GetDisplayName()<br/>
+                            <strong>Learned Roles:</strong> @string.Join(", ", employee.LearnedRoles.Select(r => r.GetDisplayName()))<br/>
                             <strong>Department:</strong> @employee.Department.GetDisplayName()<br/>
+                            <strong>Seniority:</strong> @employee.Seniority.GetDisplayName()<br/>
                             <strong>Email:</strong> @employee.Email<br/>
                             <strong>Status:</strong> 
                             @if (employee.IsAvailable)
@@ -34,6 +39,15 @@ else
                                 <span class="badge bg-warning">Busy</span>
                             }
                         </p>
+                        @if (employee.LearnableRoles.Any())
+                        {
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <strong>Can learn:</strong> 
+                                    @string.Join(", ", employee.LearnableRoles.Select(r => r.GetDisplayName()))
+                                </small>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>

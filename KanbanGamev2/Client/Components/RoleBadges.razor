@@ -1,0 +1,50 @@
+@using KanbanGame.Shared
+
+<div class="role-badges">
+    @foreach (var role in AllRoles)
+    {
+        var hasRole = Employee.HasRole(role);
+        var canLearn = Employee.CanLearnRole(role);
+        var isBlocked = Employee.IsRoleBlocked(role);
+        
+        <div class="role-badge @GetRoleBadgeClass(hasRole, canLearn, isBlocked)" 
+             title="@GetRoleTooltip(role, hasRole, canLearn, isBlocked)">
+            @GetRoleInitial(role)
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public Employee Employee { get; set; } = new();
+    
+    private List<Role> AllRoles => new() { Role.HighLevelAnalyst, Role.Analyst, Role.Developer, Role.Tester };
+    
+    private string GetRoleBadgeClass(bool hasRole, bool canLearn, bool isBlocked)
+    {
+        if (hasRole) return "role-learned";
+        if (canLearn) return "role-learnable";
+        if (isBlocked) return "role-blocked";
+        return "role-unavailable";
+    }
+    
+    private string GetRoleTooltip(Role role, bool hasRole, bool canLearn, bool isBlocked)
+    {
+        var roleName = role.ToString().Replace("HighLevel", "High Level ");
+        if (hasRole) return $"{roleName} (Learned)";
+        if (canLearn) return $"{roleName} (Can Learn)";
+        if (isBlocked) return $"{roleName} (Cannot Learn)";
+        return $"{roleName} (Not Available)";
+    }
+    
+    private string GetRoleInitial(Role role)
+    {
+        return role switch
+        {
+            Role.HighLevelAnalyst => "H",
+            Role.Analyst => "A",
+            Role.Developer => "D",
+            Role.Tester => "T",
+            _ => "?"
+        };
+    }
+} 

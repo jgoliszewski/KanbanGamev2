@@ -1,7 +1,7 @@
 @using KanbanGame.Shared
 
 <div class="modal fade @(IsVisible ? "show" : "")" style="display: @(IsVisible ? "block" : "none");" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Move Employee</h5>
@@ -10,30 +10,42 @@
             <div class="modal-body">
                 <p>Move <strong>@Employee?.Name</strong> to a different board and column.</p>
                 
-                <div class="mb-3">
-                    <label for="boardSelect" class="form-label">Select Board:</label>
-                    <select id="boardSelect" class="form-select" @bind="SelectedBoardType">
-                        <option value="">Choose a board...</option>
-                        @foreach (var boardType in AvailableBoardTypes)
-                        {
-                            <option value="@boardType">@GetBoardDisplayName(boardType)</option>
-                        }
-                    </select>
+                <div class="board-selection">
+                    @foreach (var boardGroup in AvailableBoardGroups)
+                    {
+                        <div class="board-group mb-4">
+                            <h6 class="board-group-title">@GetBoardDisplayName(boardGroup.BoardType)</h6>
+                            <div class="column-tiles">
+                                @foreach (var column in boardGroup.AvailableColumns)
+                                {
+                                    var isAvailable = Employee?.CanWorkInColumn(column.Id) ?? false;
+                                    var isSelected = SelectedColumnId == column.Id;
+                                    
+                                    <div class="column-tile @(isSelected ? "selected" : "") @(isAvailable ? "" : "unavailable")" 
+                                         @onclick="() => SelectColumn(column.Id, boardGroup.BoardType, isAvailable)"
+                                         data-column-id="@column.Id">
+                                        <div class="column-tile-header">
+                                            <span class="column-name">@column.Title</span>
+                                            <span class="column-status @GetColumnStatusClass(column.Id)">@GetColumnStatusText(column.Id)</span>
+                                        </div>
+                                        <div class="column-tile-body">
+                                            <small class="text-muted">@GetColumnDescription(column.Id)</small>
+                                            @if (!isAvailable)
+                                            {
+                                                <div class="unavailable-reason mt-2">
+                                                    <small class="text-danger">
+                                                        <i class="oi oi-lock-locked"></i> 
+                                                        Role not available
+                                                    </small>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
                 </div>
-                
-                @if (!string.IsNullOrEmpty(SelectedBoardType))
-                {
-                    <div class="mb-3">
-                        <label for="columnSelect" class="form-label">Select Column:</label>
-                        <select id="columnSelect" class="form-select" @bind="SelectedColumnId">
-                            <option value="">Choose a column...</option>
-                            @foreach (var column in AvailableColumns)
-                            {
-                                <option value="@column.Id">@column.Title</option>
-                            }
-                        </select>
-                    </div>
-                }
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
@@ -55,85 +67,158 @@
     [Parameter] public EventCallback OnCancel { get; set; }
     [Parameter] public EventCallback<(Employee employee, BoardType boardType, string columnId)> OnConfirm { get; set; }
 
-    private string SelectedBoardType { get; set; } = string.Empty;
     private string SelectedColumnId { get; set; } = string.Empty;
+    private BoardType SelectedBoardType { get; set; }
 
-    private List<string> AvailableBoardTypes => new List<string>
-    {
-        BoardType.Analysis.ToString(),
-        BoardType.Backend.ToString(),
-        BoardType.Frontend.ToString()
-    }.Where(bt => bt != CurrentBoardType.ToString()).ToList();
-
-    private List<ColumnOption> AvailableColumns
+    private List<BoardGroup> AvailableBoardGroups
     {
         get
         {
-            if (string.IsNullOrEmpty(SelectedBoardType))
-                return new List<ColumnOption>();
-
-            return GetColumnsForBoard(SelectedBoardType);
+            var groups = new List<BoardGroup>();
+            
+            // Add Backend Board group
+            if (CurrentBoardType != BoardType.Backend)
+            {
+                groups.Add(new BoardGroup
+                {
+                    BoardType = BoardType.Backend,
+                    AvailableColumns = GetAllColumnsForBoard(BoardType.Backend)
+                });
+            }
+            
+            // Add Frontend Board group
+            if (CurrentBoardType != BoardType.Frontend)
+            {
+                groups.Add(new BoardGroup
+                {
+                    BoardType = BoardType.Frontend,
+                    AvailableColumns = GetAllColumnsForBoard(BoardType.Frontend)
+                });
+            }
+            
+            // Add Analysis Board group
+            if (CurrentBoardType != BoardType.Analysis)
+            {
+                groups.Add(new BoardGroup
+                {
+                    BoardType = BoardType.Analysis,
+                    AvailableColumns = GetAllColumnsForBoard(BoardType.Analysis)
+                });
+            }
+            
+            return groups;
         }
     }
 
-    private bool CanConfirm => !string.IsNullOrEmpty(SelectedBoardType) && !string.IsNullOrEmpty(SelectedColumnId);
+    private bool CanConfirm => !string.IsNullOrEmpty(SelectedColumnId);
 
     protected override void OnParametersSet()
     {
         if (!IsVisible)
         {
-            SelectedBoardType = string.Empty;
             SelectedColumnId = string.Empty;
+            SelectedBoardType = BoardType.Analysis;
         }
     }
 
-    private string GetBoardDisplayName(string boardType)
+    private List<ColumnOption> GetAllColumnsForBoard(BoardType boardType)
     {
         return boardType switch
         {
-            nameof(BoardType.Analysis) => "Analysis Board",
-            nameof(BoardType.Backend) => "Backend Board",
-            nameof(BoardType.Frontend) => "Frontend Board",
-            _ => boardType
-        };
-    }
-
-    private List<ColumnOption> GetColumnsForBoard(string boardType)
-    {
-        return boardType switch
-        {
-            nameof(BoardType.Analysis) => new List<ColumnOption>
+            BoardType.Analysis => new List<ColumnOption>
             {
                 new ColumnOption { Id = "analysis1", Title = "Analysis 1" },
                 new ColumnOption { Id = "analysis2", Title = "Analysis 2" }
             },
-            nameof(BoardType.Backend) => new List<ColumnOption>
+            BoardType.Backend => new List<ColumnOption>
             {
                 new ColumnOption { Id = "backend-analysis", Title = "Analysis" },
-                new ColumnOption { Id = "backend-dev-waiting", Title = "Development Waiting" },
                 new ColumnOption { Id = "backend-dev-doing", Title = "Development Doing" },
-                new ColumnOption { Id = "backend-test-waiting", Title = "Testing Waiting" },
                 new ColumnOption { Id = "backend-test-doing", Title = "Testing Doing" }
             },
-            nameof(BoardType.Frontend) => new List<ColumnOption>
+            BoardType.Frontend => new List<ColumnOption>
             {
                 new ColumnOption { Id = "frontend-analysis", Title = "Analysis" },
-                new ColumnOption { Id = "frontend-dev-waiting", Title = "Development Waiting" },
                 new ColumnOption { Id = "frontend-dev-doing", Title = "Development Doing" },
-                new ColumnOption { Id = "frontend-test-waiting", Title = "Testing Waiting" },
                 new ColumnOption { Id = "frontend-test-doing", Title = "Testing Doing" }
             },
             _ => new List<ColumnOption>()
         };
     }
 
+    private void SelectColumn(string columnId, BoardType boardType, bool isAvailable)
+    {
+        if (isAvailable)
+        {
+            SelectedColumnId = columnId;
+            SelectedBoardType = boardType;
+            StateHasChanged();
+        }
+    }
+
+    private string GetBoardDisplayName(BoardType boardType)
+    {
+        return boardType switch
+        {
+            BoardType.Analysis => "Analysis Board",
+            BoardType.Backend => "Backend Board",
+            BoardType.Frontend => "Frontend Board",
+            _ => boardType.ToString()
+        };
+    }
+
+    private string GetColumnStatusClass(string columnId)
+    {
+        return columnId switch
+        {
+            "analysis1" or "analysis2" => "status-analysis",
+            "backend-analysis" or "frontend-analysis" => "status-analysis",
+            "backend-dev-doing" or "frontend-dev-doing" => "status-development",
+            "backend-test-doing" or "frontend-test-doing" => "status-testing",
+            _ => "status-default"
+        };
+    }
+
+    private string GetColumnStatusText(string columnId)
+    {
+        return columnId switch
+        {
+            "analysis1" or "analysis2" => "Analysis",
+            "backend-analysis" or "frontend-analysis" => "Analysis",
+            "backend-dev-doing" or "frontend-dev-doing" => "Development",
+            "backend-test-doing" or "frontend-test-doing" => "Testing",
+            _ => "General"
+        };
+    }
+
+    private string GetColumnDescription(string columnId)
+    {
+        return columnId switch
+        {
+            "analysis1" => "High-level analysis and requirements gathering",
+            "analysis2" => "Detailed analysis and technical specifications",
+            "backend-analysis" => "Backend requirements and API design",
+            "frontend-analysis" => "Frontend requirements and UI design",
+            "backend-dev-doing" => "Active backend development",
+            "frontend-dev-doing" => "Active frontend development",
+            "backend-test-doing" => "Backend testing and QA",
+            "frontend-test-doing" => "Frontend testing and QA",
+            _ => "Work in progress"
+        };
+    }
+
     private async Task OnConfirmClicked()
     {
-        if (Employee != null && !string.IsNullOrEmpty(SelectedBoardType) && !string.IsNullOrEmpty(SelectedColumnId))
+        if (Employee != null && !string.IsNullOrEmpty(SelectedColumnId))
         {
-            var boardType = Enum.Parse<BoardType>(SelectedBoardType);
-            await OnConfirm.InvokeAsync((Employee, boardType, SelectedColumnId));
+            await OnConfirm.InvokeAsync((Employee, SelectedBoardType, SelectedColumnId));
         }
+    }
+
+    public class BoardGroup
+    {
+        public BoardType BoardType { get; set; }
+        public List<ColumnOption> AvailableColumns { get; set; } = new();
     }
 
     public class ColumnOption
