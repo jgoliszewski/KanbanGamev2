@@ -46,26 +46,55 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public ActionResult<Employee> UpdateEmployee(Guid id, Employee employee)
+    public async Task<ActionResult<Employee>> UpdateEmployee(Guid id, Employee employee)
     {
         if (id != employee.Id)
             return BadRequest();
 
-        try
-        {
-            var updated = _employeeService.UpdateEmployee(employee);
-            return Ok(updated);
-        }
-        catch (ArgumentException)
-        {
-            return NotFound();
-        }
+        var updatedEmployee = await _employeeService.UpdateEmployee(employee);
+        return Ok(updatedEmployee);
+    }
+
+    [HttpPost("{id}/vacation")]
+    public async Task<ActionResult> SendEmployeeOnVacation(Guid id, [FromQuery] int days)
+    {
+        var result = await _employeeService.SendEmployeeOnVacationAsync(id, days);
+        if (result)
+            return Ok();
+        return NotFound();
+    }
+
+    [HttpPost("{id}/end-vacation")]
+    public async Task<ActionResult> EndEmployeeVacation(Guid id)
+    {
+        var result = await _employeeService.EndEmployeeVacationAsync(id);
+        if (result)
+            return Ok();
+        return NotFound();
+    }
+
+    [HttpPost("{id}/fire")]
+    public async Task<ActionResult> FireEmployee(Guid id)
+    {
+        var result = await _employeeService.FireEmployeeAsync(id);
+        if (result)
+            return Ok();
+        return NotFound();
+    }
+
+    [HttpPost("{id}/rehire")]
+    public async Task<ActionResult> RehireEmployee(Guid id)
+    {
+        var result = await _employeeService.RehireEmployeeAsync(id);
+        if (result)
+            return Ok();
+        return NotFound();
     }
 
     [HttpDelete("{id}")]
-    public ActionResult DeleteEmployee(Guid id)
+    public async Task<ActionResult> DeleteEmployee(Guid id)
     {
-        var deleted = _employeeService.DeleteEmployee(id);
+        var deleted = await _employeeService.DeleteEmployee(id);
         if (!deleted)
             return NotFound();
         return NoContent();

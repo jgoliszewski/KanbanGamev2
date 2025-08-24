@@ -38,6 +38,7 @@
         SignalRService.BoardUpdated += OnBoardUpdated;
         SignalRService.RefreshAllBoards += OnRefreshAllBoards;
         SignalRService.EmployeeMoved += OnEmployeeMoved;
+        SignalRService.EmployeeStatusChanged += OnEmployeeStatusChanged;
         }
         finally
         {
@@ -210,10 +211,20 @@
         }
     }
 
+    private async void OnEmployeeStatusChanged(Employee employee, EmployeeStatus oldStatus, EmployeeStatus newStatus)
+    {
+        // When employee status changes, we need to update the board data
+        // to reflect the new status (e.g., fired employees disappear, vacation employees are hidden)
+        await LoadData();
+        OrganizeColumns();
+        StateHasChanged();
+    }
+
     public void Dispose()
     {
         SignalRService.BoardUpdated -= OnBoardUpdated;
         SignalRService.RefreshAllBoards -= OnRefreshAllBoards;
         SignalRService.EmployeeMoved -= OnEmployeeMoved;
+        SignalRService.EmployeeStatusChanged -= OnEmployeeStatusChanged;
     }
 } 

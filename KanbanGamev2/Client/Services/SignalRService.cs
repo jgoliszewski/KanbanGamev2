@@ -29,6 +29,9 @@ public class SignalRService : ISignalRService, IAsyncDisposable
     public event Action? HideLoader;
     public event Action? RefreshAllBoards;
     public event Action<string, string, string>? GlobalNotificationReceived;
+    public event Action<string, string, string>? BoardUpdateReceived;
+    public event Action<string, string, string>? EmployeeMoveReceived;
+    public event Action<Employee, EmployeeStatus, EmployeeStatus>? EmployeeStatusChanged;
 
     public SignalRService(string baseUrl)
     {
@@ -121,6 +124,11 @@ public class SignalRService : ISignalRService, IAsyncDisposable
         _hubConnection.On<Employee, BoardType, string, BoardType>("EmployeeMoved", (employee, boardType, columnId, originalBoardType) =>
         {
             EmployeeMoved?.Invoke(employee, boardType, columnId, originalBoardType);
+        });
+
+        _hubConnection.On<Employee, EmployeeStatus, EmployeeStatus>("EmployeeStatusChanged", (employee, oldStatus, newStatus) =>
+        {
+            EmployeeStatusChanged?.Invoke(employee, oldStatus, newStatus);
         });
 
         // Handle connection state changes

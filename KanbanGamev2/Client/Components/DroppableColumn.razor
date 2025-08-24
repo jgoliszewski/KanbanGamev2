@@ -45,7 +45,7 @@
         get
         {
             var sortedCards = new List<Card>();
-            var employees = Cards.OfType<Employee>().ToList();
+            var employees = Cards.OfType<Employee>().Where(e => e.Status == EmployeeStatus.Active).ToList();
             var workItems = Cards.Where(c => c is KanbanTask || c is Feature).ToList();
 
             // Add employees first

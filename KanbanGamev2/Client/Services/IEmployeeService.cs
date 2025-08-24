@@ -10,7 +10,14 @@ public interface IEmployeeService
     Task<Employee> CreateEmployee(Employee employee);
     Task<Employee> UpdateEmployee(Employee employee);
     Task<bool> DeleteEmployee(Guid id);
-    Task<List<Employee>> GetAvailableEmployees();
+    Task<List<Employee>> GetEmployeesByColumnAsync(string columnId);
+    Task<List<Employee>> GetAvailableEmployeesAsync();
+    
+    // New Game Master methods
+    Task<bool> SendEmployeeOnVacationAsync(Guid employeeId, int days);
+    Task<bool> EndEmployeeVacationAsync(Guid employeeId);
+    Task<bool> FireEmployeeAsync(Guid employeeId);
+    Task<bool> RehireEmployeeAsync(Guid employeeId);
     Task<bool> UnassignWorkFromEmployee(Guid employeeId);
     Task UpdateEmployees();
     Task<bool> MoveEmployee(Guid employeeId, BoardType boardType, string columnId);

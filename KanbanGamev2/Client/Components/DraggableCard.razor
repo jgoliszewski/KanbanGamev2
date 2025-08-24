@@ -153,55 +153,26 @@
 
     private string GetEmployeeAvatar(string employeeName)
     {
-        // Map employee names to avatar files
+        // Map employee names to available avatar files
+        // Since most seeded employee names don't have matching avatar files,
+        // we'll assign them to available avatars for consistency
         var avatarMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            { "John Doe", "john.png" },
-            { "Jane Smith", "jane.png" },
-            { "Mike Johnson", "mike.png" },
-            { "Sarah Wilson", "sarah.png" },
-            { "David Brown", "david.png" },
-            { "Alice Johnson", "alice.png" },
-            { "Bob Wilson", "bob.png" },
-            { "Emma Davis", "emma.png" },
-            { "Frank Miller", "frank.png" },
-            { "Grace Lee", "grace.png" },
-            { "Henry Chen", "henry.png" },
-            { "Ivy Rodriguez", "ivy.png" },
-            { "Jack Thompson", "jack.png" },
-            { "Kevin O'Brien", "kevin.png" },
-            { "Liam Anderson", "liam.png" },
-            { "Mark Taylor", "mark.png" },
-            { "Nathan Garcia", "nathan.png" },
-            { "Oliver Martinez", "oliver.png" },
-            { "Paul Robinson", "paul.png" },
-            { "Quentin White", "quentin.png" },
-            { "Ryan Clark", "ryan.png" },
-            { "Sam Lewis", "sam.png" },
-            { "Tom Hall", "tom.png" },
-            { "Alex Turner", "alex.png" },
-            { "Beth Cooper", "beth.png" },
-            { "Charles Murphy", "charles.png" },
-            { "Claire Bennett", "claire.png" },
-            { "Diana Prince", "diana.png" },
-            { "Ethan Hunt", "ethan.png" },
-            { "Fiona Gallagher", "fiona.png" },
-            { "George Costanza", "george.png" },
-            { "Hannah Montana", "hannah.png" },
-            { "Isaac Newton", "isaac.png" },
-            { "Julia Roberts", "julia.png" },
-            { "Brian Johnson", "brian.png" }
+            { "John Doe", "alex.png" },        // Use available avatar
+            { "Jane Smith", "beth.png" },      // Use available avatar
+            { "Mike Johnson", "claire.png" },  // Use available avatar
+            { "Sarah Wilson", "diana.png" },   // Use available avatar
+            { "David Brown", "david.png" }     // This one exists!
         };
 
-        // Try to find a matching avatar, fallback to a default one
         if (avatarMap.TryGetValue(employeeName, out var avatarFile))
         {
             return $"Avatars/{avatarFile}";
         }
 
-        // Fallback to a default avatar based on name hash
+        // For any other names, use a hash-based fallback to ensure consistent avatars
         var hash = Math.Abs(employeeName.GetHashCode());
-        var defaultAvatars = new[] { "alex.png", "beth.png", "claire.png", "diana.png", "emma.png", "fiona.png", "grace.png", "hannah.png" };
+        var defaultAvatars = new[] { "emma.png", "fiona.png", "grace.png", "hannah.png", "henry.png", "ivy.png", "jack.png", "kevin.png" };
         var defaultAvatar = defaultAvatars[hash % defaultAvatars.Length];
         return $"Avatars/{defaultAvatar}";
     }

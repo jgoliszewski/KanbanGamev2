@@ -51,8 +51,95 @@ public class EmployeeService : IEmployeeService
 
     public async Task<List<Employee>> GetAvailableEmployees()
     {
-        var result = await _http.GetFromJsonAsync<List<Employee>>("api/employee/available");
-        return result ?? new List<Employee>();
+        return await GetAvailableEmployeesAsync();
+    }
+
+    public async Task<List<Employee>> GetAvailableEmployeesAsync()
+    {
+        await GetEmployees();
+        return Employees.Where(e => e.Status == EmployeeStatus.Active && !e.IsWorking).ToList();
+    }
+
+    public async Task<List<Employee>> GetEmployeesByColumnAsync(string columnId)
+    {
+        await GetEmployees();
+        return Employees.Where(e => e.ColumnId == columnId && e.Status == EmployeeStatus.Active).ToList();
+    }
+
+    public async Task<bool> SendEmployeeOnVacationAsync(Guid employeeId, int days)
+    {
+        try
+        {
+            var response = await _http.PostAsync($"api/employee/{employeeId}/vacation?days={days}", null);
+            if (response.IsSuccessStatusCode)
+            {
+                await GetEmployees();
+                return true;
+            }
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error sending employee on vacation: {ex.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> EndEmployeeVacationAsync(Guid employeeId)
+    {
+        try
+        {
+            var response = await _http.PostAsync($"api/employee/{employeeId}/end-vacation", null);
+            if (response.IsSuccessStatusCode)
+            {
+                await GetEmployees();
+                return true;
+            }
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error ending employee vacation: {ex.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> FireEmployeeAsync(Guid employeeId)
+    {
+        try
+        {
+            var response = await _http.PostAsync($"api/employee/{employeeId}/fire", null);
+            if (response.IsSuccessStatusCode)
+            {
+                await GetEmployees();
+                return true;
+            }
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error firing employee: {ex.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> RehireEmployeeAsync(Guid employeeId)
+    {
+        try
+        {
+            var response = await _http.PostAsync($"api/employee/{employeeId}/rehire", null);
+            if (response.IsSuccessStatusCode)
+            {
+                await GetEmployees();
+                return true;
+            }
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error rehiring employee: {ex.Message}");
+            return false;
+        }
     }
 
     public async Task<bool> UnassignWorkFromEmployee(Guid employeeId)

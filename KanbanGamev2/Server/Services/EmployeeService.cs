@@ -4,10 +4,13 @@ namespace KanbanGamev2.Server.Services;
 
 public class EmployeeService : IEmployeeService
 {
-    private List<Employee> _employees = new();
+    private List<Employee> _employees;
+    private readonly INotificationService _notificationService;
 
-    public EmployeeService()
+    public EmployeeService(INotificationService notificationService)
     {
+        _notificationService = notificationService;
+        _employees = new List<Employee>();
         SeedData();
     }
 
@@ -34,37 +37,33 @@ public class EmployeeService : IEmployeeService
         return employee;
     }
 
-    public Employee UpdateEmployee(Employee employee)
+    public async Task<Employee> UpdateEmployee(Employee employee)
     {
-        var existing = _employees.FirstOrDefault(e => e.Id == employee.Id);
-        if (existing != null)
-        {
-            existing.Name = employee.Name;
-            existing.LearnedRoles = employee.LearnedRoles;
-            existing.LearnableRoles = employee.LearnableRoles;
-            existing.Department = employee.Department;
-            existing.Email = employee.Email;
-            existing.IsAvailable = employee.IsAvailable;
-            existing.ColumnId = employee.ColumnId;
-            existing.Order = employee.Order;
-            existing.AssignedTaskId = employee.AssignedTaskId;
-            existing.AssignedFeatureId = employee.AssignedFeatureId;
-            existing.Seniority = employee.Seniority;
-            existing.UpdatedAt = DateTime.Now;
-            return existing;
-        }
-        throw new ArgumentException("Employee not found");
+        var existingEmployee = _employees.FirstOrDefault(e => e.Id == employee.Id);
+        if (existingEmployee == null)
+            throw new ArgumentException("Employee not found");
+
+        // Update properties
+        existingEmployee.Name = employee.Name;
+        existingEmployee.Email = employee.Email;
+        existingEmployee.LearnedRoles = employee.LearnedRoles;
+        existingEmployee.LearnableRoles = employee.LearnableRoles;
+        existingEmployee.Department = employee.Department;
+        existingEmployee.Seniority = employee.Seniority;
+        existingEmployee.ColumnId = employee.ColumnId;
+        existingEmployee.Status = employee.Status;
+        existingEmployee.VacationStartDate = employee.VacationStartDate;
+        existingEmployee.VacationEndDate = employee.VacationEndDate;
+
+        return existingEmployee;
     }
 
-    public bool DeleteEmployee(Guid id)
+    public async Task<bool> DeleteEmployee(Guid id)
     {
         var employee = _employees.FirstOrDefault(e => e.Id == id);
-        if (employee != null)
-        {
-            _employees.Remove(employee);
-            return true;
-        }
-        return false;
+        if (employee == null) return false;
+
+        return _employees.Remove(employee);
     }
 
     public List<Employee> GetEmployeesByColumn(string columnId)
@@ -76,218 +75,70 @@ public class EmployeeService : IEmployeeService
     {
         _employees = new List<Employee>
         {
-            // Analysis Board - 2 employees in each worker column
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Name = "Alex Turner",
-                LearnedRoles = new List<Role> { Role.HighLevelAnalyst, Role.Analyst },
-                LearnableRoles = new List<Role> { Role.Tester },
+                Name = "John Doe",
+                Email = "john.doe@company.com",
+                LearnedRoles = new List<Role> { Role.Analyst },
+                LearnableRoles = new List<Role> { Role.HighLevelAnalyst, Role.Tester },
                 Department = Department.Engineering,
-                Email = "alex.turner@company.com",
-                IsAvailable = true,
+                Seniority = Seniority.Mid,
+                BoardType = BoardType.Analysis,
                 ColumnId = "analysis1",
-                Order = 1,
-                Seniority = Seniority.Senior
+                Status = EmployeeStatus.Active
             },
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Name = "Emma Davis",
-                LearnedRoles = new List<Role> { Role.Analyst, Role.Tester },
-                LearnableRoles = new List<Role> { Role.HighLevelAnalyst },
-                Department = Department.Product,
-                Email = "emma.davis@company.com",
-                IsAvailable = true,
-                ColumnId = "analysis1",
-                Order = 2,
-                Seniority = Seniority.Mid
-            },
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Ivy Rodriguez",
-                LearnedRoles = new List<Role> { Role.HighLevelAnalyst, Role.Analyst, Role.Developer },
-                LearnableRoles = new List<Role>(),
-                Department = Department.Product,
-                Email = "ivy.rodriguez@company.com",
-                IsAvailable = true,
-                ColumnId = "analysis2",
-                Order = 1,
-                Seniority = Seniority.Senior
-            },
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Jack Thompson",
-                LearnedRoles = new List<Role> { Role.Analyst, Role.Developer },
-                LearnableRoles = new List<Role> { Role.HighLevelAnalyst },
-                Department = Department.Engineering,
-                Email = "jack.thompson@company.com",
-                IsAvailable = true,
-                ColumnId = "analysis2",
-                Order = 2,
-                Seniority = Seniority.Junior
-            },
-            
-            // Backend Board - 2 employees in each worker column
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Beth Cooper",
-                LearnedRoles = new List<Role> { Role.Developer, Role.Analyst },
-                LearnableRoles = new List<Role> { Role.Tester },
-                Department = Department.Engineering,
-                Email = "beth.cooper@company.com",
-                IsAvailable = true,
-                ColumnId = "backend-analysis",
-                Order = 1,
-                Seniority = Seniority.Senior
-            },
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Kevin O'Brien",
-                LearnedRoles = new List<Role> { Role.Developer, Role.Tester },
-                LearnableRoles = new List<Role> { Role.Analyst },
-                Department = Department.Engineering,
-                Email = "kevin.obrien@company.com",
-                IsAvailable = true,
-                ColumnId = "backend-analysis",
-                Order = 2,
-                Seniority = Seniority.Mid
-            },
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Liam Anderson",
-                LearnedRoles = new List<Role> { Role.Developer, Role.Analyst, Role.Tester },
-                LearnableRoles = new List<Role>(),
-                Department = Department.Engineering,
-                Email = "liam.anderson@company.com",
-                IsAvailable = true,
-                ColumnId = "backend-dev-doing",
-                Order = 1,
-                Seniority = Seniority.Senior
-            },
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Mark Taylor",
+                Name = "Jane Smith",
+                Email = "jane.smith@company.com",
                 LearnedRoles = new List<Role> { Role.Developer },
                 LearnableRoles = new List<Role> { Role.Analyst, Role.Tester },
                 Department = Department.Engineering,
-                Email = "mark.taylor@company.com",
-                IsAvailable = true,
+                Seniority = Seniority.Senior,
+                BoardType = BoardType.Backend,
                 ColumnId = "backend-dev-doing",
-                Order = 2,
-                Seniority = Seniority.Junior
+                Status = EmployeeStatus.Active
+            },
+            new Employee
+            {
+                Id = Guid.NewGuid(),
+                Name = "Mike Johnson",
+                Email = "mike.johnson@company.com",
+                LearnedRoles = new List<Role> { Role.Tester },
+                LearnableRoles = new List<Role> { Role.Analyst, Role.Developer },
+                Department = Department.Engineering,
+                Seniority = Seniority.Junior,
+                BoardType = BoardType.Backend,
+                ColumnId = "backend-test-doing",
+                Status = EmployeeStatus.Active
+            },
+            new Employee
+            {
+                Id = Guid.NewGuid(),
+                Name = "Sarah Wilson",
+                Email = "sarah.wilson@company.com",
+                LearnedRoles = new List<Role> { Role.HighLevelAnalyst },
+                LearnableRoles = new List<Role> { Role.Analyst, Role.Tester },
+                Department = Department.Engineering,
+                Seniority = Seniority.Senior,
+                BoardType = BoardType.Analysis,
+                ColumnId = "analysis2",
+                Status = EmployeeStatus.Active
             },
             new Employee
             {
                 Id = Guid.NewGuid(),
                 Name = "David Brown",
-                LearnedRoles = new List<Role> { Role.Tester, Role.Analyst },
-                LearnableRoles = new List<Role> { Role.Developer },
-                Department = Department.QualityAssurance,
                 Email = "david.brown@company.com",
-                IsAvailable = true,
-                ColumnId = "backend-test-doing",
-                Order = 1,
-                Seniority = Seniority.Mid
-            },
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Nathan Garcia",
-                LearnedRoles = new List<Role> { Role.Tester },
-                LearnableRoles = new List<Role> { Role.Analyst, Role.Developer },
-                Department = Department.QualityAssurance,
-                Email = "nathan.garcia@company.com",
-                IsAvailable = true,
-                ColumnId = "backend-test-doing",
-                Order = 2,
-                Seniority = Seniority.Junior
-            },
-            
-            // Frontend Board - 2 employees in each worker column
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Claire Bennett",
-                LearnedRoles = new List<Role> { Role.Analyst, Role.Developer },
-                LearnableRoles = new List<Role> { Role.HighLevelAnalyst },
+                LearnedRoles = new List<Role> { Role.Developer },
+                LearnableRoles = new List<Role> { Role.Analyst, Role.Tester },
                 Department = Department.Engineering,
-                Email = "claire.bennett@company.com",
-                IsAvailable = true,
-                ColumnId = "frontend-analysis",
-                Order = 1,
-                Seniority = Seniority.Mid
-            },
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Oliver Martinez",
-                LearnedRoles = new List<Role> { Role.Analyst, Role.HighLevelAnalyst },
-                LearnableRoles = new List<Role> { Role.Developer },
-                Department = Department.Engineering,
-                Email = "oliver.martinez@company.com",
-                IsAvailable = true,
-                ColumnId = "frontend-analysis",
-                Order = 2,
-                Seniority = Seniority.Junior
-            },
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Frank Miller",
-                LearnedRoles = new List<Role> { Role.Developer, Role.Tester },
-                LearnableRoles = new List<Role> { Role.Analyst },
-                Department = Department.Design,
-                Email = "frank.miller@company.com",
-                IsAvailable = true,
+                Seniority = Seniority.Mid,
+                BoardType = BoardType.Frontend,
                 ColumnId = "frontend-dev-doing",
-                Order = 1,
-                Seniority = Seniority.Senior
-            },
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Paul Robinson",
-                LearnedRoles = new List<Role> { Role.Developer, Role.Analyst },
-                LearnableRoles = new List<Role> { Role.Tester },
-                Department = Department.Engineering,
-                Email = "paul.robinson@company.com",
-                IsAvailable = true,
-                ColumnId = "frontend-dev-doing",
-                Order = 2,
-                Seniority = Seniority.Mid
-            },
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Grace Lee",
-                LearnedRoles = new List<Role> { Role.Tester, Role.Analyst },
-                LearnableRoles = new List<Role> { Role.Developer },
-                Department = Department.Design,
-                Email = "grace.lee@company.com",
-                IsAvailable = true,
-                ColumnId = "frontend-test-doing",
-                Order = 1,
-                Seniority = Seniority.Senior
-            },
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Quentin White",
-                LearnedRoles = new List<Role> { Role.Tester, Role.Developer },
-                LearnableRoles = new List<Role> { Role.Analyst },
-                Department = Department.QualityAssurance,
-                Email = "quentin.white@company.com",
-                IsAvailable = true,
-                ColumnId = "frontend-test-doing",
-                Order = 2,
-                Seniority = Seniority.Junior
+                Status = EmployeeStatus.Active
             }
         };
     }
@@ -321,12 +172,136 @@ public class EmployeeService : IEmployeeService
     public bool MoveEmployee(Guid id, BoardType boardType, string columnId)
     {
         var employee = _employees.FirstOrDefault(e => e.Id == id);
-        if (employee != null)
+        if (employee == null) return false;
+
+        employee.ColumnId = columnId;
+        return true;
+    }
+
+    public async Task<bool> SendEmployeeOnVacationAsync(Guid employeeId, int days)
+    {
+        var employee = _employees.FirstOrDefault(e => e.Id == employeeId);
+        if (employee == null) return false;
+
+        var oldStatus = employee.Status;
+
+        // Unassign any current work
+        UnassignWorkFromEmployee(employeeId);
+
+        // Set vacation status
+        employee.Status = EmployeeStatus.OnVacation;
+        employee.VacationStartDate = DateTime.Now;
+        employee.VacationEndDate = DateTime.Now.AddDays(days);
+
+        // Send notification and status change signal
+        await _notificationService.SendGlobalNotificationAsync("Employee Vacation", 
+            $"{employee.Name} has been sent on vacation for {days} days.", 
+            "Info");
+        
+        await _notificationService.NotifyEmployeeStatusChangedAsync(employee, oldStatus, employee.Status);
+
+        return true;
+    }
+
+    public async Task<bool> EndEmployeeVacationAsync(Guid employeeId)
+    {
+        var employee = _employees.FirstOrDefault(e => e.Id == employeeId);
+        if (employee == null) return false;
+
+        var oldStatus = employee.Status;
+
+        // Clear vacation status
+        employee.Status = EmployeeStatus.Active;
+        employee.VacationStartDate = null;
+        employee.VacationEndDate = null;
+
+        // Send notification and status change signal
+        await _notificationService.SendGlobalNotificationAsync("Vacation Ended", 
+            $"{employee.Name} has returned from vacation and is now active.", 
+            "Success");
+        
+        await _notificationService.NotifyEmployeeStatusChangedAsync(employee, oldStatus, employee.Status);
+
+        return true;
+    }
+
+    public async Task<bool> FireEmployeeAsync(Guid employeeId)
+    {
+        var employee = _employees.FirstOrDefault(e => e.Id == employeeId);
+        if (employee == null) return false;
+
+        var oldStatus = employee.Status;
+
+        // Unassign any current work
+        UnassignWorkFromEmployee(employeeId);
+
+        // Set fired status
+        employee.Status = EmployeeStatus.Fired;
+        employee.VacationStartDate = null;
+        employee.VacationEndDate = null;
+
+        // Send notification and status change signal
+        await _notificationService.SendGlobalNotificationAsync("Employee Fired", 
+            $"{employee.Name} has been fired from the company.", 
+            "Warning");
+        
+        await _notificationService.NotifyEmployeeStatusChangedAsync(employee, oldStatus, employee.Status);
+
+        return true;
+    }
+
+    public async Task<bool> RehireEmployeeAsync(Guid employeeId)
+    {
+        var employee = _employees.FirstOrDefault(e => e.Id == employeeId);
+        if (employee == null) return false;
+
+        var oldStatus = employee.Status; // Capture old status
+
+        // Reset employee status
+        employee.Status = EmployeeStatus.Active;
+        employee.VacationStartDate = null;
+        employee.VacationEndDate = null;
+
+        // Send notification and status change signal
+        await _notificationService.SendGlobalNotificationAsync("Employee Rehired",
+            $"{employee.Name} has been rehired and is now active.",
+            "Success");
+        await _notificationService.NotifyEmployeeStatusChangedAsync(employee, oldStatus, employee.Status);
+
+        return true;
+    }
+
+    public async Task CheckAndProcessVacationEndsAsync()
+    {
+        var today = DateTime.Today;
+        var employeesToEndVacation = _employees
+            .Where(e => e.Status == EmployeeStatus.OnVacation && 
+                       e.VacationEndDate.HasValue && 
+                       e.VacationEndDate.Value.Date <= today)
+            .ToList();
+
+        foreach (var employee in employeesToEndVacation)
         {
-            employee.ColumnId = columnId;
-            employee.UpdatedAt = DateTime.Now;
-            return true;
+            var oldStatus = employee.Status;
+            employee.Status = EmployeeStatus.Active;
+            employee.VacationStartDate = null;
+            employee.VacationEndDate = null;
+
+            // Send notification and status change signal
+            await _notificationService.SendGlobalNotificationAsync("Vacation Ended",
+                $"{employee.Name} has returned from vacation and is now active.",
+                "Success");
+            await _notificationService.NotifyEmployeeStatusChangedAsync(employee, oldStatus, employee.Status);
         }
-        return false;
+    }
+
+    public async Task<List<Employee>> GetEmployeesByColumnAsync(string columnId)
+    {
+        return _employees.Where(e => e.ColumnId == columnId && e.Status == EmployeeStatus.Active).ToList();
+    }
+
+    public async Task<List<Employee>> GetAvailableEmployeesAsync()
+    {
+        return _employees.Where(e => e.Status == EmployeeStatus.Active && !e.IsWorking).ToList();
     }
 } 

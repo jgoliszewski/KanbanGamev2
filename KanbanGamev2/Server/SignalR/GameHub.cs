@@ -94,6 +94,11 @@ public class GameHub : Hub
         await Clients.All.SendAsync("EmployeeMoved", employee, boardType, columnId, originalBoardType);
     }
 
+    public async Task NotifyEmployeeStatusChanged(Employee employee, EmployeeStatus oldStatus, EmployeeStatus newStatus)
+    {
+        await Clients.All.SendAsync("EmployeeStatusChanged", employee, oldStatus, newStatus);
+    }
+
     public static int GetConnectedCount() => _connectedUsers.Count;
     public static int GetReadyCount() => _readyUsers.Count;
 }

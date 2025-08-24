@@ -11,10 +11,16 @@ public class Employee : Card
     public string Email { get; set; } = string.Empty;
     public bool IsAvailable { get; set; } = true;
     public Seniority Seniority { get; set; } = Seniority.Junior;
+    public BoardType BoardType { get; set; } = BoardType.Analysis;
     
     // Work assignment properties
     public Guid? AssignedTaskId { get; set; }
     public Guid? AssignedFeatureId { get; set; }
+    
+    // Employee status properties
+    public EmployeeStatus Status { get; set; } = EmployeeStatus.Active;
+    public DateTime? VacationStartDate { get; set; }
+    public DateTime? VacationEndDate { get; set; }
     
     // Computed property to check if employee is working on something
     public bool IsWorking => AssignedTaskId.HasValue || AssignedFeatureId.HasValue;

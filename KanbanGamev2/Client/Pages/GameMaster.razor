@@ -1,0 +1,476 @@
+@page "/gamemaster"
+@using KanbanGame.Shared
+@using KanbanGamev2.Client.Services
+@inject IEmployeeService EmployeeService
+@inject INotificationService NotificationService
+@inject ISignalRService SignalRService
+@implements IDisposable
+@implements IAsyncDisposable
+
+<PageTitle>Game Master Panel</PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">
+                    <i class="oi oi-crown text-warning"></i> Game Master Panel
+                </h2>
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-outline-primary btn-sm" @onclick="RefreshData" title="Refresh data">
+                        <i class="oi oi-reload"></i> Refresh
+                    </button>
+                    <div class="text-muted">
+                        <small>Manage employees and game state</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="oi oi-people"></i> Employee Management
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (_employees == null)
+                    {
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Roles</th>
+                                        <th>Seniority</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var employee in _employees)
+                                    {
+                                        <tr class="@(employee.Status == EmployeeStatus.Fired ? "table-danger" : employee.Status == EmployeeStatus.OnVacation ? "table-warning" : "")">
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="@GetEmployeeAvatar(employee.Name)" alt="@employee.Name" class="rounded-circle me-3" style="width: 40px; height: 40px;" />
+                                                    <div>
+                                                        <div class="fw-bold">@employee.Name</div>
+                                                        <small class="text-muted">@employee.Email</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex gap-1 flex-wrap">
+                                                    @foreach (var role in employee.LearnedRoles)
+                                                    {
+                                                        <span class="badge @GetRoleBadgeClass(role)">@GetRoleInitial(role)</span>
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge @GetSeniorityBadgeClass(employee.Seniority)">
+                                                    @employee.Seniority.GetDisplayName()
+                                                </span>
+                                            </td>
+                                            <td>
+                                                @switch (employee.Status)
+                                                {
+                                                    case EmployeeStatus.Active:
+                                                        <span class="badge bg-success">Active</span>
+                                                        break;
+                                                    case EmployeeStatus.OnVacation:
+                                                        <div>
+                                                            <span class="badge bg-warning mb-1">
+                                                                Vacation
+                                                            </span>
+                                                            @if (employee.VacationEndDate.HasValue)
+                                                            {
+                                                                var daysLeft = GetDaysLeft(employee.VacationEndDate.Value);
+                                                                var hoursLeft = GetHoursLeft(employee.VacationEndDate.Value);
+                                                                <div class="small text-muted">
+                                                                    @if (daysLeft > 0)
+                                                                    {
+                                                                        <span class="text-info">
+                                                                            <i class="oi oi-clock"></i> @daysLeft day@(daysLeft == 1 ? "" : "s") left
+                                                                        </span>
+                                                                    }
+                                                                    else if (daysLeft == 0 && hoursLeft > 0)
+                                                                    {
+                                                                        <span class="text-warning">
+                                                                            <i class="oi oi-clock"></i> @hoursLeft hour@(hoursLeft == 1 ? "" : "s") left
+                                                                        </span>
+                                                                    }
+                                                                    else if (daysLeft == 0 && hoursLeft == 0)
+                                                                    {
+                                                                        <span class="text-success">
+                                                                            <i class="oi oi-check"></i> Returns today
+                                                                        </span>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span class="text-danger">
+                                                                            <i class="oi oi-warning"></i> Overdue (@Math.Abs(daysLeft) day@(Math.Abs(daysLeft) == 1 ? "" : "s") overdue)
+                                                                        </span>
+                                                                    }
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                        break;
+                                                    case EmployeeStatus.Fired:
+                                                        <span class="badge bg-danger">Fired</span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    @if (employee.Status == EmployeeStatus.Active)
+                                                    {
+                                                        <button class="btn btn-warning btn-sm" @onclick="() => ShowVacationModal(employee)" title="Send on Vacation">
+                                                            <i class="oi oi-sun"></i>
+                                                        </button>
+                                                        <button class="btn btn-danger btn-sm" @onclick="() => ShowFireModal(employee)" title="Fire Employee">
+                                                            <i class="oi oi-x"></i>
+                                                        </button>
+                                                    }
+                                                    else if (employee.Status == EmployeeStatus.OnVacation)
+                                                    {
+                                                        <button class="btn btn-success btn-sm" @onclick="() => EndVacation(employee)" title="End Vacation Early">
+                                                            <i class="oi oi-check"></i>
+                                                        </button>
+                                                    }
+                                                    else if (employee.Status == EmployeeStatus.Fired)
+                                                    {
+                                                        <button class="btn btn-success btn-sm" @onclick="() => RehireEmployee(employee)" title="Rehire Employee">
+                                                            <i class="oi oi-plus"></i>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (_showVacationModal)
+{
+    <div class="modal fade show" style="display: block;" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">
+                        <i class="oi oi-sun"></i> Send Employee on Vacation
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CloseVacationModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Send <strong>@_selectedEmployee?.Name</strong> on vacation?</p>
+                    <div class="mb-3">
+                        <label class="form-label">Vacation Duration</label>
+                        <select class="form-select" @bind="_vacationDuration">
+                            <option value="7">1 Week</option>
+                            <option value="14">2 Weeks</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseVacationModal">Cancel</button>
+                    <button type="button" class="btn btn-warning" @onclick="SendOnVacation">Send on Vacation</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+@if (_showFireModal)
+{
+    <div class="modal fade show" style="display: block;" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="oi oi-x"></i> Fire Employee
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CloseFireModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <h6 class="alert-heading">Warning: This action cannot be undone!</h6>
+                        <p class="mb-0">Are you sure you want to fire <strong>@_selectedEmployee?.Name</strong>?</p>
+                    </div>
+                    <p class="text-muted small">
+                        The employee will be removed from all boards and their work will be unassigned.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseFireModal">Cancel</button>
+                    <button type="button" class="btn btn-danger" @onclick="FireEmployee">Fire Employee</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    private List<Employee>? _employees;
+    private bool _showVacationModal = false;
+    private bool _showFireModal = false;
+    private Employee? _selectedEmployee;
+    private int _vacationDuration = 7;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEmployees();
+        SignalRService.EmployeeStatusChanged += OnEmployeeStatusChanged;
+    }
+
+    private async Task LoadEmployees()
+    {
+        try
+        {
+            await EmployeeService.GetEmployees();
+            _employees = EmployeeService.Employees;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading employees: {ex.Message}");
+        }
+    }
+
+    private void ShowVacationModal(Employee employee)
+    {
+        _selectedEmployee = employee;
+        _showVacationModal = true;
+        StateHasChanged();
+    }
+
+    private void CloseVacationModal()
+    {
+        _showVacationModal = false;
+        _selectedEmployee = null;
+        StateHasChanged();
+    }
+
+    private void ShowFireModal(Employee employee)
+    {
+        _selectedEmployee = employee;
+        _showFireModal = true;
+        StateHasChanged();
+    }
+
+    private void CloseFireModal()
+    {
+        _showFireModal = false;
+        _selectedEmployee = null;
+        StateHasChanged();
+    }
+
+    private async Task SendOnVacation()
+    {
+        if (_selectedEmployee == null) return;
+
+        try
+        {
+            await EmployeeService.SendEmployeeOnVacationAsync(_selectedEmployee.Id, _vacationDuration);
+            await NotificationService.ShowGlobalNotificationAsync(
+                "Employee Vacation", 
+                $"{_selectedEmployee.Name} has been sent on vacation for {(_vacationDuration == 7 ? "1 week" : "2 weeks")}.", 
+                NotificationType.Info
+            );
+            
+            CloseVacationModal();
+            await LoadEmployees();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error sending employee on vacation: {ex.Message}");
+        }
+    }
+
+    private async Task FireEmployee()
+    {
+        if (_selectedEmployee == null) return;
+
+        try
+        {
+            await EmployeeService.FireEmployeeAsync(_selectedEmployee.Id);
+            await NotificationService.ShowGlobalNotificationAsync(
+                "Employee Fired", 
+                $"{_selectedEmployee.Name} has been fired from the company.", 
+                NotificationType.Warning
+            );
+            
+            CloseFireModal();
+            await LoadEmployees();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error firing employee: {ex.Message}");
+        }
+    }
+
+    private async Task EndVacation(Employee employee)
+    {
+        try
+        {
+            await EmployeeService.EndEmployeeVacationAsync(employee.Id);
+            await NotificationService.ShowGlobalNotificationAsync(
+                "Vacation Ended", 
+                $"{employee.Name} has returned from vacation and is now active.", 
+                NotificationType.Success
+            );
+            
+            await LoadEmployees();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error ending vacation: {ex.Message}");
+        }
+    }
+
+    private async Task RehireEmployee(Employee employee)
+    {
+        try
+        {
+            await EmployeeService.RehireEmployeeAsync(employee.Id);
+            await NotificationService.ShowGlobalNotificationAsync(
+                "Employee Rehired", 
+                $"{employee.Name} has been rehired and is now active.", 
+                                NotificationType.Success
+            );
+            
+            await LoadEmployees();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error rehiring employee: {ex.Message}");
+        }
+    }
+
+    private void OnEmployeeStatusChanged(Employee employee, EmployeeStatus oldStatus, EmployeeStatus newStatus)
+    {
+        // Refresh the employee list when status changes
+        _ = InvokeAsync(async () =>
+        {
+            await LoadEmployees();
+            StateHasChanged();
+        });
+    }
+
+    private string GetEmployeeAvatar(string employeeName)
+    {
+        // Map employee names to available avatar files
+        // Since most seeded employee names don't have matching avatar files,
+        // we'll assign them to available avatars for consistency
+        var avatarMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "John Doe", "alex.png" },        // Use available avatar
+            { "Jane Smith", "beth.png" },      // Use available avatar
+            { "Mike Johnson", "claire.png" },  // Use available avatar
+            { "Sarah Wilson", "diana.png" },   // Use available avatar
+            { "David Brown", "david.png" }     // This one exists!
+        };
+
+        if (avatarMap.TryGetValue(employeeName, out var avatarFile))
+        {
+            return $"Avatars/{avatarFile}";
+        }
+
+        // For any other names, use a hash-based fallback to ensure consistent avatars
+        var hash = Math.Abs(employeeName.GetHashCode());
+        var defaultAvatars = new[] { "emma.png", "fiona.png", "grace.png", "hannah.png", "henry.png", "ivy.png", "jack.png", "kevin.png" };
+        var defaultAvatar = defaultAvatars[hash % defaultAvatars.Length];
+        return $"Avatars/{defaultAvatar}";
+    }
+
+    private string GetRoleBadgeClass(Role role)
+    {
+        return role switch
+        {
+            Role.HighLevelAnalyst => "bg-warning",
+            Role.Analyst => "bg-success",
+            Role.Developer => "bg-primary",
+            Role.Tester => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetRoleInitial(Role role)
+    {
+        return role switch
+        {
+            Role.HighLevelAnalyst => "H",
+            Role.Analyst => "A",
+            Role.Developer => "D",
+            Role.Tester => "T",
+            _ => "?"
+        };
+    }
+
+    private string GetSeniorityBadgeClass(Seniority seniority)
+    {
+        return seniority switch
+        {
+            Seniority.Junior => "bg-info",
+            Seniority.Mid => "bg-warning",
+            Seniority.Senior => "bg-success",
+            _ => "bg-secondary"
+        };
+    }
+
+    private int GetDaysLeft(DateTime vacationEndDate)
+    {
+        var now = DateTime.Now;
+        var timeLeft = vacationEndDate - now;
+        return (int)timeLeft.TotalDays;
+    }
+
+    private int GetHoursLeft(DateTime vacationEndDate)
+    {
+        var now = DateTime.Now;
+        var timeLeft = vacationEndDate - now;
+        return (int)(timeLeft.TotalHours % 24);
+    }
+
+    private async Task RefreshData()
+    {
+        await LoadEmployees();
+        await NotificationService.ShowGlobalNotificationAsync(
+            "Data Refreshed", 
+            "Employee data has been refreshed.", 
+            NotificationType.Info
+        );
+    }
+
+    public void Dispose()
+    {
+        SignalRService.EmployeeStatusChanged -= OnEmployeeStatusChanged;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        SignalRService.EmployeeStatusChanged -= OnEmployeeStatusChanged;
+        await Task.CompletedTask;
+    }
+} 
