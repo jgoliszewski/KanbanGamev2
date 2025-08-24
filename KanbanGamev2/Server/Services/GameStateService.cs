@@ -13,37 +13,11 @@ public class GameStateService : IGameStateService
 
     public GameStateService()
     {
-        // Start with some progress already made
-        _currentDay = 5;
-        _companyMoney = 25000; // Starting with some money from completed work
+        // Start with initial values
+        _currentDay = 1;
+        _companyMoney = 10000; // Starting money
         
-        // Add some initial money transactions to simulate completed work
-        _moneyTransactions.Add(new MoneyTransaction
-        {
-            Id = Guid.NewGuid(),
-            Amount = 15000,
-            Description = "User Authentication Feature Completed",
-            Timestamp = DateTime.Now.AddDays(-3),
-            Type = TransactionType.Income
-        });
-        
-        _moneyTransactions.Add(new MoneyTransaction
-        {
-            Id = Guid.NewGuid(),
-            Amount = 8000,
-            Description = "Dashboard Analytics Feature Completed",
-            Timestamp = DateTime.Now.AddDays(-2),
-            Type = TransactionType.Income
-        });
-        
-        _moneyTransactions.Add(new MoneyTransaction
-        {
-            Id = Guid.NewGuid(),
-            Amount = -2000,
-            Description = "Employee Salaries",
-            Timestamp = DateTime.Now.AddDays(-1),
-            Type = TransactionType.Expense
-        });
+        // No initial money transactions - start fresh
     }
 
     public int CurrentDay => _currentDay;
@@ -110,6 +84,21 @@ public class GameStateService : IGameStateService
     {
         _companyMoney = amount;
         MoneyChanged?.Invoke(_companyMoney);
+        await Task.CompletedTask;
+    }
+
+    public async Task RestartGame()
+    {
+        // Reset to initial state
+        _currentDay = 1;
+        _companyMoney = 10000; // Starting money
+        _moneyTransactions.Clear();
+        _unlockedAchievements.Clear();
+        
+        // Trigger events to notify clients
+        DayChanged?.Invoke(_currentDay);
+        MoneyChanged?.Invoke(_companyMoney);
+        
         await Task.CompletedTask;
     }
 } 

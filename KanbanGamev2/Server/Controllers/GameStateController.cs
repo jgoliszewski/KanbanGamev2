@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using KanbanGamev2.Shared.Services;
+using KanbanGamev2.Server.Services;
 
 namespace KanbanGamev2.Server.Controllers;
 
@@ -8,10 +9,12 @@ namespace KanbanGamev2.Server.Controllers;
 public class GameStateController : ControllerBase
 {
     private readonly IGameStateService _gameStateService;
+    private readonly IGameRestartService _gameRestartService;
 
-    public GameStateController(IGameStateService gameStateService)
+    public GameStateController(IGameStateService gameStateService, IGameRestartService gameRestartService)
     {
         _gameStateService = gameStateService;
+        _gameRestartService = gameRestartService;
     }
 
     [HttpGet]
@@ -52,6 +55,13 @@ public class GameStateController : ControllerBase
     public async Task<IActionResult> UnlockAchievement([FromBody] Achievement achievement)
     {
         await _gameStateService.UnlockAchievement(achievement);
+        return Ok();
+    }
+
+    [HttpPost("restart")]
+    public async Task<IActionResult> RestartGame()
+    {
+        await _gameRestartService.RestartGameAsync();
         return Ok();
     }
 } 

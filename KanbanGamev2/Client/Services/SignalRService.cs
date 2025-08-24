@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using KanbanGame.Shared;
+using KanbanGamev2.Client.Services;
 
 namespace KanbanGamev2.Client.Services;
 
 public class SignalRService : ISignalRService, IAsyncDisposable
 {
     private HubConnection? _hubConnection;
+    private HubConnection? _notificationHubConnection;
     private bool _isReady = false;
     private readonly string _baseUrl;
 
@@ -26,6 +28,7 @@ public class SignalRService : ISignalRService, IAsyncDisposable
     public event Action<string, string>? ShowLoader;
     public event Action? HideLoader;
     public event Action? RefreshAllBoards;
+    public event Action<string, string, string>? GlobalNotificationReceived;
 
     public SignalRService(string baseUrl)
     {
@@ -41,6 +44,23 @@ public class SignalRService : ISignalRService, IAsyncDisposable
             .WithUrl($"{_baseUrl}gamehub")
             .WithAutomaticReconnect()
             .Build();
+
+        // Set up notification hub connection
+        _notificationHubConnection = new HubConnectionBuilder()
+            .WithUrl($"{_baseUrl}notificationhub")
+            .WithAutomaticReconnect()
+            .Build();
+
+        // Set up notification hub event handlers
+        _notificationHubConnection.On<string, string, string>("ReceiveGlobalNotification", (title, message, type) =>
+        {
+            GlobalNotificationReceived?.Invoke(title, message, type);
+        });
+
+        _notificationHubConnection.On("RefreshAllBoards", () =>
+        {
+            RefreshAllBoards?.Invoke();
+        });
 
         // Set up event handlers
         _hubConnection.On<int>("UpdateConnectedCount", count =>
@@ -126,13 +146,14 @@ public class SignalRService : ISignalRService, IAsyncDisposable
         {
             ShowLoader?.Invoke("Connecting to Game Server", "Establishing real-time connection...");
             await _hubConnection.StartAsync();
-            Console.WriteLine($"SignalR connected successfully to {_baseUrl}gamehub");
+            await _notificationHubConnection.StartAsync();
+            Console.WriteLine($"SignalR connected successfully to {_baseUrl}gamehub and {_baseUrl}notificationhub");
             await GetCurrentStatsAsync();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"SignalR connection failed: {ex.Message}");
-            Console.WriteLine($"Attempted to connect to: {_baseUrl}gamehub");
+            Console.WriteLine($"Attempted to connect to: {_baseUrl}gamehub and {_baseUrl}notificationhub");
         }
         finally
         {
@@ -147,6 +168,13 @@ public class SignalRService : ISignalRService, IAsyncDisposable
             await _hubConnection.StopAsync();
             await _hubConnection.DisposeAsync();
             _hubConnection = null;
+        }
+
+        if (_notificationHubConnection != null)
+        {
+            await _notificationHubConnection.StopAsync();
+            await _notificationHubConnection.DisposeAsync();
+            _notificationHubConnection = null;
         }
     }
 

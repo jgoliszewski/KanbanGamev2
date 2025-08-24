@@ -7,6 +7,8 @@ public class DragDropService : IDragDropService
     public Card? DraggedCard { get; set; }
     public string? SourceColumnId { get; set; }
     public string? TargetColumnId { get; set; }
+    public string? DragOverTargetId { get; set; } // Track what we're currently hovering over
+    public DragOverTargetType DragOverTargetType { get; set; } // Track if we're hovering over column or employee
     
     public bool IsDragging => DraggedCard != null;
 
@@ -15,6 +17,8 @@ public class DragDropService : IDragDropService
         DraggedCard = card;
         SourceColumnId = columnId;
         TargetColumnId = null;
+        DragOverTargetId = null;
+        DragOverTargetType = DragOverTargetType.None;
     }
 
     public void SetDropTarget(string columnId)
@@ -22,11 +26,37 @@ public class DragDropService : IDragDropService
         TargetColumnId = columnId;
     }
 
+    public void ClearDropTarget()
+    {
+        TargetColumnId = null;
+    }
+
+    public void SetDragOverTarget(string targetId, DragOverTargetType targetType)
+    {
+        DragOverTargetId = targetId;
+        DragOverTargetType = targetType;
+    }
+
+    public void ClearDragOverTarget()
+    {
+        DragOverTargetId = null;
+        DragOverTargetType = DragOverTargetType.None;
+    }
+
+    public void ClearDragOver()
+    {
+        DragOverTargetId = null;
+        DragOverTargetType = DragOverTargetType.None;
+        TargetColumnId = null;
+    }
+
     public void ClearDrag()
     {
         DraggedCard = null;
         SourceColumnId = null;
         TargetColumnId = null;
+        DragOverTargetId = null;
+        DragOverTargetType = DragOverTargetType.None;
     }
 
     public bool IsReadOnlyBoard(BoardType boardType)
@@ -47,6 +77,13 @@ public class DragDropService : IDragDropService
         // Working employees cannot be moved between columns
         if (card is Employee employee && employee.IsWorking)
             return false;
+
+        // For employees, check role-based column restrictions first
+        if (card is Employee emp)
+        {
+            if (!emp.CanWorkInColumn(toColumn))
+                return false;
+        }
 
         // For work items (tasks/features), only backward moves are allowed via column drops
         // Forward moves must be done by dropping on employees
@@ -227,8 +264,12 @@ public class DragDropService : IDragDropService
 
     private bool IsValidAnalysisMove(Card card, string fromColumn, string toColumn)
     {
-        if (card is Employee)
+        if (card is Employee employee)
         {
+            // Check if employee can work in both the source and target columns
+            if (!employee.CanWorkInColumn(fromColumn) || !employee.CanWorkInColumn(toColumn))
+                return false;
+                
             // Employees can only move between "under analysis 1" and "under analysis 2"
             var allowedEmployeeColumns = new[] { "analysis1", "analysis2" };
             return allowedEmployeeColumns.Contains(fromColumn) && allowedEmployeeColumns.Contains(toColumn);
@@ -250,8 +291,12 @@ public class DragDropService : IDragDropService
 
     private bool IsValidDevBoardMove(Card card, string fromColumn, string toColumn)
     {
-        if (card is Employee)
+        if (card is Employee employee)
         {
+            // Check if employee can work in both the source and target columns
+            if (!employee.CanWorkInColumn(fromColumn) || !employee.CanWorkInColumn(toColumn))
+                return false;
+                
             // Employees can only move between Analysis, Development Doing, and Testing Doing
             var allowedEmployeeColumns = new[] { "backend-analysis", "frontend-analysis", "backend-dev-doing", "frontend-dev-doing", "backend-test-doing", "frontend-test-doing" };
             return allowedEmployeeColumns.Contains(fromColumn) && allowedEmployeeColumns.Contains(toColumn);

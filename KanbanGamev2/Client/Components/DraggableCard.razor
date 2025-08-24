@@ -13,6 +13,7 @@
      @ondragend="OnDragEnd"
      @ondragover="OnDragOver"
      @ondragover:preventDefault
+     @ondragleave="OnDragLeave"
      @ondrop="OnDrop"
      @ondrop:preventDefault>
     <div class="card mb-2">
@@ -22,21 +23,21 @@
                 <div class="employee-card @(employee.IsWorking ? "assigned" : "")">
                     <div class="employee-top">
                         <div class="employee-left">
-                            <img src="@GetEmployeeAvatar(employee.Name)" alt="@employee.Name" class="employee-avatar" />
+                    <img src="@GetEmployeeAvatar(employee.Name)" alt="@employee.Name" class="employee-avatar" />
                             <div class="employee-info-left">
                                 <div class="employee-name">@GetFirstName(employee.Name)</div>
-                                <div class="employee-seniority">
-                                    <span class="badge @GetSeniorityBadgeClass(employee.Seniority)">
-                                        @employee.Seniority.GetDisplayName()
-                                    </span>
-                                </div>
+                        <div class="employee-seniority">
+                            <span class="badge @GetSeniorityBadgeClass(employee.Seniority)">
+                                @employee.Seniority.GetDisplayName()
+                            </span>
+                        </div>
                             </div>
                         </div>
                         <div class="employee-right">
-                            <div class="employee-status">
-                                <span class="badge @(employee.IsWorking ? "bg-danger" : "bg-success")">
-                                    @(employee.IsWorking ? "Working" : "Free")
-                                </span>
+                        <div class="employee-status">
+                            <span class="badge @(employee.IsWorking ? "bg-danger" : "bg-success")">
+                                @(employee.IsWorking ? "Working" : "Free")
+                            </span>
                             </div>
                             <div class="employee-efficiency">
                                 <small class="text-muted">@(employee.Efficiency.ToString("P0"))</small>
@@ -133,6 +134,8 @@
     
     private bool IsDragOverEmployee => DragDropService.IsDragging && 
                                       Card is Employee && 
+                                      DragDropService.DragOverTargetId == Card.Id.ToString() &&
+                                      DragDropService.DragOverTargetType == DragOverTargetType.Employee &&
                                       (DragDropService.DraggedCard is KanbanTask || DragDropService.DraggedCard is Feature) &&
                                       DragDropService.CanMoveWorkForward(BoardType, DragDropService.DraggedCard, (Employee)Card);
     
@@ -225,7 +228,21 @@
 
     private void OnDragOver(DragEventArgs e)
     {
+        // Set drag-over target for employee highlighting
+        if (DragDropService.IsDragging && Card is Employee && 
+            (DragDropService.DraggedCard is KanbanTask || DragDropService.DraggedCard is Feature))
+        {
+            DragDropService.SetDragOverTarget(Card.Id.ToString(), DragOverTargetType.Employee);
+        }
+        
         // Trigger state change to update the drag-over highlighting
+        StateHasChanged();
+    }
+
+    private void OnDragLeave(DragEventArgs e)
+    {
+        // Clear drag-over state when the draggable card is no longer over a droppable area
+        DragDropService.ClearDragOver();
         StateHasChanged();
     }
 

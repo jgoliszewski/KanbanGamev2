@@ -1,0 +1,89 @@
+@using KanbanGamev2.Client.Services
+
+<div class="modal fade @(IsVisible ? "show" : "")" style="display: @(IsVisible ? "block" : "none");" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title text-danger">
+                    <i class="oi oi-warning"></i> Confirm Game Restart
+                </h5>
+                <button type="button" class="btn-close" @onclick="CloseModal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning" role="alert">
+                    <h6 class="alert-heading">
+                        <i class="oi oi-warning"></i> Warning: This action cannot be undone!
+                    </h6>
+                    <p class="mb-0">
+                        Are you sure you want to restart the game? This will:
+                    </p>
+                    <ul class="mb-0 mt-2">
+                        <li>Reset all game progress to day 1</li>
+                        <li>Reset money to $10,000</li>
+                        <li>Move all features and tasks back to backlog</li>
+                        <li>Reset all employee assignments</li>
+                        <li>Clear all achievements and money transactions</li>
+                    </ul>
+                </div>
+                <p class="text-muted small">
+                    <strong>Note:</strong> All connected players will see this restart and their boards will be refreshed automatically.
+                </p>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary" @onclick="CloseModal">
+                    <i class="oi oi-x"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-danger" @onclick="ConfirmRestart" disabled="@IsRestarting">
+                    @if (IsRestarting)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <span>Restarting...</span>
+                    }
+                    else
+                    {
+                        <i class="oi oi-reload"></i>
+                        <span>Yes, Restart Game</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (IsVisible)
+{
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public EventCallback OnRestartConfirmed { get; set; }
+
+    private bool IsRestarting { get; set; } = false;
+
+    private async Task CloseModal()
+    {
+        if (!IsRestarting)
+        {
+            IsVisible = false;
+            await IsVisibleChanged.InvokeAsync(false);
+        }
+    }
+
+    private async Task ConfirmRestart()
+    {
+        IsRestarting = true;
+        StateHasChanged();
+
+        try
+        {
+            await OnRestartConfirmed.InvokeAsync();
+        }
+        finally
+        {
+            IsRestarting = false;
+            StateHasChanged();
+        }
+    }
+} 

@@ -20,6 +20,7 @@ public interface IGameStateService
     Task<bool> IsAchievementUnlocked(string achievementId);
     Task AddMoney(decimal amount, string description = "Feature completed");
     Task SetMoney(decimal amount);
+    Task RestartGame();
 }
 
 public class Achievement

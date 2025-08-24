@@ -128,4 +128,21 @@ public class GameStateService : IGameStateService
     {
         return await Task.FromResult(_gameStateManager.UnlockedAchievements.Any(a => a.Id == achievementId));
     }
+
+    public async Task RestartGame()
+    {
+        try
+        {
+            var response = await _httpClient.PostAsync("api/gamestate/restart", null);
+            if (response.IsSuccessStatusCode)
+            {
+                // Reload the game state after restart
+                await LoadGameState();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to restart game: {ex.Message}");
+        }
+    }
 } 

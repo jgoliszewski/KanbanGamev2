@@ -7,7 +7,7 @@
         var canLearn = Employee.CanLearnRole(role);
         var isBlocked = Employee.IsRoleBlocked(role);
         
-        <div class="role-badge @GetRoleBadgeClass(hasRole, canLearn, isBlocked)" 
+        <div class="role-badge @GetRoleBadgeClass(hasRole, canLearn, isBlocked) @GetRoleSpecificClass(role)" 
              title="@GetRoleTooltip(role, hasRole, canLearn, isBlocked)">
             @GetRoleInitial(role)
         </div>
@@ -45,6 +45,18 @@
             Role.Developer => "D",
             Role.Tester => "T",
             _ => "?"
+        };
+    }
+
+    private string GetRoleSpecificClass(Role role)
+    {
+        return role switch
+        {
+            Role.HighLevelAnalyst => "role-high-level-analyst",
+            Role.Analyst => "role-analyst",
+            Role.Developer => "role-developer",
+            Role.Tester => "role-tester",
+            _ => ""
         };
     }
 } 

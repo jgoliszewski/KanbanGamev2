@@ -17,6 +17,7 @@ public interface ISignalRService
     event Action<Employee, BoardType, string, BoardType>? EmployeeMoved;
     event Action<string, string>? ShowLoader;
     event Action? HideLoader;
+    event Action<string, string, string>? GlobalNotificationReceived;
     
     bool IsConnected { get; }
     int ConnectedCount { get; }

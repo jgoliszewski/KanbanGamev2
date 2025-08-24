@@ -7,6 +7,7 @@
      data-column-id="@ColumnId"
      @ondragover="OnDragOver"
      @ondragover:preventDefault
+     @ondragleave="OnDragLeave"
      @ondrop="OnDrop"
      @ondrop:preventDefault>
     <div class="column-header">
@@ -35,7 +36,8 @@
     [Parameter] public EventCallback<(Card workCard, Employee employee)> OnWorkAssigned { get; set; }
 
     private bool IsDragOver => DragDropService.IsDragging && 
-                               DragDropService.TargetColumnId == ColumnId && 
+                               DragDropService.DragOverTargetId == ColumnId &&
+                               DragDropService.DragOverTargetType == DragOverTargetType.Column &&
                                IsValidDropTarget();
 
     private List<Card> SortedCards
@@ -97,6 +99,16 @@
         if (DragDropService.IsDragging && DragDropService.SourceColumnId != ColumnId && IsValidDropTarget())
         {
             DragDropService.SetDropTarget(ColumnId);
+            DragDropService.SetDragOverTarget(ColumnId, DragOverTargetType.Column);
+            StateHasChanged();
+        }
+    }
+
+    private void OnDragLeave(DragEventArgs e)
+    {
+        if (DragDropService.IsDragging && DragDropService.DragOverTargetId == ColumnId)
+        {
+            DragDropService.ClearDragOverTarget();
             StateHasChanged();
         }
     }

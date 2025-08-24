@@ -1,4 +1,7 @@
 ﻿@using KanbanGamev2.Client.Components
+@using KanbanGamev2.Client.Services
+@inject IGameRestartService GameRestartService
+@inject NavigationManager Navigation
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -68,16 +71,43 @@
                 <GameStatus />
             </div>
         </div>
+        
+        <div class="nav-item px-3 mt-auto">
+            <button class="btn btn-danger w-100" @onclick="ShowRestartConfirmation" title="Restart Game - Reset all progress">
+                <span class="oi oi-reload" aria-hidden="true"></span> Restart Game
+            </button>
+        </div>
     </nav>
 </div>
 
+<RestartConfirmationModal 
+    IsVisible="@_showRestartConfirmation" 
+    IsVisibleChanged="@((bool value) => _showRestartConfirmation = value)"
+    OnRestartConfirmed="RestartGame" />
+
 @code {
     private bool collapseNavMenu = true;
+    private bool _showRestartConfirmation = false;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    private void ShowRestartConfirmation()
+    {
+        _showRestartConfirmation = true;
+    }
+
+    private async Task RestartGame()
+    {
+        var success = await GameRestartService.RestartGameAsync();
+        if (success)
+        {
+            // Reload the page to show the new state
+            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+        }
     }
 }

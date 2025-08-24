@@ -36,4 +36,10 @@ builder.Services.AddScoped<IWorkSimulationService, WorkSimulationService>();
 // Register global loader service
 builder.Services.AddScoped<IGlobalLoaderService, GlobalLoaderService>();
 
+// Register notification service
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
+// Register game restart service
+builder.Services.AddScoped<IGameRestartService, GameRestartService>();
+
 await builder.Build().RunAsync();

@@ -2,6 +2,8 @@
 @using KanbanGamev2.Client.Services
 @using KanbanGamev2.Client.Components
 @inject IGlobalLoaderService GlobalLoaderService
+@inject ISignalRService SignalRService
+@inject NavigationManager NavigationManager
 @implements IDisposable
 
 <div class="page">
@@ -25,10 +27,13 @@
     Title="@GlobalLoaderService.Title"
     Message="@GlobalLoaderService.Message" />
 
+<NotificationPopup />
+
 @code {
     protected override void OnInitialized()
     {
         GlobalLoaderService.LoaderStateChanged += OnLoaderStateChanged;
+        SignalRService.RefreshAllBoards += OnRefreshAllBoards;
     }
 
     private bool disposed = false;
@@ -41,9 +46,19 @@
         }
     }
 
+    private async void OnRefreshAllBoards()
+    {
+        if (!disposed)
+        {
+            // Refresh the current page to show the new game state
+            await InvokeAsync(() => NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true));
+        }
+    }
+
     public void Dispose()
     {
         disposed = true;
         GlobalLoaderService.LoaderStateChanged -= OnLoaderStateChanged;
+        SignalRService.RefreshAllBoards -= OnRefreshAllBoards;
     }
 }

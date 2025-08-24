@@ -14,6 +14,7 @@ builder.Services.AddSingleton<IEmployeeService, EmployeeService>();
 builder.Services.AddSingleton<IFeatureService, FeatureService>();
 builder.Services.AddSingleton<ITaskService, TaskService>();
 builder.Services.AddSingleton<IGameStateService, GameStateService>();
+builder.Services.AddSingleton<IGameRestartService, GameRestartService>();
 
 // Add SignalR (for future real-time updates)
 builder.Services.AddSignalR();
@@ -52,6 +53,7 @@ app.UseRouting();
 app.MapRazorPages();
 app.MapControllers();
 app.MapHub<GameHub>("/gamehub");
+app.MapHub<NotificationHub>("/notificationhub");
 app.MapFallbackToFile("index.html");
 
 app.Run();

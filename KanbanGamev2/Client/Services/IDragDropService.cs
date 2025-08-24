@@ -7,9 +7,15 @@ public interface IDragDropService
     Card? DraggedCard { get; set; }
     string? SourceColumnId { get; set; }
     string? TargetColumnId { get; set; }
+    string? DragOverTargetId { get; set; }
+    DragOverTargetType DragOverTargetType { get; set; }
     
     void StartDrag(Card card, string columnId);
     void SetDropTarget(string columnId);
+    void ClearDropTarget();
+    void SetDragOverTarget(string targetId, DragOverTargetType targetType);
+    void ClearDragOverTarget();
+    void ClearDragOver();
     void ClearDrag();
     bool IsDragging { get; }
     
@@ -24,4 +30,11 @@ public interface IDragDropService
     void UnassignWorkFromEmployee(Employee employee);
     void UnassignWorkFromCard(Card card);
     void UnassignWorkWhenMoved(Card card);
+}
+
+public enum DragOverTargetType
+{
+    None,
+    Column,
+    Employee
 } 

@@ -21,7 +21,23 @@
 .kanban-column.drag-over {
     background-color: #e3f2fd;
     border-color: #2196f3;
-    box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
+    border-width: 3px;
+    box-shadow: 0 0 20px rgba(33, 150, 243, 0.5);
+    transform: scale(1.02);
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.kanban-column.drag-over::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(33, 150, 243, 0.1), rgba(33, 150, 243, 0.05));
+    pointer-events: none;
+    border-radius: inherit;
 }
 
 .kanban-column.invalid-drop {
@@ -218,7 +234,7 @@
 .draggable-card.dragging {
     opacity: 0.5;
     transform: rotate(5deg);
-    z-index: 1000;
+    z-index: 9997;
 }
 
 /* Employee card drag-over highlighting */
@@ -535,25 +551,25 @@
     /* Colors based on role type */
 }
 
-.role-learned[title*="High Level Analyst"] {
+.role-learned.role-high-level-analyst {
     background-color: #ffc107;
     /* Yellow for H */
     border: 2px solid #e0a800;
 }
 
-.role-learned[title*="Analyst"] {
+.role-learned.role-analyst {
     background-color: #28a745;
     /* Green for A */
     border: 2px solid #1e7e34;
 }
 
-.role-learned[title*="Developer"] {
+.role-learned.role-developer {
     background-color: #007bff;
     /* Blue for D */
     border: 2px solid #0056b3;
 }
 
-.role-learned[title*="Tester"] {
+.role-learned.role-tester {
     background-color: #dc3545;
     /* Red for T */
     border: 2px solid #c82333;
@@ -894,4 +910,242 @@
 .move-employee-btn:hover {
     background-color: #007bff;
     color: white;
+}
+
+/* Notification System */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9998;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notification {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-left: 4px solid #007bff;
+    overflow: hidden;
+    animation: slideInRight 0.3s ease-out;
+    max-width: 400px;
+}
+
+.notification.global {
+    border-left-color: #dc3545;
+    border-left-width: 6px;
+}
+
+.notification-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 8px 16px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.notification-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #212529;
+    flex: 1;
+}
+
+.notification-header .btn-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #000000;
+    cursor: pointer;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+    font-weight: bold;
+}
+
+.notification-header .btn-close:hover {
+    color: #dc3545;
+}
+
+.notification-body {
+    padding: 12px 16px;
+    color: #495057;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.notification-footer {
+    padding: 8px 16px 12px 16px;
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Notification Types */
+.notification-info {
+    border-left-color: #007bff;
+}
+
+.notification-success {
+    border-left-color: #28a745;
+}
+
+.notification-warning {
+    border-left-color: #ffc107;
+}
+
+.notification-error {
+    border-left-color: #dc3545;
+}
+
+/* Animation */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.notification.removing {
+    animation: slideOutRight 0.3s ease-in forwards;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .notification-container {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+
+    .notification {
+        max-width: none;
+    }
+}
+
+/* Restart Confirmation Modal */
+.modal-backdrop {
+    z-index: 1040;
+    background-color: rgba(0, 0, 0, 0.5);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+}
+
+.modal {
+    z-index: 1050;
+}
+
+.modal-content {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    background-color: white;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    border-radius: 12px 12px 0 0;
+}
+
+.modal-header .btn-close {
+    filter: invert(1);
+    opacity: 0.8;
+}
+
+.modal-header .btn-close:hover {
+    opacity: 1;
+}
+
+.modal-title {
+    color: white !important;
+    font-weight: 600;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border-color: #ffeaa7;
+    color: #856404;
+}
+
+.alert-heading {
+    color: #856404;
+    font-weight: 600;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem 1.5rem 1.5rem;
+}
+
+.modal-footer .btn {
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    border-radius: 8px;
+}
+
+.modal-footer .btn-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    border: none;
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+.modal-footer .btn-danger:hover:not(:disabled) {
+    background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+}
+
+.modal-footer .btn-danger:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.modal-footer .btn-secondary {
+    background: #6c757d;
+    border: none;
+    box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+}
+
+.modal-footer .btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+}
+
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
 }
