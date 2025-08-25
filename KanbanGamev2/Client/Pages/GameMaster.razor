@@ -4,6 +4,7 @@
 @inject IEmployeeService EmployeeService
 @inject INotificationService NotificationService
 @inject ISignalRService SignalRService
+@inject KanbanGamev2.Shared.Services.IGameStateService GameStateService
 @implements IDisposable
 @implements IAsyncDisposable
 
@@ -163,6 +164,35 @@
     </div>
 </div>
 
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="oi oi-cog"></i> UI Preferences
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="summaryBoardToggle" 
+                                   checked="@_isSummaryBoardVisible" 
+                                   @onchange="OnSummaryBoardVisibilityChanged" />
+                            <label class="form-check-label" for="summaryBoardToggle">
+                                <strong>Show Summary Board in Sidebar</strong>
+                            </label>
+                            <div class="form-text text-muted">
+                                Control whether the Summary Board link appears in the navigation sidebar.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @if (_showVacationModal)
 {
     <div class="modal fade show" style="display: block;" tabindex="-1">
@@ -230,11 +260,15 @@
     private bool _showFireModal = false;
     private Employee? _selectedEmployee;
     private int _vacationDuration = 7;
+    private bool _isSummaryBoardVisible = true; // New field for checkbox state
 
     protected override async Task OnInitializedAsync()
     {
         await LoadEmployees();
+        await GameStateService.LoadGameState(); // Load the current game state
+        _isSummaryBoardVisible = GameStateService.IsSummaryBoardVisible; // Initialize the checkbox state
         SignalRService.EmployeeStatusChanged += OnEmployeeStatusChanged;
+        GameStateService.SummaryBoardVisibilityChanged += OnGameStateSummaryBoardVisibilityChanged;
     }
 
     private async Task LoadEmployees()
@@ -371,6 +405,12 @@
         });
     }
 
+    private void OnGameStateSummaryBoardVisibilityChanged(bool isVisible)
+    {
+        _isSummaryBoardVisible = isVisible;
+        StateHasChanged();
+    }
+
     private string GetEmployeeAvatar(string employeeName)
     {
         // Map employee names to available avatar files
@@ -439,6 +479,14 @@
         return (int)timeLeft.TotalDays;
     }
 
+    private async Task OnSummaryBoardVisibilityChanged(ChangeEventArgs e)
+    {
+        if (e.Value is bool isVisible)
+        {
+            _isSummaryBoardVisible = isVisible;
+            await GameStateService.SetSummaryBoardVisibility(_isSummaryBoardVisible);
+        }
+    }
 
 
     private async Task RefreshData()
@@ -454,11 +502,13 @@
     public void Dispose()
     {
         SignalRService.EmployeeStatusChanged -= OnEmployeeStatusChanged;
+        GameStateService.SummaryBoardVisibilityChanged -= OnGameStateSummaryBoardVisibilityChanged;
     }
 
     public async ValueTask DisposeAsync()
     {
         SignalRService.EmployeeStatusChanged -= OnEmployeeStatusChanged;
+        GameStateService.SummaryBoardVisibilityChanged -= OnGameStateSummaryBoardVisibilityChanged;
         await Task.CompletedTask;
     }
 } 

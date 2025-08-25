@@ -21,6 +21,7 @@ public interface ISignalRService
     event Action<string, string, string>? BoardUpdateReceived;
     event Action<string, string, string>? EmployeeMoveReceived;
     event Action<Employee, EmployeeStatus, EmployeeStatus>? EmployeeStatusChanged;
+    event Action<bool>? SummaryBoardVisibilityChangedFromServer;
     
     bool IsConnected { get; }
     int ConnectedCount { get; }

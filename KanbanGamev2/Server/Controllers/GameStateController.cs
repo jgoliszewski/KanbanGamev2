@@ -26,7 +26,8 @@ public class GameStateController : ControllerBase
             GameStartDate = _gameStateService.GameStartDate,
             UnlockedAchievements = _gameStateService.UnlockedAchievements,
             CompanyMoney = _gameStateService.CompanyMoney,
-            MoneyTransactions = _gameStateService.MoneyTransactions
+            MoneyTransactions = _gameStateService.MoneyTransactions,
+            IsSummaryBoardVisible = _gameStateService.IsSummaryBoardVisible
         });
     }
 
@@ -56,6 +57,13 @@ public class GameStateController : ControllerBase
     {
         await _gameStateService.UnlockAchievement(achievement);
         return Ok();
+    }
+
+    [HttpPost("summary-board-visibility")]
+    public async Task<IActionResult> SetSummaryBoardVisibility([FromBody] bool isVisible)
+    {
+        await _gameStateService.SetSummaryBoardVisibility(isVisible);
+        return Ok(new { IsSummaryBoardVisible = _gameStateService.IsSummaryBoardVisible });
     }
 
     [HttpPost("restart")]

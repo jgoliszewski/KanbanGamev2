@@ -5,16 +5,18 @@ using KanbanGamev2.Shared.Services;
 
 namespace KanbanGamev2.Client.Services;
 
-public class GameStateService : IGameStateService
+public class GameStateService : IGameStateService, IDisposable
 {
     private readonly HttpClient _httpClient;
     private readonly IGameStateManager _gameStateManager;
+    private readonly ISignalRService _signalRService;
 
     public int CurrentDay => _gameStateManager.CurrentDay;
     public DateTime GameStartDate => _gameStateManager.GameStartDate;
     public List<Achievement> UnlockedAchievements => _gameStateManager.UnlockedAchievements.ToList();
     public decimal CompanyMoney => _gameStateManager.CompanyMoney;
     public List<MoneyTransaction> MoneyTransactions => _gameStateManager.MoneyTransactions.ToList();
+    public bool IsSummaryBoardVisible => _gameStateManager.IsSummaryBoardVisible;
 
     public event Action<int>? DayChanged
     {
@@ -34,10 +36,20 @@ public class GameStateService : IGameStateService
         remove => _gameStateManager.MoneyChanged -= value;
     }
 
-    public GameStateService(HttpClient httpClient, IGameStateManager gameStateManager)
+    public event Action<bool>? SummaryBoardVisibilityChanged
+    {
+        add => _gameStateManager.SummaryBoardVisibilityChanged += value;
+        remove => _gameStateManager.SummaryBoardVisibilityChanged -= value;
+    }
+
+    public GameStateService(HttpClient httpClient, IGameStateManager gameStateManager, ISignalRService signalRService)
     {
         _httpClient = httpClient;
         _gameStateManager = gameStateManager;
+        _signalRService = signalRService;
+        
+        // Subscribe to SignalR events for real-time updates
+        _signalRService.SummaryBoardVisibilityChangedFromServer += OnSummaryBoardVisibilityChangedFromServer;
     }
 
     public async Task AdvanceToNextDay()
@@ -72,7 +84,8 @@ public class GameStateService : IGameStateService
                         gameState.GameStartDate, 
                         gameState.UnlockedAchievements,
                         gameState.CompanyMoney,
-                        gameState.MoneyTransactions
+                        gameState.MoneyTransactions,
+                        gameState.IsSummaryBoardVisible
                     );
                 }
             }
@@ -81,6 +94,34 @@ public class GameStateService : IGameStateService
         {
             Console.WriteLine($"Failed to load game state: {ex.Message}");
         }
+    }
+
+    public async Task SetSummaryBoardVisibility(bool isVisible)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync("api/gamestate/summary-board-visibility", isVisible);
+            if (response.IsSuccessStatusCode)
+            {
+                // Update local state
+                _gameStateManager.SetSummaryBoardVisibility(isVisible);
+            }
+            else
+            {
+                Console.WriteLine($"Failed to set summary board visibility: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to set summary board visibility: {ex.Message}");
+        }
+    }
+
+    public void SetSummaryBoardVisibilityFromServer(bool isVisible)
+    {
+        // This method is called when the server sends a SignalR notification
+        // about a summary board visibility change from another client
+        _gameStateManager.SetSummaryBoardVisibility(isVisible);
     }
 
     public async Task AddMoney(decimal amount, string description = "Feature completed")
@@ -116,6 +157,7 @@ public class GameStateService : IGameStateService
         public List<Achievement> UnlockedAchievements { get; set; } = new();
         public decimal CompanyMoney { get; set; }
         public List<MoneyTransaction> MoneyTransactions { get; set; } = new();
+        public bool IsSummaryBoardVisible { get; set; }
     }
 
     public async Task UnlockAchievement(Achievement achievement)
@@ -144,5 +186,15 @@ public class GameStateService : IGameStateService
         {
             Console.WriteLine($"Failed to restart game: {ex.Message}");
         }
+    }
+
+    private void OnSummaryBoardVisibilityChangedFromServer(bool isVisible)
+    {
+        _gameStateManager.SetSummaryBoardVisibility(isVisible);
+    }
+
+    public void Dispose()
+    {
+        _signalRService.SummaryBoardVisibilityChangedFromServer -= OnSummaryBoardVisibilityChangedFromServer;
     }
 } 

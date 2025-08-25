@@ -9,10 +9,12 @@ public interface IGameStateService
     List<Achievement> UnlockedAchievements { get; }
     decimal CompanyMoney { get; }
     List<MoneyTransaction> MoneyTransactions { get; }
+    bool IsSummaryBoardVisible { get; }
     
     event Action<int>? DayChanged;
     event Action<Achievement>? AchievementUnlocked;
     event Action<decimal>? MoneyChanged;
+    event Action<bool>? SummaryBoardVisibilityChanged;
     
     Task AdvanceToNextDay();
     Task LoadGameState();
@@ -21,6 +23,7 @@ public interface IGameStateService
     Task AddMoney(decimal amount, string description = "Feature completed");
     Task SetMoney(decimal amount);
     Task RestartGame();
+    Task SetSummaryBoardVisibility(bool isVisible);
 }
 
 public class Achievement

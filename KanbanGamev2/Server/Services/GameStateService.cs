@@ -1,5 +1,7 @@
 using KanbanGame.Shared;
 using KanbanGamev2.Shared.Services;
+using Microsoft.AspNetCore.SignalR;
+using KanbanGamev2.Server.SignalR;
 
 namespace KanbanGamev2.Server.Services;
 
@@ -11,13 +13,17 @@ public class GameStateService : IGameStateService
     private decimal _companyMoney = 10000; // Starting money
     private readonly List<MoneyTransaction> _moneyTransactions = new();
     private readonly IEmployeeService _employeeService;
+    private readonly IHubContext<GameHub> _gameHub;
+    private bool _isSummaryBoardVisible = true; // Default to visible
 
-    public GameStateService(IEmployeeService employeeService)
+    public GameStateService(IEmployeeService employeeService, IHubContext<GameHub> gameHub)
     {
         _employeeService = employeeService;
+        _gameHub = gameHub;
         // Start with initial values
         _currentDay = 1;
         _companyMoney = 10000; // Starting money
+        _isSummaryBoardVisible = true; // Default to visible
         
         // No initial money transactions - start fresh
     }
@@ -27,10 +33,12 @@ public class GameStateService : IGameStateService
     public List<Achievement> UnlockedAchievements => _unlockedAchievements.ToList();
     public decimal CompanyMoney => _companyMoney;
     public List<MoneyTransaction> MoneyTransactions => _moneyTransactions.ToList();
+    public bool IsSummaryBoardVisible => _isSummaryBoardVisible;
 
     public event Action<int>? DayChanged;
     public event Action<Achievement>? AchievementUnlocked;
     public event Action<decimal>? MoneyChanged;
+    public event Action<bool>? SummaryBoardVisibilityChanged;
 
     public async Task AdvanceToNextDay()
     {
@@ -152,11 +160,28 @@ public class GameStateService : IGameStateService
         _companyMoney = 10000; // Starting money
         _moneyTransactions.Clear();
         _unlockedAchievements.Clear();
+        _isSummaryBoardVisible = true; // Reset to default visible
         
         // Trigger events to notify clients
         DayChanged?.Invoke(_currentDay);
         MoneyChanged?.Invoke(_companyMoney);
+        SummaryBoardVisibilityChanged?.Invoke(_isSummaryBoardVisible);
         
+        await Task.CompletedTask;
+    }
+
+    public async Task SetSummaryBoardVisibility(bool isVisible)
+    {
+        if (_isSummaryBoardVisible != isVisible)
+        {
+            _isSummaryBoardVisible = isVisible;
+            
+            // Notify all clients about the change via SignalR
+            await _gameHub.Clients.All.SendAsync("SummaryBoardVisibilityChanged", _isSummaryBoardVisible);
+            
+            // Also trigger the local event
+            SummaryBoardVisibilityChanged?.Invoke(_isSummaryBoardVisible);
+        }
         await Task.CompletedTask;
     }
 } 

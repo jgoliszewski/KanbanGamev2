@@ -10,16 +10,19 @@ public interface IGameStateManager
     List<Achievement> UnlockedAchievements { get; set; }
     decimal CompanyMoney { get; set; }
     List<MoneyTransaction> MoneyTransactions { get; set; }
+    bool IsSummaryBoardVisible { get; set; }
     
     event Action<int>? DayChanged;
     event Action<Achievement>? AchievementUnlocked;
     event Action<decimal>? MoneyChanged;
+    event Action<bool>? SummaryBoardVisibilityChanged;
     
-    void UpdateFromServer(int currentDay, DateTime gameStartDate, List<Achievement> achievements, decimal companyMoney, List<MoneyTransaction> moneyTransactions);
+    void UpdateFromServer(int currentDay, DateTime gameStartDate, List<Achievement> achievements, decimal companyMoney, List<MoneyTransaction> moneyTransactions, bool isSummaryBoardVisible);
     void NotifyDayChanged(int newDay);
     void NotifyAchievementUnlocked(Achievement achievement);
     void AddMoney(decimal amount);
     void SetMoney(decimal amount);
+    void SetSummaryBoardVisibility(bool isVisible);
 }
 
 public class GameStateManager : IGameStateManager
@@ -29,6 +32,7 @@ public class GameStateManager : IGameStateManager
     private List<Achievement> _unlockedAchievements = new();
     private decimal _companyMoney = 10000;
     private List<MoneyTransaction> _moneyTransactions = new();
+    private bool _isSummaryBoardVisible = false;
 
     public int CurrentDay 
     { 
@@ -60,19 +64,28 @@ public class GameStateManager : IGameStateManager
         set => _moneyTransactions = value;
     }
 
+    public bool IsSummaryBoardVisible
+    {
+        get => _isSummaryBoardVisible;
+        set => _isSummaryBoardVisible = value;
+    }
+
     public event Action<int>? DayChanged;
     public event Action<Achievement>? AchievementUnlocked;
     public event Action<decimal>? MoneyChanged;
+    public event Action<bool>? SummaryBoardVisibilityChanged;
 
-    public void UpdateFromServer(int currentDay, DateTime gameStartDate, List<Achievement> achievements, decimal companyMoney, List<MoneyTransaction> moneyTransactions)
+    public void UpdateFromServer(int currentDay, DateTime gameStartDate, List<Achievement> achievements, decimal companyMoney, List<MoneyTransaction> moneyTransactions, bool isSummaryBoardVisible)
     {
         _currentDay = currentDay;
         _gameStartDate = gameStartDate;
         _unlockedAchievements = achievements ?? new List<Achievement>();
         _companyMoney = companyMoney;
         _moneyTransactions = moneyTransactions ?? new List<MoneyTransaction>();
+        _isSummaryBoardVisible = isSummaryBoardVisible;
         DayChanged?.Invoke(_currentDay);
         MoneyChanged?.Invoke(_companyMoney);
+        SummaryBoardVisibilityChanged?.Invoke(_isSummaryBoardVisible);
     }
 
     public void NotifyDayChanged(int newDay)
@@ -100,5 +113,11 @@ public class GameStateManager : IGameStateManager
     {
         _companyMoney = amount;
         MoneyChanged?.Invoke(_companyMoney);
+    }
+
+    public void SetSummaryBoardVisibility(bool isVisible)
+    {
+        _isSummaryBoardVisible = isVisible;
+        SummaryBoardVisibilityChanged?.Invoke(_isSummaryBoardVisible);
     }
 } 
