@@ -98,7 +98,6 @@
                                                             @if (employee.VacationEndDate.HasValue)
                                                             {
                                                                 var daysLeft = GetDaysLeft(employee.VacationEndDate.Value);
-                                                                var hoursLeft = GetHoursLeft(employee.VacationEndDate.Value);
                                                                 <div class="small text-muted">
                                                                     @if (daysLeft > 0)
                                                                     {
@@ -106,13 +105,7 @@
                                                                             <i class="oi oi-clock"></i> @daysLeft day@(daysLeft == 1 ? "" : "s") left
                                                                         </span>
                                                                     }
-                                                                    else if (daysLeft == 0 && hoursLeft > 0)
-                                                                    {
-                                                                        <span class="text-warning">
-                                                                            <i class="oi oi-clock"></i> @hoursLeft hour@(hoursLeft == 1 ? "" : "s") left
-                                                                        </span>
-                                                                    }
-                                                                    else if (daysLeft == 0 && hoursLeft == 0)
+                                                                    else if (daysLeft == 0)
                                                                     {
                                                                         <span class="text-success">
                                                                             <i class="oi oi-check"></i> Returns today
@@ -441,17 +434,12 @@
 
     private int GetDaysLeft(DateTime vacationEndDate)
     {
-        var now = DateTime.Now;
-        var timeLeft = vacationEndDate - now;
+        var now = DateTime.Today;
+        var timeLeft = vacationEndDate.Date - now;
         return (int)timeLeft.TotalDays;
     }
 
-    private int GetHoursLeft(DateTime vacationEndDate)
-    {
-        var now = DateTime.Now;
-        var timeLeft = vacationEndDate - now;
-        return (int)(timeLeft.TotalHours % 24);
-    }
+
 
     private async Task RefreshData()
     {

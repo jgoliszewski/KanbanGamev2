@@ -33,6 +33,7 @@
         
         // Subscribe to real-time board updates
         SignalRService.BoardUpdated += OnBoardUpdated;
+        SignalRService.RefreshAllBoards += OnRefreshAllBoards;
         }
         finally
         {
@@ -89,8 +90,18 @@
         }
     }
 
+    private async void OnRefreshAllBoards()
+    {
+        // Reload data from server to ensure we have the latest state
+        // This is especially important for vacation status changes
+        await FeatureService.GetFeatures();
+        OrganizeColumns();
+        StateHasChanged();
+    }
+
     public void Dispose()
     {
         SignalRService.BoardUpdated -= OnBoardUpdated;
+        SignalRService.RefreshAllBoards -= OnRefreshAllBoards;
     }
 } 

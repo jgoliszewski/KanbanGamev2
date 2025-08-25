@@ -33,7 +33,6 @@
     protected override void OnInitialized()
     {
         GlobalLoaderService.LoaderStateChanged += OnLoaderStateChanged;
-        SignalRService.RefreshAllBoards += OnRefreshAllBoards;
     }
 
     private bool disposed = false;
@@ -46,19 +45,9 @@
         }
     }
 
-    private async void OnRefreshAllBoards()
-    {
-        if (!disposed)
-        {
-            // Refresh the current page to show the new game state
-            await InvokeAsync(() => NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true));
-        }
-    }
-
     public void Dispose()
     {
         disposed = true;
         GlobalLoaderService.LoaderStateChanged -= OnLoaderStateChanged;
-        SignalRService.RefreshAllBoards -= OnRefreshAllBoards;
     }
 }

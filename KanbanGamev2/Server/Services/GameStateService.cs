@@ -10,9 +10,11 @@ public class GameStateService : IGameStateService
     private readonly List<Achievement> _unlockedAchievements = new();
     private decimal _companyMoney = 10000; // Starting money
     private readonly List<MoneyTransaction> _moneyTransactions = new();
+    private readonly IEmployeeService _employeeService;
 
-    public GameStateService()
+    public GameStateService(IEmployeeService employeeService)
     {
+        _employeeService = employeeService;
         // Start with initial values
         _currentDay = 1;
         _companyMoney = 10000; // Starting money
@@ -35,8 +37,64 @@ public class GameStateService : IGameStateService
         _currentDay++;
         DayChanged?.Invoke(_currentDay);
         
+        // Process vacation days for all employees
+        await ProcessVacationDays();
+        
         // No more daily achievements - only feature completion achievements
         await Task.CompletedTask;
+    }
+
+    private async Task ProcessVacationDays()
+    {
+        try
+        {
+            Console.WriteLine($"Processing vacation days for day {_currentDay}...");
+            Console.WriteLine($"Current real-world date: {DateTime.Today:yyyy-MM-dd}");
+            
+            // Get all employees currently on vacation
+            var employees = _employeeService.GetEmployees();
+            var employeesOnVacation = employees.Where(e => e.Status == EmployeeStatus.OnVacation && e.VacationEndDate.HasValue).ToList();
+            
+            Console.WriteLine($"Found {employeesOnVacation.Count} employees on vacation");
+            
+            foreach (var employee in employeesOnVacation)
+            {
+                if (employee.VacationEndDate.HasValue)
+                {
+                    var oldEndDate = employee.VacationEndDate.Value;
+                    
+                    // Calculate remaining vacation days based on the current vacation end date
+                    var daysRemaining = (oldEndDate.Date - DateTime.Today.Date).Days;
+                    
+                    Console.WriteLine($"Employee {employee.Name}: Vacation end date: {oldEndDate.Date:yyyy-MM-dd}, Days remaining: {daysRemaining}");
+                    
+                    // Decrement by 1 day since we're advancing to the next day
+                    var newDaysRemaining = daysRemaining - 1;
+                    Console.WriteLine($"Employee {employee.Name}: After decrement: {newDaysRemaining} days remaining");
+                    
+                    if (newDaysRemaining <= 0)
+                    {
+                        Console.WriteLine($"Employee {employee.Name} vacation ended, returning to work");
+                        // Vacation is over, return employee to work
+                        await _employeeService.EndEmployeeVacationAsync(employee.Id);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Employee {employee.Name} vacation updated: {newDaysRemaining} days remaining");
+                        // Update vacation end date to reflect one less day
+                        var newEndDate = DateTime.Today.AddDays(newDaysRemaining);
+                        Console.WriteLine($"Employee {employee.Name}: New vacation end date: {newEndDate:yyyy-MM-dd}");
+                        employee.VacationEndDate = newEndDate;
+                        await _employeeService.UpdateEmployee(employee);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't fail the day advancement
+            Console.WriteLine($"Error processing vacation days: {ex.Message}");
+        }
     }
 
     public async Task LoadGameState()

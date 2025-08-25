@@ -193,8 +193,10 @@
 
     private async void OnRefreshAllBoards()
     {
-        // Reload data from services to ensure we have the latest state
-        await LoadData();
+        // Reload data from server to ensure we have the latest state
+        // This is especially important for vacation status changes
+        await EmployeeService.GetEmployees();
+        await TaskService.GetTasks();
         OrganizeColumns();
         StateHasChanged();
     }
