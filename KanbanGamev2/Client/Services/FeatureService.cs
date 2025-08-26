@@ -1,7 +1,6 @@
-using System.Net.Http.Json;
-using Microsoft.AspNetCore.Components;
 using KanbanGame.Shared;
-using KanbanGamev2.Client.Services;
+using Microsoft.AspNetCore.Components;
+using System.Net.Http.Json;
 
 namespace KanbanGamev2.Client.Services;
 
@@ -29,18 +28,6 @@ public class FeatureService : IFeatureService
             Features = result;
     }
 
-    public async Task<Feature?> GetFeature(Guid id)
-    {
-        return await _http.GetFromJsonAsync<Feature>($"api/feature/{id}");
-    }
-
-    public async Task<Feature> CreateFeature(Feature feature)
-    {
-        var response = await _http.PostAsJsonAsync("api/feature", feature);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<Feature>() ?? feature;
-    }
-
     public async Task<Feature> UpdateFeature(Feature feature)
     {
         var response = await _http.PutAsJsonAsync($"api/feature/{feature.Id}", feature);
@@ -48,38 +35,20 @@ public class FeatureService : IFeatureService
         return await response.Content.ReadFromJsonAsync<Feature>() ?? feature;
     }
 
-    public async Task<bool> DeleteFeature(Guid id)
-    {
-        var response = await _http.DeleteAsync($"api/feature/{id}");
-        return response.IsSuccessStatusCode;
-    }
-
-    public async Task<List<Feature>> GetFeaturesByColumn(string columnId)
-    {
-        var result = await _http.GetFromJsonAsync<List<Feature>>($"api/feature/column/{columnId}");
-        return result ?? new List<Feature>();
-    }
-
-    public async Task UpdateFeatures()
-    {
-        // This method is called after work simulation to persist changes
-        await Task.CompletedTask;
-    }
-
     public async Task SendFeatureToDevelopment(Feature feature)
     {
         // Call the API endpoint to send feature to development
         var response = await _http.PostAsync($"api/feature/{feature.Id}/send-to-development", null);
         response.EnsureSuccessStatusCode();
-        
+
         // Refresh features and tasks
         await GetFeatures();
         await _taskService.GetTasks();
-        
+
         // Notify other users about the feature being sent to development
         await _signalRService.NotifyBoardUpdateAsync("Analysis", "ready-dev", feature);
         await _signalRService.NotifyBoardUpdateAsync("Summary", "development", feature);
-        
+
         Console.WriteLine($"Feature '{feature.Title}' sent to development and boards refreshed");
     }
-} 
+}

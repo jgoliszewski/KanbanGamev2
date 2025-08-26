@@ -66,11 +66,6 @@ public class EmployeeService : IEmployeeService
         return _employees.Remove(employee);
     }
 
-    public List<Employee> GetEmployeesByColumn(string columnId)
-    {
-        return _employees.Where(e => e.ColumnId == columnId).OrderBy(e => e.Order).ToList();
-    }
-
     private void SeedData()
     {
         _employees = new List<Employee>
@@ -162,13 +157,6 @@ public class EmployeeService : IEmployeeService
         return false;
     }
 
-    public async Task UpdateEmployees()
-    {
-        // This method is called after work simulation to persist changes
-        // In a real application, this would save to a database
-        await Task.CompletedTask;
-    }
-
     public bool MoveEmployee(Guid id, BoardType boardType, string columnId)
     {
         var employee = _employees.FirstOrDefault(e => e.Id == id);
@@ -194,10 +182,10 @@ public class EmployeeService : IEmployeeService
         employee.VacationEndDate = DateTime.Now.AddDays(days);
 
         // Send notification and status change signal
-        await _notificationService.SendGlobalNotificationAsync("Employee Vacation", 
-            $"{employee.Name} has been sent on vacation for {days} days.", 
+        await _notificationService.SendGlobalNotificationAsync("Employee Vacation",
+            $"{employee.Name} has been sent on vacation for {days} days.",
             "Info");
-        
+
         await _notificationService.NotifyEmployeeStatusChangedAsync(employee, oldStatus, employee.Status);
 
         return true;
@@ -216,10 +204,10 @@ public class EmployeeService : IEmployeeService
         employee.VacationEndDate = null;
 
         // Send notification and status change signal
-        await _notificationService.SendGlobalNotificationAsync("Vacation Ended", 
-            $"{employee.Name} has returned from vacation and is now active.", 
+        await _notificationService.SendGlobalNotificationAsync("Vacation Ended",
+            $"{employee.Name} has returned from vacation and is now active.",
             "Success");
-        
+
         await _notificationService.NotifyEmployeeStatusChangedAsync(employee, oldStatus, employee.Status);
 
         return true;
@@ -241,10 +229,10 @@ public class EmployeeService : IEmployeeService
         employee.VacationEndDate = null;
 
         // Send notification and status change signal
-        await _notificationService.SendGlobalNotificationAsync("Employee Fired", 
-            $"{employee.Name} has been fired from the company.", 
+        await _notificationService.SendGlobalNotificationAsync("Employee Fired",
+            $"{employee.Name} has been fired from the company.",
             "Warning");
-        
+
         await _notificationService.NotifyEmployeeStatusChangedAsync(employee, oldStatus, employee.Status);
 
         return true;
@@ -271,30 +259,6 @@ public class EmployeeService : IEmployeeService
         return true;
     }
 
-    public async Task CheckAndProcessVacationEndsAsync()
-    {
-        var today = DateTime.Today;
-        var employeesToEndVacation = _employees
-            .Where(e => e.Status == EmployeeStatus.OnVacation && 
-                       e.VacationEndDate.HasValue && 
-                       e.VacationEndDate.Value.Date <= today)
-            .ToList();
-
-        foreach (var employee in employeesToEndVacation)
-        {
-            var oldStatus = employee.Status;
-            employee.Status = EmployeeStatus.Active;
-            employee.VacationStartDate = null;
-            employee.VacationEndDate = null;
-
-            // Send notification and status change signal
-            await _notificationService.SendGlobalNotificationAsync("Vacation Ended",
-                $"{employee.Name} has returned from vacation and is now active.",
-                "Success");
-            await _notificationService.NotifyEmployeeStatusChangedAsync(employee, oldStatus, employee.Status);
-        }
-    }
-
     public async Task<List<Employee>> GetEmployeesByColumnAsync(string columnId)
     {
         return _employees.Where(e => e.ColumnId == columnId && e.Status == EmployeeStatus.Active).ToList();
@@ -304,4 +268,4 @@ public class EmployeeService : IEmployeeService
     {
         return _employees.Where(e => e.Status == EmployeeStatus.Active && !e.IsWorking).ToList();
     }
-} 
+}

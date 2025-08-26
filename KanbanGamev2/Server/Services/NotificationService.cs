@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.SignalR;
-using KanbanGamev2.Server.SignalR;
 using KanbanGame.Shared;
+using KanbanGamev2.Server.SignalR;
+using Microsoft.AspNetCore.SignalR;
 
 namespace KanbanGamev2.Server.Services;
 
@@ -20,14 +20,8 @@ public class NotificationService : INotificationService
         await _notificationHub.Clients.All.SendAsync("ReceiveGlobalNotification", title, message, type);
     }
 
-    public async Task RefreshAllBoardsAsync()
-    {
-        // Use the existing RefreshAllBoards signal to refresh all boards
-        await _gameHub.Clients.All.SendAsync("RefreshAllBoards");
-    }
-
     public async Task NotifyEmployeeStatusChangedAsync(Employee employee, EmployeeStatus oldStatus, EmployeeStatus newStatus)
     {
         await _gameHub.Clients.All.SendAsync("EmployeeStatusChanged", employee, oldStatus, newStatus);
     }
-} 
+}

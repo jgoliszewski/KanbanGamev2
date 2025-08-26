@@ -3,7 +3,6 @@ namespace KanbanGamev2.Client.Services;
 public interface INotificationService
 {
     event Action<NotificationMessage>? NotificationReceived;
-    Task ShowNotificationAsync(string title, string message, NotificationType type = NotificationType.Info);
     Task ShowGlobalNotificationAsync(string title, string message, NotificationType type = NotificationType.Info);
 }
 
@@ -23,4 +22,4 @@ public enum NotificationType
     Success,
     Warning,
     Error
-} 
+}

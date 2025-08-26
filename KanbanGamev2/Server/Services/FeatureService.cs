@@ -339,11 +339,4 @@ public class FeatureService : IFeatureService
         _features.Clear();
         SeedData();
     }
-
-    public async Task UpdateFeatures()
-    {
-        // This method is called after work simulation to persist changes
-        // In a real application, this would save to a database
-        await Task.CompletedTask;
-    }
-} 
+}

@@ -24,18 +24,6 @@ public class TaskService : ITaskService
             Tasks = result;
     }
 
-    public async Task<KanbanTask?> GetTask(Guid id)
-    {
-        return await _http.GetFromJsonAsync<KanbanTask>($"api/task/{id}");
-    }
-
-    public async Task<KanbanTask> CreateTask(KanbanTask task)
-    {
-        var response = await _http.PostAsJsonAsync("api/task", task);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<KanbanTask>() ?? task;
-    }
-
     public async Task<KanbanTask> UpdateTask(KanbanTask task)
     {
         var response = await _http.PutAsJsonAsync($"api/task/{task.Id}", task);
@@ -47,18 +35,6 @@ public class TaskService : ITaskService
     {
         var response = await _http.DeleteAsync($"api/task/{id}");
         return response.IsSuccessStatusCode;
-    }
-
-    public async Task<List<KanbanTask>> GetTasksByColumn(string columnId)
-    {
-        var result = await _http.GetFromJsonAsync<List<KanbanTask>>($"api/task/column/{columnId}");
-        return result ?? new List<KanbanTask>();
-    }
-
-    public async Task UpdateTasks()
-    {
-        // This method is called after work simulation to persist changes
-        await Task.CompletedTask;
     }
 
     public async Task<bool> AreAllTasksCompleted(List<Guid> taskIds)
@@ -88,10 +64,5 @@ public class TaskService : ITaskService
         }
         // Refresh the tasks list
         await GetTasks();
-    }
-
-    public void AssignTasksToEmployees(IEmployeeService employeeService)
-    {
-        throw new NotImplementedException();
     }
 }

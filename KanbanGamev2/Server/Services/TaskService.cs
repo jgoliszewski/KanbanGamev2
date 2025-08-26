@@ -173,29 +173,4 @@ public class TaskService : ITaskService
         _tasks.Clear();
         SeedData();
     }
-
-    public async Task<bool> AreAllTasksCompleted(List<Guid> taskIds)
-    {
-        if (!taskIds.Any()) return true;
-
-        var tasks = _tasks.Where(t => taskIds.Contains(t.Id)).ToList();
-        return tasks.All(t => t.IsCompleted);
-    }
-
-    public async Task DeleteTasks(List<Guid> taskIds)
-    {
-        var tasksToDelete = _tasks.Where(t => taskIds.Contains(t.Id)).ToList();
-        foreach (var task in tasksToDelete)
-        {
-            _tasks.Remove(task);
-        }
-        await Task.CompletedTask;
-    }
-
-    public async Task UpdateTasks()
-    {
-        // This method is called after work simulation to persist changes
-        // In a real application, this would save to a database
-        await Task.CompletedTask;
-    }
 }

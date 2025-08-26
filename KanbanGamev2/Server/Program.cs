@@ -17,9 +17,6 @@ builder.Services.AddSingleton<ITaskService, TaskService>();
 builder.Services.AddSingleton<IGameStateService, GameStateService>();
 builder.Services.AddSingleton<IGameRestartService, GameRestartService>();
 
-// Add background service for vacation management
-builder.Services.AddHostedService<VacationBackgroundService>();
-
 // Add SignalR (for future real-time updates)
 builder.Services.AddSignalR();
 

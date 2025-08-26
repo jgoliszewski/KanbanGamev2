@@ -22,11 +22,11 @@ public interface ISignalRService
     event Action<string, string, string>? EmployeeMoveReceived;
     event Action<Employee, EmployeeStatus, EmployeeStatus>? EmployeeStatusChanged;
     event Action<bool>? SummaryBoardVisibilityChangedFromServer;
-    
+
     bool IsConnected { get; }
     int ConnectedCount { get; }
     int ReadyCount { get; }
-    
+
     Task ConnectAsync();
     Task DisconnectAsync();
     Task SetReadyStatusAsync(bool isReady);
@@ -41,4 +41,4 @@ public class UserInfo
     public string ConnectionId { get; set; } = string.Empty;
     public string UserName { get; set; } = string.Empty;
     public DateTime ConnectedAt { get; set; }
-} 
+}

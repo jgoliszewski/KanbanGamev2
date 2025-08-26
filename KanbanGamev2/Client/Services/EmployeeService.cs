@@ -24,46 +24,11 @@ public class EmployeeService : IEmployeeService
             Employees = result;
     }
 
-    public async Task<Employee?> GetEmployee(Guid id)
-    {
-        return await _http.GetFromJsonAsync<Employee>($"api/employee/{id}");
-    }
-
-    public async Task<Employee> CreateEmployee(Employee employee)
-    {
-        var response = await _http.PostAsJsonAsync("api/employee", employee);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<Employee>() ?? employee;
-    }
-
     public async Task<Employee> UpdateEmployee(Employee employee)
     {
         var response = await _http.PutAsJsonAsync($"api/employee/{employee.Id}", employee);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<Employee>() ?? employee;
-    }
-
-    public async Task<bool> DeleteEmployee(Guid id)
-    {
-        var response = await _http.DeleteAsync($"api/employee/{id}");
-        return response.IsSuccessStatusCode;
-    }
-
-    public async Task<List<Employee>> GetAvailableEmployees()
-    {
-        return await GetAvailableEmployeesAsync();
-    }
-
-    public async Task<List<Employee>> GetAvailableEmployeesAsync()
-    {
-        await GetEmployees();
-        return Employees.Where(e => e.Status == EmployeeStatus.Active && !e.IsWorking).ToList();
-    }
-
-    public async Task<List<Employee>> GetEmployeesByColumnAsync(string columnId)
-    {
-        await GetEmployees();
-        return Employees.Where(e => e.ColumnId == columnId && e.Status == EmployeeStatus.Active).ToList();
     }
 
     public async Task<bool> SendEmployeeOnVacationAsync(Guid employeeId, int days)
@@ -140,18 +105,6 @@ public class EmployeeService : IEmployeeService
             Console.WriteLine($"Error rehiring employee: {ex.Message}");
             return false;
         }
-    }
-
-    public async Task<bool> UnassignWorkFromEmployee(Guid employeeId)
-    {
-        var response = await _http.PutAsync($"api/employee/{employeeId}/unassign", null);
-        return response.IsSuccessStatusCode;
-    }
-
-    public async Task UpdateEmployees()
-    {
-        // This method is called after work simulation to persist changes
-        await Task.CompletedTask;
     }
 
     public async Task<bool> MoveEmployee(Guid employeeId, BoardType boardType, string columnId)

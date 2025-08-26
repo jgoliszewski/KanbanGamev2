@@ -9,7 +9,7 @@ public class DragDropService : IDragDropService
     public string? TargetColumnId { get; set; }
     public string? DragOverTargetId { get; set; } // Track what we're currently hovering over
     public DragOverTargetType DragOverTargetType { get; set; } // Track if we're hovering over column or employee
-    
+
     public bool IsDragging => DraggedCard != null;
 
     public void StartDrag(Card card, string columnId)
@@ -24,11 +24,6 @@ public class DragDropService : IDragDropService
     public void SetDropTarget(string columnId)
     {
         TargetColumnId = columnId;
-    }
-
-    public void ClearDropTarget()
-    {
-        TargetColumnId = null;
     }
 
     public void SetDragOverTarget(string targetId, DragOverTargetType targetType)
@@ -137,21 +132,21 @@ public class DragDropService : IDragDropService
         // Check if the work card is a task or feature
         if (workCard is not KanbanTask && workCard is not Feature)
             return false;
-            
+
         // Check if employee is already working on something
         if (employee.IsWorking)
             return false;
-            
+
         // Check if the work is already assigned to someone
         if (workCard is KanbanTask task && task.IsAssigned)
             return false;
         if (workCard is Feature feature && feature.IsAssigned)
             return false;
-            
+
         // Check if employee can work in the current column of the work item
         if (!employee.CanWorkInColumn(workCard.ColumnId))
             return false;
-            
+
         return true;
     }
 
@@ -206,7 +201,7 @@ public class DragDropService : IDragDropService
     {
         if (!CanAssignWork(workCard, employee))
             return;
-            
+
         if (workCard is KanbanTask task)
         {
             task.AssignedToEmployeeId = employee.Id;
@@ -219,49 +214,6 @@ public class DragDropService : IDragDropService
         }
     }
 
-    public void UnassignWorkFromEmployee(Employee employee)
-    {
-        if (employee.AssignedTaskId.HasValue)
-        {
-            // Find and unassign the task
-            // This will be handled by the service layer
-            employee.AssignedTaskId = null;
-        }
-        
-        if (employee.AssignedFeatureId.HasValue)
-        {
-            // Find and unassign the feature
-            // This will be handled by the service layer
-            employee.AssignedFeatureId = null;
-        }
-    }
-
-    public void UnassignWorkFromCard(Card card)
-    {
-        if (card is KanbanTask task)
-        {
-            task.AssignedToEmployeeId = null;
-        }
-        else if (card is Feature feature)
-        {
-            feature.AssignedToEmployeeId = null;
-        }
-    }
-
-    public void UnassignWorkWhenMoved(Card card)
-    {
-        if (card is Employee employee)
-        {
-            // If employee is moved, unassign their current work
-            UnassignWorkFromEmployee(employee);
-        }
-        else if (card is KanbanTask || card is Feature)
-        {
-            // If work is moved, unassign it from the employee
-            UnassignWorkFromCard(card);
-        }
-    }
-
     private bool IsValidAnalysisMove(Card card, string fromColumn, string toColumn)
     {
         if (card is Employee employee)
@@ -269,7 +221,7 @@ public class DragDropService : IDragDropService
             // Check if employee can work in both the source and target columns
             if (!employee.CanWorkInColumn(fromColumn) || !employee.CanWorkInColumn(toColumn))
                 return false;
-                
+
             // Employees can only move between "under analysis 1" and "under analysis 2"
             var allowedEmployeeColumns = new[] { "analysis1", "analysis2" };
             return allowedEmployeeColumns.Contains(fromColumn) && allowedEmployeeColumns.Contains(toColumn);
@@ -296,7 +248,7 @@ public class DragDropService : IDragDropService
             // Check if employee can work in both the source and target columns
             if (!employee.CanWorkInColumn(fromColumn) || !employee.CanWorkInColumn(toColumn))
                 return false;
-                
+
             // Employees can only move between Analysis, Development Doing, and Testing Doing
             var allowedEmployeeColumns = new[] { "backend-analysis", "frontend-analysis", "backend-dev-doing", "frontend-dev-doing", "backend-test-doing", "frontend-test-doing" };
             return allowedEmployeeColumns.Contains(fromColumn) && allowedEmployeeColumns.Contains(toColumn);
@@ -319,4 +271,4 @@ public class DragDropService : IDragDropService
 
         return false;
     }
-} 
+}
