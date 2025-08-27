@@ -109,32 +109,28 @@ public class FeatureService : IFeatureService
 
     private void UpdateTaskDependencies(List<KanbanTask> frontendTasks, List<KanbanTask> backendTasks)
     {
-        // Update frontend task dependencies
+        // Update frontend task dependencies - every third task depends on the previous one
         if (frontendTasks.Count >= 3)
         {
-            // Component Development depends on UI Design
-            var componentTask = frontendTasks[1]; // Index 1
-            componentTask.DependsOnTaskId = frontendTasks[0].Id; // Index 0 (UI Design)
-            _taskService.UpdateTask(componentTask);
-
-            // Integration depends on Component Development
-            var integrationTask = frontendTasks[2]; // Index 2
-            integrationTask.DependsOnTaskId = frontendTasks[1].Id; // Index 1 (Component Development)
-            _taskService.UpdateTask(integrationTask);
+            for (int i = 2; i < frontendTasks.Count; i += 3) // Start from index 2 (third task), increment by 3
+            {
+                var dependentTask = frontendTasks[i];
+                var dependencyTask = frontendTasks[i - 1]; // Depends on the previous task
+                dependentTask.DependsOnTaskId = dependencyTask.Id;
+                _taskService.UpdateTask(dependentTask);
+            }
         }
 
-        // Update backend task dependencies
+        // Update backend task dependencies - every third task depends on the previous one
         if (backendTasks.Count >= 3)
         {
-            // Database Schema depends on API Design
-            var databaseTask = backendTasks[1]; // Index 1
-            databaseTask.DependsOnTaskId = backendTasks[0].Id; // Index 0 (API Design)
-            _taskService.UpdateTask(databaseTask);
-
-            // Backend Implementation depends on Database Schema
-            var implementationTask = backendTasks[2]; // Index 2
-            implementationTask.DependsOnTaskId = backendTasks[1].Id; // Index 1 (Database Schema)
-            _taskService.UpdateTask(implementationTask);
+            for (int i = 2; i < backendTasks.Count; i += 3) // Start from index 2 (third task), increment by 3
+            {
+                var dependentTask = backendTasks[i];
+                var dependencyTask = backendTasks[i - 1]; // Depends on the previous task
+                dependentTask.DependsOnTaskId = dependencyTask.Id;
+                _taskService.UpdateTask(dependentTask);
+            }
         }
     }
 
@@ -142,6 +138,9 @@ public class FeatureService : IFeatureService
     {
         var tasks = new List<KanbanTask>();
         var baseStoryPoints = feature.StoryPoints / 2; // Split between frontend and backend
+        
+        // Determine number of frontend tasks (4-8 based on story points)
+        var numFrontendTasks = Math.Min(8, Math.Max(4, feature.StoryPoints / 2));
 
         // UI Design task
         tasks.Add(new KanbanTask
@@ -150,7 +149,7 @@ public class FeatureService : IFeatureService
             Description = $"Design user interface for {feature.Title}",
             Priority = feature.Priority,
             Status = Status.ToDo,
-            StoryPoints = Math.Max(2, baseStoryPoints / 3),
+            StoryPoints = Math.Max(2, baseStoryPoints / numFrontendTasks),
             ColumnId = "frontend-backlog",
             Order = 1,
             LaborIntensity = 1.0,
@@ -167,7 +166,7 @@ public class FeatureService : IFeatureService
             Description = $"Develop React components for {feature.Title}",
             Priority = feature.Priority,
             Status = Status.ToDo,
-            StoryPoints = Math.Max(3, baseStoryPoints / 2),
+            StoryPoints = Math.Max(3, baseStoryPoints / numFrontendTasks),
             ColumnId = "frontend-backlog",
             Order = 2,
             LaborIntensity = 1.0,
@@ -177,14 +176,14 @@ public class FeatureService : IFeatureService
             BoardType = BoardType.Frontend
         });
 
-        // Integration task
+        // State Management task
         tasks.Add(new KanbanTask
         {
-            Title = $"{feature.Title} - Frontend Integration",
-            Description = $"Integrate {feature.Title} with backend APIs",
+            Title = $"{feature.Title} - State Management",
+            Description = $"Implement state management for {feature.Title}",
             Priority = feature.Priority,
             Status = Status.ToDo,
-            StoryPoints = Math.Max(2, baseStoryPoints / 3),
+            StoryPoints = Math.Max(2, baseStoryPoints / numFrontendTasks),
             ColumnId = "frontend-backlog",
             Order = 3,
             LaborIntensity = 1.0,
@@ -194,6 +193,104 @@ public class FeatureService : IFeatureService
             BoardType = BoardType.Frontend
         });
 
+        // Routing and Navigation task
+        tasks.Add(new KanbanTask
+        {
+            Title = $"{feature.Title} - Routing and Navigation",
+            Description = $"Set up routing and navigation for {feature.Title}",
+            Priority = feature.Priority,
+            Status = Status.ToDo,
+            StoryPoints = Math.Max(2, baseStoryPoints / numFrontendTasks),
+            ColumnId = "frontend-backlog",
+            Order = 4,
+            LaborIntensity = 1.0,
+            LaborLeft = 1.0,
+            DependsOnTaskId = null, // Will be updated after creation
+            FeatureId = feature.Id,
+            BoardType = BoardType.Frontend
+        });
+
+        // Add more tasks if needed for larger features
+        if (numFrontendTasks >= 5)
+        {
+            // Form Handling task
+            tasks.Add(new KanbanTask
+            {
+                Title = $"{feature.Title} - Form Handling",
+                Description = $"Implement form handling and validation for {feature.Title}",
+                Priority = feature.Priority,
+                Status = Status.ToDo,
+                StoryPoints = Math.Max(2, baseStoryPoints / numFrontendTasks),
+                ColumnId = "frontend-backlog",
+                Order = 5,
+                LaborIntensity = 1.0,
+                LaborLeft = 1.0,
+                DependsOnTaskId = null,
+                FeatureId = feature.Id,
+                BoardType = BoardType.Frontend
+            });
+        }
+
+        if (numFrontendTasks >= 6)
+        {
+            // Error Handling task
+            tasks.Add(new KanbanTask
+            {
+                Title = $"{feature.Title} - Error Handling",
+                Description = $"Implement error handling and user feedback for {feature.Title}",
+                Priority = feature.Priority,
+                Status = Status.ToDo,
+                StoryPoints = Math.Max(2, baseStoryPoints / numFrontendTasks),
+                ColumnId = "frontend-backlog",
+                Order = 6,
+                LaborIntensity = 1.0,
+                LaborLeft = 1.0,
+                DependsOnTaskId = null,
+                FeatureId = feature.Id,
+                BoardType = BoardType.Frontend
+            });
+        }
+
+        if (numFrontendTasks >= 7)
+        {
+            // Performance Optimization task
+            tasks.Add(new KanbanTask
+            {
+                Title = $"{feature.Title} - Performance Optimization",
+                Description = $"Optimize performance and loading times for {feature.Title}",
+                Priority = feature.Priority,
+                Status = Status.ToDo,
+                StoryPoints = Math.Max(2, baseStoryPoints / numFrontendTasks),
+                ColumnId = "frontend-backlog",
+                Order = 7,
+                LaborIntensity = 1.0,
+                LaborLeft = 1.0,
+                DependsOnTaskId = null,
+                FeatureId = feature.Id,
+                BoardType = BoardType.Frontend
+            });
+        }
+
+        if (numFrontendTasks >= 8)
+        {
+            // Frontend Integration task
+            tasks.Add(new KanbanTask
+            {
+                Title = $"{feature.Title} - Frontend Integration",
+                Description = $"Final integration and testing for {feature.Title}",
+                Priority = feature.Priority,
+                Status = Status.ToDo,
+                StoryPoints = Math.Max(2, baseStoryPoints / numFrontendTasks),
+                ColumnId = "frontend-backlog",
+                Order = 8,
+                LaborIntensity = 1.0,
+                LaborLeft = 1.0,
+                DependsOnTaskId = null, // Will be updated after creation
+                FeatureId = feature.Id,
+                BoardType = BoardType.Frontend
+            });
+        }
+
         return tasks;
     }
 
@@ -201,6 +298,9 @@ public class FeatureService : IFeatureService
     {
         var tasks = new List<KanbanTask>();
         var baseStoryPoints = feature.StoryPoints / 2; // Split between frontend and backend
+        
+        // Determine number of backend tasks (2-4 based on story points)
+        var numBackendTasks = Math.Min(4, Math.Max(2, feature.StoryPoints / 4));
 
         // API Design task
         tasks.Add(new KanbanTask
@@ -209,7 +309,7 @@ public class FeatureService : IFeatureService
             Description = $"Design REST API endpoints for {feature.Title}",
             Priority = feature.Priority,
             Status = Status.ToDo,
-            StoryPoints = Math.Max(2, baseStoryPoints / 3),
+            StoryPoints = Math.Max(2, baseStoryPoints / numBackendTasks),
             ColumnId = "backend-backlog",
             Order = 1,
             LaborIntensity = 1.0,
@@ -219,14 +319,14 @@ public class FeatureService : IFeatureService
             BoardType = BoardType.Backend
         });
 
-        // Backend Implementation task
+        // Database Schema task
         tasks.Add(new KanbanTask
         {
-            Title = $"{feature.Title} - Backend Implementation",
-            Description = $"Implement backend logic for {feature.Title}",
+            Title = $"{feature.Title} - Database Schema",
+            Description = $"Create database schema for {feature.Title}",
             Priority = feature.Priority,
             Status = Status.ToDo,
-            StoryPoints = Math.Max(4, baseStoryPoints),
+            StoryPoints = Math.Max(2, baseStoryPoints / numBackendTasks),
             ColumnId = "backend-backlog",
             Order = 2,
             LaborIntensity = 1.0,
@@ -236,22 +336,46 @@ public class FeatureService : IFeatureService
             BoardType = BoardType.Backend
         });
 
-        // Database task
-        tasks.Add(new KanbanTask
+        // Add more tasks if needed for larger features
+        if (numBackendTasks >= 3)
         {
-            Title = $"{feature.Title} - Database Schema",
-            Description = $"Create database schema for {feature.Title}",
-            Priority = feature.Priority,
-            Status = Status.ToDo,
-            StoryPoints = Math.Max(2, baseStoryPoints / 3),
-            ColumnId = "backend-backlog",
-            Order = 3,
-            LaborIntensity = 1.0,
-            LaborLeft = 1.0,
-            DependsOnTaskId = null, // Will be updated after creation
-            FeatureId = feature.Id,
-            BoardType = BoardType.Backend
-        });
+            // Backend Implementation task
+            tasks.Add(new KanbanTask
+            {
+                Title = $"{feature.Title} - Backend Implementation",
+                Description = $"Implement core backend logic for {feature.Title}",
+                Priority = feature.Priority,
+                Status = Status.ToDo,
+                StoryPoints = Math.Max(3, baseStoryPoints / numBackendTasks),
+                ColumnId = "backend-backlog",
+                Order = 3,
+                LaborIntensity = 1.0,
+                LaborLeft = 1.0,
+                DependsOnTaskId = null, // Will be updated after creation
+                FeatureId = feature.Id,
+                BoardType = BoardType.Backend
+            });
+        }
+
+        if (numBackendTasks >= 4)
+        {
+            // Testing and Validation task
+            tasks.Add(new KanbanTask
+            {
+                Title = $"{feature.Title} - Testing and Validation",
+                Description = $"Implement testing and validation for {feature.Title}",
+                Priority = feature.Priority,
+                Status = Status.ToDo,
+                StoryPoints = Math.Max(2, baseStoryPoints / numBackendTasks),
+                ColumnId = "backend-backlog",
+                Order = 4,
+                LaborIntensity = 1.0,
+                LaborLeft = 1.0,
+                DependsOnTaskId = null, // Will be updated after creation
+                FeatureId = feature.Id,
+                BoardType = BoardType.Backend
+            });
+        }
 
         return tasks;
     }
