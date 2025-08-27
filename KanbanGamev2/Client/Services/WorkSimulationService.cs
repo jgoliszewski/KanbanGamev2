@@ -14,17 +14,20 @@ public class WorkSimulationService : IWorkSimulationService
     private readonly ITaskService _taskService;
     private readonly IFeatureService _featureService;
     private readonly KanbanGamev2.Shared.Services.IGameStateService _gameStateService;
+    private readonly IGameStateManager _gameStateManager;
 
     public WorkSimulationService(
         IEmployeeService employeeService,
         ITaskService taskService,
         IFeatureService featureService,
-        KanbanGamev2.Shared.Services.IGameStateService gameStateService)
+        KanbanGamev2.Shared.Services.IGameStateService gameStateService,
+        IGameStateManager gameStateManager)
     {
         _employeeService = employeeService;
         _taskService = taskService;
         _featureService = featureService;
         _gameStateService = gameStateService;
+        _gameStateManager = gameStateManager;
     }
 
     public async Task SimulateWorkDay()
@@ -244,6 +247,15 @@ public class WorkSimulationService : IWorkSimulationService
             {
                 movedFeature.LaborLeft = movedFeature.LaborIntensity;
                 Console.WriteLine($"Feature '{movedFeature.Title}' moved from {oldColumn} to {nextColumn}, labor left reset to {movedFeature.LaborLeft:F2}");
+
+                // If feature moved to ready-dev column and the ready for development column is not visible,
+                // automatically send it to development
+                if (nextColumn == "ready-dev" && !_gameStateService.IsReadyForDevelopmentColumnVisible)
+                {
+                    Console.WriteLine($"Feature '{movedFeature.Title}' automatically sent to development (ready-dev column hidden)");
+                    await _featureService.SendFeatureToDevelopment(movedFeature);
+                    return; // Don't continue with normal column progression since SendFeatureToDevelopment handles it
+                }
             }
         }
         else
