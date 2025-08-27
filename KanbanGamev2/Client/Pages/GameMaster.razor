@@ -187,6 +187,19 @@
                             </div>
                         </div>
                     </div>
+                    <div class="col-md-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="readyDevColumnToggle" 
+                                   checked="@_isReadyForDevelopmentColumnVisible" 
+                                   @onchange="OnReadyForDevelopmentColumnVisibilityChanged" />
+                            <label class="form-check-label" for="readyDevColumnToggle">
+                                <strong>Show Ready for Development Column</strong>
+                            </label>
+                            <div class="form-text text-muted">
+                                Control whether the "Ready for Development" column appears on the Analysis Board.
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -261,14 +274,17 @@
     private Employee? _selectedEmployee;
     private int _vacationDuration = 7;
     private bool _isSummaryBoardVisible = true; // New field for checkbox state
+    private bool _isReadyForDevelopmentColumnVisible = true; // New field for ready dev column checkbox state
 
     protected override async Task OnInitializedAsync()
     {
         await LoadEmployees();
         await GameStateService.LoadGameState(); // Load the current game state
         _isSummaryBoardVisible = GameStateService.IsSummaryBoardVisible; // Initialize the checkbox state
+        _isReadyForDevelopmentColumnVisible = GameStateService.IsReadyForDevelopmentColumnVisible; // Initialize the ready dev column checkbox state
         SignalRService.EmployeeStatusChanged += OnEmployeeStatusChanged;
         GameStateService.SummaryBoardVisibilityChanged += OnGameStateSummaryBoardVisibilityChanged;
+        GameStateService.ReadyForDevelopmentColumnVisibilityChanged += OnGameStateReadyForDevelopmentColumnVisibilityChanged;
     }
 
     private async Task LoadEmployees()
@@ -411,6 +427,12 @@
         StateHasChanged();
     }
 
+    private void OnGameStateReadyForDevelopmentColumnVisibilityChanged(bool isVisible)
+    {
+        _isReadyForDevelopmentColumnVisible = isVisible;
+        StateHasChanged();
+    }
+
     private string GetEmployeeAvatar(string employeeName)
     {
         // Map employee names to available avatar files
@@ -488,6 +510,15 @@
         }
     }
 
+    private async Task OnReadyForDevelopmentColumnVisibilityChanged(ChangeEventArgs e)
+    {
+        if (e.Value is bool isVisible)
+        {
+            _isReadyForDevelopmentColumnVisible = isVisible;
+            await GameStateService.SetReadyForDevelopmentColumnVisibility(_isReadyForDevelopmentColumnVisible);
+        }
+    }
+
 
     private async Task RefreshData()
     {
@@ -503,12 +534,14 @@
     {
         SignalRService.EmployeeStatusChanged -= OnEmployeeStatusChanged;
         GameStateService.SummaryBoardVisibilityChanged -= OnGameStateSummaryBoardVisibilityChanged;
+        GameStateService.ReadyForDevelopmentColumnVisibilityChanged -= OnGameStateReadyForDevelopmentColumnVisibilityChanged;
     }
 
     public async ValueTask DisposeAsync()
     {
         SignalRService.EmployeeStatusChanged -= OnEmployeeStatusChanged;
         GameStateService.SummaryBoardVisibilityChanged -= OnGameStateSummaryBoardVisibilityChanged;
+        GameStateService.ReadyForDevelopmentColumnVisibilityChanged -= OnGameStateReadyForDevelopmentColumnVisibilityChanged;
         await Task.CompletedTask;
     }
 } 

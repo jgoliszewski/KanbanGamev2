@@ -10,11 +10,13 @@ public interface IGameStateService
     decimal CompanyMoney { get; }
     List<MoneyTransaction> MoneyTransactions { get; }
     bool IsSummaryBoardVisible { get; }
+    bool IsReadyForDevelopmentColumnVisible { get; }
     
     event Action<int>? DayChanged;
     event Action<Achievement>? AchievementUnlocked;
     event Action<decimal>? MoneyChanged;
     event Action<bool>? SummaryBoardVisibilityChanged;
+    event Action<bool>? ReadyForDevelopmentColumnVisibilityChanged;
     
     Task AdvanceToNextDay();
     Task LoadGameState();
@@ -24,6 +26,7 @@ public interface IGameStateService
     Task SetMoney(decimal amount);
     Task RestartGame();
     Task SetSummaryBoardVisibility(bool isVisible);
+    Task SetReadyForDevelopmentColumnVisibility(bool isVisible);
 }
 
 public class Achievement

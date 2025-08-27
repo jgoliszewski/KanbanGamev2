@@ -11,18 +11,21 @@ public interface IGameStateManager
     decimal CompanyMoney { get; set; }
     List<MoneyTransaction> MoneyTransactions { get; set; }
     bool IsSummaryBoardVisible { get; set; }
+    bool IsReadyForDevelopmentColumnVisible { get; set; }
     
     event Action<int>? DayChanged;
     event Action<Achievement>? AchievementUnlocked;
     event Action<decimal>? MoneyChanged;
     event Action<bool>? SummaryBoardVisibilityChanged;
+    event Action<bool>? ReadyForDevelopmentColumnVisibilityChanged;
     
-    void UpdateFromServer(int currentDay, DateTime gameStartDate, List<Achievement> achievements, decimal companyMoney, List<MoneyTransaction> moneyTransactions, bool isSummaryBoardVisible);
+    void UpdateFromServer(int currentDay, DateTime gameStartDate, List<Achievement> achievements, decimal companyMoney, List<MoneyTransaction> moneyTransactions, bool isSummaryBoardVisible, bool isReadyForDevelopmentColumnVisible);
     void NotifyDayChanged(int newDay);
     void NotifyAchievementUnlocked(Achievement achievement);
     void AddMoney(decimal amount);
     void SetMoney(decimal amount);
     void SetSummaryBoardVisibility(bool isVisible);
+    void SetReadyForDevelopmentColumnVisibility(bool isVisible);
 }
 
 public class GameStateManager : IGameStateManager
@@ -33,6 +36,7 @@ public class GameStateManager : IGameStateManager
     private decimal _companyMoney = 10000;
     private List<MoneyTransaction> _moneyTransactions = new();
     private bool _isSummaryBoardVisible = false;
+    private bool _isReadyForDevelopmentColumnVisible = false;
 
     public int CurrentDay 
     { 
@@ -70,12 +74,19 @@ public class GameStateManager : IGameStateManager
         set => _isSummaryBoardVisible = value;
     }
 
+    public bool IsReadyForDevelopmentColumnVisible
+    {
+        get => _isReadyForDevelopmentColumnVisible;
+        set => _isReadyForDevelopmentColumnVisible = value;
+    }
+
     public event Action<int>? DayChanged;
     public event Action<Achievement>? AchievementUnlocked;
     public event Action<decimal>? MoneyChanged;
     public event Action<bool>? SummaryBoardVisibilityChanged;
+    public event Action<bool>? ReadyForDevelopmentColumnVisibilityChanged;
 
-    public void UpdateFromServer(int currentDay, DateTime gameStartDate, List<Achievement> achievements, decimal companyMoney, List<MoneyTransaction> moneyTransactions, bool isSummaryBoardVisible)
+    public void UpdateFromServer(int currentDay, DateTime gameStartDate, List<Achievement> achievements, decimal companyMoney, List<MoneyTransaction> moneyTransactions, bool isSummaryBoardVisible, bool isReadyForDevelopmentColumnVisible)
     {
         _currentDay = currentDay;
         _gameStartDate = gameStartDate;
@@ -83,9 +94,11 @@ public class GameStateManager : IGameStateManager
         _companyMoney = companyMoney;
         _moneyTransactions = moneyTransactions ?? new List<MoneyTransaction>();
         _isSummaryBoardVisible = isSummaryBoardVisible;
+        _isReadyForDevelopmentColumnVisible = isReadyForDevelopmentColumnVisible;
         DayChanged?.Invoke(_currentDay);
         MoneyChanged?.Invoke(_companyMoney);
         SummaryBoardVisibilityChanged?.Invoke(_isSummaryBoardVisible);
+        ReadyForDevelopmentColumnVisibilityChanged?.Invoke(_isReadyForDevelopmentColumnVisible);
     }
 
     public void NotifyDayChanged(int newDay)
@@ -119,5 +132,11 @@ public class GameStateManager : IGameStateManager
     {
         _isSummaryBoardVisible = isVisible;
         SummaryBoardVisibilityChanged?.Invoke(_isSummaryBoardVisible);
+    }
+
+    public void SetReadyForDevelopmentColumnVisibility(bool isVisible)
+    {
+        _isReadyForDevelopmentColumnVisible = isVisible;
+        ReadyForDevelopmentColumnVisibilityChanged?.Invoke(_isReadyForDevelopmentColumnVisible);
     }
 } 

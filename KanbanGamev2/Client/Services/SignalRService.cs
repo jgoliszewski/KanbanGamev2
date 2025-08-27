@@ -33,6 +33,7 @@ public class SignalRService : ISignalRService, IAsyncDisposable
     public event Action<string, string, string>? EmployeeMoveReceived;
     public event Action<Employee, EmployeeStatus, EmployeeStatus>? EmployeeStatusChanged;
     public event Action<bool>? SummaryBoardVisibilityChangedFromServer;
+    public event Action<bool>? ReadyForDevelopmentColumnVisibilityChangedFromServer;
 
     public SignalRService(string baseUrl)
     {
@@ -121,6 +122,12 @@ public class SignalRService : ISignalRService, IAsyncDisposable
         {
             // Notify subscribers about the summary board visibility change
             SummaryBoardVisibilityChangedFromServer?.Invoke(isVisible);
+        });
+
+        _hubConnection.On<bool>("ReadyForDevelopmentColumnVisibilityChanged", (isVisible) =>
+        {
+            // Notify subscribers about the ready for development column visibility change
+            ReadyForDevelopmentColumnVisibilityChangedFromServer?.Invoke(isVisible);
         });
 
         _hubConnection.On<string, string, object>("BoardUpdated", (boardType, columnId, cardData) =>

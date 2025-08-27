@@ -1,4 +1,5 @@
 using KanbanGame.Shared;
+using KanbanGamev2.Shared.Services;
 
 namespace KanbanGamev2.Client.Services;
 

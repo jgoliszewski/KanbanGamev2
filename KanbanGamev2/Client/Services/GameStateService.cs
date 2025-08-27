@@ -17,6 +17,7 @@ public class GameStateService : IGameStateService, IDisposable
     public decimal CompanyMoney => _gameStateManager.CompanyMoney;
     public List<MoneyTransaction> MoneyTransactions => _gameStateManager.MoneyTransactions.ToList();
     public bool IsSummaryBoardVisible => _gameStateManager.IsSummaryBoardVisible;
+    public bool IsReadyForDevelopmentColumnVisible => _gameStateManager.IsReadyForDevelopmentColumnVisible;
 
     public event Action<int>? DayChanged
     {
@@ -42,6 +43,12 @@ public class GameStateService : IGameStateService, IDisposable
         remove => _gameStateManager.SummaryBoardVisibilityChanged -= value;
     }
 
+    public event Action<bool>? ReadyForDevelopmentColumnVisibilityChanged
+    {
+        add => _gameStateManager.ReadyForDevelopmentColumnVisibilityChanged += value;
+        remove => _gameStateManager.ReadyForDevelopmentColumnVisibilityChanged -= value;
+    }
+
     public GameStateService(HttpClient httpClient, IGameStateManager gameStateManager, ISignalRService signalRService)
     {
         _httpClient = httpClient;
@@ -50,6 +57,7 @@ public class GameStateService : IGameStateService, IDisposable
         
         // Subscribe to SignalR events for real-time updates
         _signalRService.SummaryBoardVisibilityChangedFromServer += OnSummaryBoardVisibilityChangedFromServer;
+        _signalRService.ReadyForDevelopmentColumnVisibilityChangedFromServer += OnReadyForDevelopmentColumnVisibilityChangedFromServer;
     }
 
     public async Task AdvanceToNextDay()
@@ -85,7 +93,8 @@ public class GameStateService : IGameStateService, IDisposable
                         gameState.UnlockedAchievements,
                         gameState.CompanyMoney,
                         gameState.MoneyTransactions,
-                        gameState.IsSummaryBoardVisible
+                        gameState.IsSummaryBoardVisible,
+                        gameState.IsReadyForDevelopmentColumnVisible
                     );
                 }
             }
@@ -114,6 +123,27 @@ public class GameStateService : IGameStateService, IDisposable
         catch (Exception ex)
         {
             Console.WriteLine($"Failed to set summary board visibility: {ex.Message}");
+        }
+    }
+
+    public async Task SetReadyForDevelopmentColumnVisibility(bool isVisible)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync("api/gamestate/ready-dev-column-visibility", isVisible);
+            if (response.IsSuccessStatusCode)
+            {
+                // Update local state
+                _gameStateManager.SetReadyForDevelopmentColumnVisibility(isVisible);
+            }
+            else
+            {
+                Console.WriteLine($"Failed to set ready for development column visibility: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to set ready for development column visibility: {ex.Message}");
         }
     }
 
@@ -158,6 +188,7 @@ public class GameStateService : IGameStateService, IDisposable
         public decimal CompanyMoney { get; set; }
         public List<MoneyTransaction> MoneyTransactions { get; set; } = new();
         public bool IsSummaryBoardVisible { get; set; }
+        public bool IsReadyForDevelopmentColumnVisible { get; set; }
     }
 
     public async Task UnlockAchievement(Achievement achievement)
@@ -193,8 +224,16 @@ public class GameStateService : IGameStateService, IDisposable
         _gameStateManager.SetSummaryBoardVisibility(isVisible);
     }
 
+    private void OnReadyForDevelopmentColumnVisibilityChangedFromServer(bool isVisible)
+    {
+        // This method is called when the server sends a SignalR notification
+        // about a ready for development column visibility change from another client
+        _gameStateManager.SetReadyForDevelopmentColumnVisibility(isVisible);
+    }
+
     public void Dispose()
     {
         _signalRService.SummaryBoardVisibilityChangedFromServer -= OnSummaryBoardVisibilityChangedFromServer;
+        _signalRService.ReadyForDevelopmentColumnVisibilityChangedFromServer -= OnReadyForDevelopmentColumnVisibilityChangedFromServer;
     }
 } 

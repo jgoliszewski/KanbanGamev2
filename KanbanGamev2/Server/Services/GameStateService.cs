@@ -1,7 +1,7 @@
 using KanbanGame.Shared;
+using KanbanGamev2.Server.SignalR;
 using KanbanGamev2.Shared.Services;
 using Microsoft.AspNetCore.SignalR;
-using KanbanGamev2.Server.SignalR;
 
 namespace KanbanGamev2.Server.Services;
 
@@ -15,6 +15,7 @@ public class GameStateService : IGameStateService
     private readonly IEmployeeService _employeeService;
     private readonly IHubContext<GameHub> _gameHub;
     private bool _isSummaryBoardVisible = true; // Default to visible
+    private bool _isReadyForDevelopmentColumnVisible = true; // Default to visible
 
     public GameStateService(IEmployeeService employeeService, IHubContext<GameHub> gameHub)
     {
@@ -24,7 +25,8 @@ public class GameStateService : IGameStateService
         _currentDay = 1;
         _companyMoney = 10000; // Starting money
         _isSummaryBoardVisible = true; // Default to visible
-        
+        _isReadyForDevelopmentColumnVisible = true; // Default to visible
+
         // No initial money transactions - start fresh
     }
 
@@ -34,20 +36,22 @@ public class GameStateService : IGameStateService
     public decimal CompanyMoney => _companyMoney;
     public List<MoneyTransaction> MoneyTransactions => _moneyTransactions.ToList();
     public bool IsSummaryBoardVisible => _isSummaryBoardVisible;
+    public bool IsReadyForDevelopmentColumnVisible => _isReadyForDevelopmentColumnVisible;
 
     public event Action<int>? DayChanged;
     public event Action<Achievement>? AchievementUnlocked;
     public event Action<decimal>? MoneyChanged;
     public event Action<bool>? SummaryBoardVisibilityChanged;
+    public event Action<bool>? ReadyForDevelopmentColumnVisibilityChanged;
 
     public async Task AdvanceToNextDay()
     {
         _currentDay++;
         DayChanged?.Invoke(_currentDay);
-        
+
         // Process vacation days for all employees
         await ProcessVacationDays();
-        
+
         // No more daily achievements - only feature completion achievements
         await Task.CompletedTask;
     }
@@ -58,28 +62,28 @@ public class GameStateService : IGameStateService
         {
             Console.WriteLine($"Processing vacation days for day {_currentDay}...");
             Console.WriteLine($"Current real-world date: {DateTime.Today:yyyy-MM-dd}");
-            
+
             // Get all employees currently on vacation
             var employees = _employeeService.GetEmployees();
             var employeesOnVacation = employees.Where(e => e.Status == EmployeeStatus.OnVacation && e.VacationEndDate.HasValue).ToList();
-            
+
             Console.WriteLine($"Found {employeesOnVacation.Count} employees on vacation");
-            
+
             foreach (var employee in employeesOnVacation)
             {
                 if (employee.VacationEndDate.HasValue)
                 {
                     var oldEndDate = employee.VacationEndDate.Value;
-                    
+
                     // Calculate remaining vacation days based on the current vacation end date
                     var daysRemaining = (oldEndDate.Date - DateTime.Today.Date).Days;
-                    
+
                     Console.WriteLine($"Employee {employee.Name}: Vacation end date: {oldEndDate.Date:yyyy-MM-dd}, Days remaining: {daysRemaining}");
-                    
+
                     // Decrement by 1 day since we're advancing to the next day
                     var newDaysRemaining = daysRemaining - 1;
                     Console.WriteLine($"Employee {employee.Name}: After decrement: {newDaysRemaining} days remaining");
-                    
+
                     if (newDaysRemaining <= 0)
                     {
                         Console.WriteLine($"Employee {employee.Name} vacation ended, returning to work");
@@ -120,7 +124,7 @@ public class GameStateService : IGameStateService
             _unlockedAchievements.Add(achievement);
             AchievementUnlocked?.Invoke(achievement);
         }
-        
+
         await Task.CompletedTask;
     }
 
@@ -132,7 +136,7 @@ public class GameStateService : IGameStateService
     public async Task AddMoney(decimal amount, string description = "Feature completed")
     {
         _companyMoney += amount;
-        
+
         // Record the transaction
         var transaction = new MoneyTransaction
         {
@@ -141,7 +145,7 @@ public class GameStateService : IGameStateService
             Type = TransactionType.Income
         };
         _moneyTransactions.Add(transaction);
-        
+
         MoneyChanged?.Invoke(_companyMoney);
         await Task.CompletedTask;
     }
@@ -161,12 +165,14 @@ public class GameStateService : IGameStateService
         _moneyTransactions.Clear();
         _unlockedAchievements.Clear();
         _isSummaryBoardVisible = true; // Reset to default visible
-        
+        _isReadyForDevelopmentColumnVisible = true; // Reset to default visible
+
         // Trigger events to notify clients
         DayChanged?.Invoke(_currentDay);
         MoneyChanged?.Invoke(_companyMoney);
         SummaryBoardVisibilityChanged?.Invoke(_isSummaryBoardVisible);
-        
+        ReadyForDevelopmentColumnVisibilityChanged?.Invoke(_isReadyForDevelopmentColumnVisible);
+
         await Task.CompletedTask;
     }
 
@@ -175,13 +181,28 @@ public class GameStateService : IGameStateService
         if (_isSummaryBoardVisible != isVisible)
         {
             _isSummaryBoardVisible = isVisible;
-            
+
             // Notify all clients about the change via SignalR
             await _gameHub.Clients.All.SendAsync("SummaryBoardVisibilityChanged", _isSummaryBoardVisible);
-            
+
             // Also trigger the local event
             SummaryBoardVisibilityChanged?.Invoke(_isSummaryBoardVisible);
         }
         await Task.CompletedTask;
     }
-} 
+
+    public async Task SetReadyForDevelopmentColumnVisibility(bool isVisible)
+    {
+        if (_isReadyForDevelopmentColumnVisible != isVisible)
+        {
+            _isReadyForDevelopmentColumnVisible = isVisible;
+
+            // Notify all clients about the change via SignalR
+            await _gameHub.Clients.All.SendAsync("ReadyForDevelopmentColumnVisibilityChanged", _isReadyForDevelopmentColumnVisible);
+
+            // Also trigger the local event
+            ReadyForDevelopmentColumnVisibilityChanged?.Invoke(_isReadyForDevelopmentColumnVisible);
+        }
+        await Task.CompletedTask;
+    }
+}

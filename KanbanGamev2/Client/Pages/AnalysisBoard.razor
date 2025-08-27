@@ -2,10 +2,12 @@
 @using KanbanGame.Shared
 @using KanbanGamev2.Client.Services
 @using KanbanGamev2.Client.Components
+@using KanbanGamev2.Shared.Services
 @inject IEmployeeService EmployeeService
 @inject IFeatureService FeatureService
 @inject ISignalRService SignalRService
 @inject IGlobalLoaderService GlobalLoaderService
+@inject IGameStateService GameStateService
 @implements IDisposable
 
 <PageTitle>High Level Analysis Board</PageTitle>
@@ -31,15 +33,16 @@
         try
         {
             GlobalLoaderService.Show("Loading Analysis Board", "Initializing board data and connecting to real-time updates...");
-            
-        await LoadData();
-        OrganizeColumns();
-        
-        // Subscribe to real-time board updates
-        SignalRService.BoardUpdated += OnBoardUpdated;
-        SignalRService.RefreshAllBoards += OnRefreshAllBoards;
-        SignalRService.EmployeeMoved += OnEmployeeMoved;
-        SignalRService.EmployeeStatusChanged += OnEmployeeStatusChanged;
+
+            await LoadData();
+            OrganizeColumns();
+
+            // Subscribe to real-time board updates
+            SignalRService.BoardUpdated += OnBoardUpdated;
+            SignalRService.RefreshAllBoards += OnRefreshAllBoards;
+            SignalRService.EmployeeMoved += OnEmployeeMoved;
+            SignalRService.EmployeeStatusChanged += OnEmployeeStatusChanged;
+            GameStateService.ReadyForDevelopmentColumnVisibilityChanged += OnReadyForDevelopmentColumnVisibilityChanged;
         }
         finally
         {
@@ -80,14 +83,19 @@
                 Title = "Under Analysis 2",
                 ColumnId = "analysis2",
                 Cards = GetCardsByColumn("analysis2")
-            },
-            new KanbanBoard.KanbanColumnData
+            }
+        };
+
+        // Conditionally add the "Ready for Development" column based on the setting
+        if (GameStateService.IsReadyForDevelopmentColumnVisible)
+        {
+            analysisColumns.Add(new KanbanBoard.KanbanColumnData
             {
                 Title = "Ready for Development",
                 ColumnId = "ready-dev",
                 Cards = GetCardsByColumn("ready-dev")
-            }
-        };
+            });
+        }
     }
 
     private List<Card> GetCardsByColumn(string columnId)
@@ -119,23 +127,23 @@
         {
             await EmployeeService.UpdateEmployee(employee);
         }
-        else if (card is Feature feature)
+        else if (card is Feature movedFeature)
         {
             // If this is a work item being moved, unassign the employee
-            if (feature.AssignedToEmployeeId.HasValue)
+            if (movedFeature.AssignedToEmployeeId.HasValue)
             {
                 var cardsInFromColumn = GetCardsByColumn(fromColumn);
-                var assignedEmployee = cardsInFromColumn.FirstOrDefault(x => x.Id == feature.AssignedToEmployeeId.Value && x is Employee);
+                var assignedEmployee = cardsInFromColumn.FirstOrDefault(x => x.Id == movedFeature.AssignedToEmployeeId.Value && x is Employee);
                 if (assignedEmployee is not null)
                 {
                     (assignedEmployee! as Employee).AssignedFeatureId = null;
                     await EmployeeService.UpdateEmployee(assignedEmployee as Employee);
                 }
 
-                feature.AssignedToEmployeeId = null;
+                movedFeature.AssignedToEmployeeId = null;
             }
 
-            await FeatureService.UpdateFeature(feature);
+            await FeatureService.UpdateFeature(movedFeature);
         }
 
         // Reorganize columns to reflect the change
@@ -212,11 +220,19 @@
         StateHasChanged();
     }
 
+    private async void OnReadyForDevelopmentColumnVisibilityChanged(bool isVisible)
+    {
+        await LoadData();
+        OrganizeColumns();
+        StateHasChanged();
+    }
+
     public void Dispose()
     {
         SignalRService.BoardUpdated -= OnBoardUpdated;
         SignalRService.RefreshAllBoards -= OnRefreshAllBoards;
         SignalRService.EmployeeMoved -= OnEmployeeMoved;
         SignalRService.EmployeeStatusChanged -= OnEmployeeStatusChanged;
+        GameStateService.ReadyForDevelopmentColumnVisibilityChanged -= OnReadyForDevelopmentColumnVisibilityChanged;
     }
 } 

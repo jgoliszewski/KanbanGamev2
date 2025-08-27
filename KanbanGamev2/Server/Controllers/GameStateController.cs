@@ -27,7 +27,8 @@ public class GameStateController : ControllerBase
             UnlockedAchievements = _gameStateService.UnlockedAchievements,
             CompanyMoney = _gameStateService.CompanyMoney,
             MoneyTransactions = _gameStateService.MoneyTransactions,
-            IsSummaryBoardVisible = _gameStateService.IsSummaryBoardVisible
+            IsSummaryBoardVisible = _gameStateService.IsSummaryBoardVisible,
+            IsReadyForDevelopmentColumnVisible = _gameStateService.IsReadyForDevelopmentColumnVisible
         });
     }
 
@@ -64,6 +65,13 @@ public class GameStateController : ControllerBase
     {
         await _gameStateService.SetSummaryBoardVisibility(isVisible);
         return Ok(new { IsSummaryBoardVisible = _gameStateService.IsSummaryBoardVisible });
+    }
+
+    [HttpPost("ready-dev-column-visibility")]
+    public async Task<IActionResult> SetReadyForDevelopmentColumnVisibility([FromBody] bool isVisible)
+    {
+        await _gameStateService.SetReadyForDevelopmentColumnVisibility(isVisible);
+        return Ok(new { IsReadyForDevelopmentColumnVisible = _gameStateService.IsReadyForDevelopmentColumnVisible });
     }
 
     [HttpPost("restart")]
