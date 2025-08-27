@@ -8,7 +8,6 @@ public class TaskService : ITaskService
 
     public TaskService()
     {
-        SeedData();
     }
 
     public List<KanbanTask> GetTasks()
@@ -34,6 +33,12 @@ public class TaskService : ITaskService
         var existing = _tasks.FirstOrDefault(t => t.Id == task.Id);
         if (existing != null)
         {
+            // Check if task was moved to a done column and update dependencies
+            if (IsDoneColumn(task.ColumnId) && !IsDoneColumn(existing.ColumnId))
+            {
+                UpdateDependentTasks(existing.Id);
+            }
+
             existing.Title = task.Title;
             existing.Description = task.Description;
             existing.Priority = task.Priority;
@@ -44,7 +49,11 @@ public class TaskService : ITaskService
             existing.LaborLeft = task.LaborLeft;
             existing.ColumnId = task.ColumnId;
             existing.Order = task.Order;
+            existing.DependsOnTaskId = task.DependsOnTaskId;
+            existing.FeatureId = task.FeatureId;
+            existing.BoardType = task.BoardType;
             existing.UpdatedAt = DateTime.Now;
+
             return existing;
         }
         throw new ArgumentException("Task not found");
@@ -66,111 +75,30 @@ public class TaskService : ITaskService
         return _tasks.Where(t => t.ColumnId == columnId).OrderBy(t => t.Order).ToList();
     }
 
-    private void SeedData()
-    {
-        _tasks = new List<KanbanTask>
-        {
-            // All tasks start in backlog
-            new KanbanTask
-            {
-                Id = Guid.NewGuid(),
-                Title = "Mobile App - API Design",
-                Description = "Design REST API endpoints for mobile application",
-                Priority = Priority.Medium,
-                Status = Status.ToDo,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(15),
-                StoryPoints = 3,
-                ColumnId = "backlog",
-                Order = 1,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0
-            },
-            new KanbanTask
-            {
-                Id = Guid.NewGuid(),
-                Title = "File Upload System - Backend Implementation",
-                Description = "Implement backend logic for file upload system",
-                Priority = Priority.Medium,
-                Status = Status.ToDo,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(5),
-                StoryPoints = 4,
-                ColumnId = "backlog",
-                Order = 2,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0
-            },
-            new KanbanTask
-            {
-                Id = Guid.NewGuid(),
-                Title = "Search Functionality - Database Schema",
-                Description = "Create database schema for search functionality",
-                Priority = Priority.Medium,
-                Status = Status.ToDo,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(3),
-                StoryPoints = 2,
-                ColumnId = "backlog",
-                Order = 3,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0
-            },
-            
-            // Frontend tasks in backlog
-            new KanbanTask
-            {
-                Id = Guid.NewGuid(),
-                Title = "Real-time Chat - Frontend Analysis",
-                Description = "Analyze frontend requirements for real-time chat",
-                Priority = Priority.High,
-                Status = Status.ToDo,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(8),
-                StoryPoints = 3,
-                ColumnId = "backlog",
-                Order = 4,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0
-            },
-            new KanbanTask
-            {
-                Id = Guid.NewGuid(),
-                Title = "Email Notifications - UI Components",
-                Description = "Create UI components for email notification system",
-                Priority = Priority.Low,
-                Status = Status.ToDo,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(3),
-                StoryPoints = 2,
-                ColumnId = "backlog",
-                Order = 5,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0
-            },
-            
-            // More tasks in backlog
-            new KanbanTask
-            {
-                Id = Guid.NewGuid(),
-                Title = "Mobile App - Backend Implementation",
-                Description = "Implement backend logic for mobile application",
-                Priority = Priority.Medium,
-                Status = Status.ToDo,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(20),
-                StoryPoints = 8,
-                ColumnId = "backlog",
-                Order = 6,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0
-            }
-        };
-    }
+
 
     public void ResetData()
     {
         _tasks.Clear();
-        SeedData();
+    }
+
+    private bool IsDoneColumn(string columnId)
+    {
+        return columnId?.Contains("done") == true;
+    }
+
+    private void UpdateDependentTasks(Guid completedTaskId)
+    {
+        // Find all tasks that depend on the completed task
+        var dependentTasks = _tasks.Where(t => t.DependsOnTaskId == completedTaskId).ToList();
+
+        foreach (var dependentTask in dependentTasks)
+        {
+            // Set the dependency as completed
+            dependentTask.IsDependencyCompleted = true;
+            dependentTask.UpdatedAt = DateTime.Now;
+
+            Console.WriteLine($"Updated task '{dependentTask.Title}' - dependency on completed task is now satisfied");
+        }
     }
 }

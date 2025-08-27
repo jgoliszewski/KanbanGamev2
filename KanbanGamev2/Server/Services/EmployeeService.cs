@@ -54,6 +54,10 @@ public class EmployeeService : IEmployeeService
         existingEmployee.Status = employee.Status;
         existingEmployee.VacationStartDate = employee.VacationStartDate;
         existingEmployee.VacationEndDate = employee.VacationEndDate;
+        
+        // Update work assignment properties
+        existingEmployee.AssignedTaskId = employee.AssignedTaskId;
+        existingEmployee.AssignedFeatureId = employee.AssignedFeatureId;
 
         return existingEmployee;
     }
@@ -70,6 +74,7 @@ public class EmployeeService : IEmployeeService
     {
         _employees = new List<Employee>
         {
+            // Analysis Board Employees
             new Employee
             {
                 Id = Guid.NewGuid(),
@@ -83,6 +88,34 @@ public class EmployeeService : IEmployeeService
                 ColumnId = "analysis1",
                 Status = EmployeeStatus.Active
             },
+            new Employee
+            {
+                Id = Guid.NewGuid(),
+                Name = "Sarah Wilson",
+                Email = "sarah.wilson@company.com",
+                LearnedRoles = new List<Role> { Role.HighLevelAnalyst },
+                LearnableRoles = new List<Role> { Role.Analyst, Role.Tester },
+                Department = Department.Engineering,
+                Seniority = Seniority.Senior,
+                BoardType = BoardType.Analysis,
+                ColumnId = "analysis2",
+                Status = EmployeeStatus.Active
+            },
+            new Employee
+            {
+                Id = Guid.NewGuid(),
+                Name = "Maria Garcia",
+                Email = "maria.garcia@company.com",
+                LearnedRoles = new List<Role> { Role.Analyst, Role.Tester },
+                LearnableRoles = new List<Role> { Role.Developer, Role.HighLevelAnalyst },
+                Department = Department.Engineering,
+                Seniority = Seniority.Mid,
+                BoardType = BoardType.Analysis,
+                ColumnId = "analysis1",
+                Status = EmployeeStatus.Active
+            },
+            
+            // Backend Board Employees
             new Employee
             {
                 Id = Guid.NewGuid(),
@@ -112,16 +145,31 @@ public class EmployeeService : IEmployeeService
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Name = "Sarah Wilson",
-                Email = "sarah.wilson@company.com",
-                LearnedRoles = new List<Role> { Role.HighLevelAnalyst },
+                Name = "Alex Rodriguez",
+                Email = "alex.rodriguez@company.com",
+                LearnedRoles = new List<Role> { Role.Analyst, Role.Developer },
+                LearnableRoles = new List<Role> { Role.HighLevelAnalyst, Role.Tester },
+                Department = Department.Engineering,
+                Seniority = Seniority.Mid,
+                BoardType = BoardType.Backend,
+                ColumnId = "backend-analysis",
+                Status = EmployeeStatus.Active
+            },
+            new Employee
+            {
+                Id = Guid.NewGuid(),
+                Name = "Robert Kim",
+                Email = "robert.kim@company.com",
+                LearnedRoles = new List<Role> { Role.Developer, Role.HighLevelAnalyst },
                 LearnableRoles = new List<Role> { Role.Analyst, Role.Tester },
                 Department = Department.Engineering,
                 Seniority = Seniority.Senior,
-                BoardType = BoardType.Analysis,
-                ColumnId = "analysis2",
+                BoardType = BoardType.Backend,
+                ColumnId = "backend-dev-doing",
                 Status = EmployeeStatus.Active
             },
+            
+            // Frontend Board Employees
             new Employee
             {
                 Id = Guid.NewGuid(),
@@ -133,6 +181,32 @@ public class EmployeeService : IEmployeeService
                 Seniority = Seniority.Mid,
                 BoardType = BoardType.Frontend,
                 ColumnId = "frontend-dev-doing",
+                Status = EmployeeStatus.Active
+            },
+            new Employee
+            {
+                Id = Guid.NewGuid(),
+                Name = "Emily Chen",
+                Email = "emily.chen@company.com",
+                LearnedRoles = new List<Role> { Role.Developer, Role.Tester },
+                LearnableRoles = new List<Role> { Role.Analyst, Role.HighLevelAnalyst },
+                Department = Department.Engineering,
+                Seniority = Seniority.Senior,
+                BoardType = BoardType.Frontend,
+                ColumnId = "frontend-test-doing",
+                Status = EmployeeStatus.Active
+            },
+            new Employee
+            {
+                Id = Guid.NewGuid(),
+                Name = "Lisa Thompson",
+                Email = "lisa.thompson@company.com",
+                LearnedRoles = new List<Role> { Role.Tester, Role.Analyst },
+                LearnableRoles = new List<Role> { Role.Developer, Role.HighLevelAnalyst },
+                Department = Department.Engineering,
+                Seniority = Seniority.Junior,
+                BoardType = BoardType.Frontend,
+                ColumnId = "frontend-analysis",
                 Status = EmployeeStatus.Active
             }
         };

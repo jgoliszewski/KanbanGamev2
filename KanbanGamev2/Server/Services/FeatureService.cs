@@ -78,24 +78,64 @@ public class FeatureService : IFeatureService
         feature.Status = Status.InProgress;
         UpdateFeature(feature);
 
-        // Create frontend tasks
+        // Create frontend tasks first (without dependencies)
         var frontendTasks = CreateFrontendTasks(feature);
+        var createdFrontendTasks = new List<KanbanTask>();
+        
         foreach (var task in frontendTasks)
         {
             var createdTask = _taskService.CreateTask(task);
+            createdFrontendTasks.Add(createdTask);
             feature.GeneratedTaskIds.Add(createdTask.Id);
         }
 
-        // Create backend tasks
+        // Create backend tasks first (without dependencies)
         var backendTasks = CreateBackendTasks(feature);
+        var createdBackendTasks = new List<KanbanTask>();
+        
         foreach (var task in backendTasks)
         {
             var createdTask = _taskService.CreateTask(task);
+            createdBackendTasks.Add(createdTask);
             feature.GeneratedTaskIds.Add(createdTask.Id);
         }
 
+        // Now update the dependencies with the actual created task IDs
+        UpdateTaskDependencies(createdFrontendTasks, createdBackendTasks);
+
         // Update feature with task references
         UpdateFeature(feature);
+    }
+
+    private void UpdateTaskDependencies(List<KanbanTask> frontendTasks, List<KanbanTask> backendTasks)
+    {
+        // Update frontend task dependencies
+        if (frontendTasks.Count >= 3)
+        {
+            // Component Development depends on UI Design
+            var componentTask = frontendTasks[1]; // Index 1
+            componentTask.DependsOnTaskId = frontendTasks[0].Id; // Index 0 (UI Design)
+            _taskService.UpdateTask(componentTask);
+
+            // Integration depends on Component Development
+            var integrationTask = frontendTasks[2]; // Index 2
+            integrationTask.DependsOnTaskId = frontendTasks[1].Id; // Index 1 (Component Development)
+            _taskService.UpdateTask(integrationTask);
+        }
+
+        // Update backend task dependencies
+        if (backendTasks.Count >= 3)
+        {
+            // Database Schema depends on API Design
+            var databaseTask = backendTasks[1]; // Index 1
+            databaseTask.DependsOnTaskId = backendTasks[0].Id; // Index 0 (API Design)
+            _taskService.UpdateTask(databaseTask);
+
+            // Backend Implementation depends on Database Schema
+            var implementationTask = backendTasks[2]; // Index 2
+            implementationTask.DependsOnTaskId = backendTasks[1].Id; // Index 1 (Database Schema)
+            _taskService.UpdateTask(implementationTask);
+        }
     }
 
     private List<KanbanTask> CreateFrontendTasks(Feature feature)
@@ -114,7 +154,10 @@ public class FeatureService : IFeatureService
             ColumnId = "frontend-backlog",
             Order = 1,
             LaborIntensity = 1.0,
-            LaborLeft = 1.0
+            LaborLeft = 1.0,
+            DependsOnTaskId = null,
+            FeatureId = feature.Id,
+            BoardType = BoardType.Frontend
         });
 
         // Component Development task
@@ -128,7 +171,10 @@ public class FeatureService : IFeatureService
             ColumnId = "frontend-backlog",
             Order = 2,
             LaborIntensity = 1.0,
-            LaborLeft = 1.0
+            LaborLeft = 1.0,
+            DependsOnTaskId = null, // Will be updated after creation
+            FeatureId = feature.Id,
+            BoardType = BoardType.Frontend
         });
 
         // Integration task
@@ -142,7 +188,10 @@ public class FeatureService : IFeatureService
             ColumnId = "frontend-backlog",
             Order = 3,
             LaborIntensity = 1.0,
-            LaborLeft = 1.0
+            LaborLeft = 1.0,
+            DependsOnTaskId = null, // Will be updated after creation
+            FeatureId = feature.Id,
+            BoardType = BoardType.Frontend
         });
 
         return tasks;
@@ -164,7 +213,10 @@ public class FeatureService : IFeatureService
             ColumnId = "backend-backlog",
             Order = 1,
             LaborIntensity = 1.0,
-            LaborLeft = 1.0
+            LaborLeft = 1.0,
+            DependsOnTaskId = null,
+            FeatureId = feature.Id,
+            BoardType = BoardType.Backend
         });
 
         // Backend Implementation task
@@ -178,7 +230,10 @@ public class FeatureService : IFeatureService
             ColumnId = "backend-backlog",
             Order = 2,
             LaborIntensity = 1.0,
-            LaborLeft = 1.0
+            LaborLeft = 1.0,
+            DependsOnTaskId = null, // Will be updated after creation
+            FeatureId = feature.Id,
+            BoardType = BoardType.Backend
         });
 
         // Database task
@@ -192,7 +247,10 @@ public class FeatureService : IFeatureService
             ColumnId = "backend-backlog",
             Order = 3,
             LaborIntensity = 1.0,
-            LaborLeft = 1.0
+            LaborLeft = 1.0,
+            DependsOnTaskId = null, // Will be updated after creation
+            FeatureId = feature.Id,
+            BoardType = BoardType.Backend
         });
 
         return tasks;
@@ -202,18 +260,18 @@ public class FeatureService : IFeatureService
     {
         _features = new List<Feature>
         {
-            // Analysis Backlog Features
+            // Ready for Development Features
             new Feature
             {
                 Id = Guid.NewGuid(),
                 Title = "User Authentication",
                 Description = "Implement secure user authentication system",
                 Priority = Priority.High,
-                Status = Status.ToDo,
+                Status = Status.Waiting,
                 AssignedToEmployeeId = null,
                 DueDate = DateTime.Now.AddDays(7),
                 StoryPoints = 8,
-                ColumnId = "backlog",
+                ColumnId = "ready-dev",
                 Order = 1,
                 LaborIntensity = 1.0,
                 LaborLeft = 1.0,
@@ -225,16 +283,17 @@ public class FeatureService : IFeatureService
                 Title = "Dashboard Analytics",
                 Description = "Create analytics dashboard with charts and metrics",
                 Priority = Priority.Medium,
-                Status = Status.ToDo,
+                Status = Status.Waiting,
                 AssignedToEmployeeId = null,
                 DueDate = DateTime.Now.AddDays(14),
                 StoryPoints = 13,
-                ColumnId = "backlog",
+                ColumnId = "ready-dev",
                 Order = 2,
                 LaborIntensity = 1.0,
                 LaborLeft = 1.0,
                 Profit = 25000
             },
+            // Analysis Backlog Features
             new Feature
             {
                 Id = Guid.NewGuid(),
