@@ -45,10 +45,6 @@ public class FeatureService : IFeatureService
         await GetFeatures();
         await _taskService.GetTasks();
 
-        // Notify other users about the feature being sent to development
-        await _signalRService.NotifyBoardUpdateAsync("Analysis", "ready-dev", feature);
-        await _signalRService.NotifyBoardUpdateAsync("Summary", "development", feature);
-
         Console.WriteLine($"Feature '{feature.Title}' sent to development and boards refreshed");
     }
 }

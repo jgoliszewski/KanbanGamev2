@@ -1,4 +1,6 @@
 using KanbanGame.Shared;
+using Microsoft.AspNetCore.SignalR;
+using KanbanGamev2.Server.SignalR;
 
 namespace KanbanGamev2.Server.Services;
 
@@ -6,10 +8,12 @@ public class FeatureService : IFeatureService
 {
     private List<Feature> _features = new();
     private readonly ITaskService _taskService;
+    private readonly IHubContext<GameHub> _gameHubContext;
 
-    public FeatureService(ITaskService taskService)
+    public FeatureService(ITaskService taskService, IHubContext<GameHub> gameHubContext)
     {
         _taskService = taskService;
+        _gameHubContext = gameHubContext;
         SeedData();
     }
 
@@ -105,6 +109,9 @@ public class FeatureService : IFeatureService
 
         // Update feature with task references
         UpdateFeature(feature);
+
+        // Notify all connected users to refresh their boards
+        await _gameHubContext.Clients.All.SendAsync("RefreshAllBoards");
     }
 
     private void UpdateTaskDependencies(List<KanbanTask> frontendTasks, List<KanbanTask> backendTasks)
