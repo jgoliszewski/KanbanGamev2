@@ -935,7 +935,6 @@
 }
 
 .notification.global {
-    border-left-color: #dc3545;
     border-left-width: 6px;
 }
 
@@ -990,19 +989,19 @@
 }
 
 /* Notification Types */
-.notification-info {
+.notification.notification-info {
     border-left-color: #007bff;
 }
 
-.notification-success {
+.notification.notification-success {
     border-left-color: #28a745;
 }
 
-.notification-warning {
+.notification.notification-warning {
     border-left-color: #ffc107;
 }
 
-.notification-error {
+.notification.notification-error {
     border-left-color: #dc3545;
 }
 

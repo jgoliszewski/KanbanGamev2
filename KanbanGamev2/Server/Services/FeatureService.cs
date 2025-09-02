@@ -9,11 +9,13 @@ public class FeatureService : IFeatureService
     private List<Feature> _features = new();
     private readonly ITaskService _taskService;
     private readonly IHubContext<GameHub> _gameHubContext;
+    private readonly INotificationService _notificationService;
 
-    public FeatureService(ITaskService taskService, IHubContext<GameHub> gameHubContext)
+    public FeatureService(ITaskService taskService, IHubContext<GameHub> gameHubContext, INotificationService notificationService)
     {
         _taskService = taskService;
         _gameHubContext = gameHubContext;
+        _notificationService = notificationService;
         SeedData();
     }
 
@@ -109,6 +111,11 @@ public class FeatureService : IFeatureService
 
         // Update feature with task references
         UpdateFeature(feature);
+
+        // Send global notification about feature being sent to development
+        await _notificationService.SendGlobalNotificationAsync("Feature Sent to Development",
+            $"Feature '{feature.Title}' has been sent to development. {feature.GeneratedTaskIds.Count} tasks have been created.",
+            "Info");
 
         // Notify all connected users to refresh their boards
         await _gameHubContext.Clients.All.SendAsync("RefreshAllBoards");

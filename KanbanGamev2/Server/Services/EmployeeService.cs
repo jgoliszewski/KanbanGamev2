@@ -258,7 +258,7 @@ public class EmployeeService : IEmployeeService
         // Send notification and status change signal
         await _notificationService.SendGlobalNotificationAsync("Employee Vacation",
             $"{employee.Name} has been sent on vacation for {days} days.",
-            "Info");
+            "Warning");
 
         await _notificationService.NotifyEmployeeStatusChangedAsync(employee, oldStatus, employee.Status);
 
@@ -305,7 +305,7 @@ public class EmployeeService : IEmployeeService
         // Send notification and status change signal
         await _notificationService.SendGlobalNotificationAsync("Employee Fired",
             $"{employee.Name} has been fired from the company.",
-            "Warning");
+            "Error");
 
         await _notificationService.NotifyEmployeeStatusChangedAsync(employee, oldStatus, employee.Status);
 
