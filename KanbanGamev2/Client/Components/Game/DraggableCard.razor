@@ -180,28 +180,7 @@
 
     private string GetEmployeeAvatar(string employeeName)
     {
-        // Map employee names to available avatar files
-        // Since most seeded employee names don't have matching avatar files,
-        // we'll assign them to available avatars for consistency
-        var avatarMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            { "John Doe", "alex.png" },        // Use available avatar
-            { "Jane Smith", "beth.png" },      // Use available avatar
-            { "Mike Johnson", "claire.png" },  // Use available avatar
-            { "Sarah Wilson", "diana.png" },   // Use available avatar
-            { "David Brown", "david.png" }     // This one exists!
-        };
-
-        if (avatarMap.TryGetValue(employeeName, out var avatarFile))
-        {
-            return $"Avatars/{avatarFile}";
-        }
-
-        // For any other names, use a hash-based fallback to ensure consistent avatars
-        var hash = Math.Abs(employeeName.GetHashCode());
-        var defaultAvatars = new[] { "emma.png", "fiona.png", "grace.png", "hannah.png", "henry.png", "ivy.png", "jack.png", "kevin.png" };
-        var defaultAvatar = defaultAvatars[hash % defaultAvatars.Length];
-        return $"Avatars/{defaultAvatar}";
+        return $"Avatars/{employeeName}.png";
     }
 
     private string GetFirstName(string fullName)

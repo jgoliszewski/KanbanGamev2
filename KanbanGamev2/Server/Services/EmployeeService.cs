@@ -78,8 +78,8 @@ public class EmployeeService : IEmployeeService
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Name = "John Doe",
-                Email = "john.doe@company.com",
+                Name = "Alex",
+                Email = "alex@company.com",
                 LearnedRoles = new List<Role> { Role.Analyst },
                 LearnableRoles = new List<Role> { Role.HighLevelAnalyst, Role.Tester },
                 Department = Department.Engineering,
@@ -91,8 +91,8 @@ public class EmployeeService : IEmployeeService
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Name = "Sarah Wilson",
-                Email = "sarah.wilson@company.com",
+                Name = "Alice",
+                Email = "alice@company.com",
                 LearnedRoles = new List<Role> { Role.HighLevelAnalyst },
                 LearnableRoles = new List<Role> { Role.Analyst, Role.Tester },
                 Department = Department.Engineering,
@@ -104,8 +104,8 @@ public class EmployeeService : IEmployeeService
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Name = "Maria Garcia",
-                Email = "maria.garcia@company.com",
+                Name = "Beth",
+                Email = "beth@company.com",
                 LearnedRoles = new List<Role> { Role.Analyst, Role.Tester },
                 LearnableRoles = new List<Role> { Role.Developer, Role.HighLevelAnalyst },
                 Department = Department.Engineering,
@@ -119,8 +119,8 @@ public class EmployeeService : IEmployeeService
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Name = "Jane Smith",
-                Email = "jane.smith@company.com",
+                Name = "Brian",
+                Email = "brian@company.com",
                 LearnedRoles = new List<Role> { Role.Developer },
                 LearnableRoles = new List<Role> { Role.Analyst, Role.Tester },
                 Department = Department.Engineering,
@@ -132,8 +132,8 @@ public class EmployeeService : IEmployeeService
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Name = "Mike Johnson",
-                Email = "mike.johnson@company.com",
+                Name = "Charles",
+                Email = "charles@company.com",
                 LearnedRoles = new List<Role> { Role.Tester },
                 LearnableRoles = new List<Role> { Role.Analyst, Role.Developer },
                 Department = Department.Engineering,
@@ -145,8 +145,8 @@ public class EmployeeService : IEmployeeService
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Name = "Alex Rodriguez",
-                Email = "alex.rodriguez@company.com",
+                Name = "Claire",
+                Email = "claire@company.com",
                 LearnedRoles = new List<Role> { Role.Analyst, Role.Developer },
                 LearnableRoles = new List<Role> { Role.HighLevelAnalyst, Role.Tester },
                 Department = Department.Engineering,
@@ -158,8 +158,8 @@ public class EmployeeService : IEmployeeService
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Name = "Robert Kim",
-                Email = "robert.kim@company.com",
+                Name = "David",
+                Email = "david@company.com",
                 LearnedRoles = new List<Role> { Role.Developer, Role.HighLevelAnalyst },
                 LearnableRoles = new List<Role> { Role.Analyst, Role.Tester },
                 Department = Department.Engineering,
@@ -173,8 +173,8 @@ public class EmployeeService : IEmployeeService
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Name = "David Brown",
-                Email = "david.brown@company.com",
+                Name = "Diana",
+                Email = "diana@company.com",
                 LearnedRoles = new List<Role> { Role.Developer },
                 LearnableRoles = new List<Role> { Role.Analyst, Role.Tester },
                 Department = Department.Engineering,
@@ -186,8 +186,8 @@ public class EmployeeService : IEmployeeService
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Name = "Emily Chen",
-                Email = "emily.chen@company.com",
+                Name = "Emma",
+                Email = "emma@company.com",
                 LearnedRoles = new List<Role> { Role.Developer, Role.Tester },
                 LearnableRoles = new List<Role> { Role.Analyst, Role.HighLevelAnalyst },
                 Department = Department.Engineering,
@@ -199,8 +199,8 @@ public class EmployeeService : IEmployeeService
             new Employee
             {
                 Id = Guid.NewGuid(),
-                Name = "Lisa Thompson",
-                Email = "lisa.thompson@company.com",
+                Name = "Ethan",
+                Email = "ethan@company.com",
                 LearnedRoles = new List<Role> { Role.Tester, Role.Analyst },
                 LearnableRoles = new List<Role> { Role.Developer, Role.HighLevelAnalyst },
                 Department = Department.Engineering,
