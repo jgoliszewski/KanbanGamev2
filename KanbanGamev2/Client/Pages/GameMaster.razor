@@ -1,10 +1,13 @@
 @page "/gamemaster"
 @using KanbanGame.Shared
 @using KanbanGamev2.Client.Services
+@using KanbanGamev2.Client.Components
 @inject IEmployeeService EmployeeService
 @inject INotificationService NotificationService
 @inject ISignalRService SignalRService
+@inject IGameRestartService GameRestartService
 @inject KanbanGamev2.Shared.Services.IGameStateService GameStateService
+@inject NavigationManager Navigation
 @implements IDisposable
 @implements IAsyncDisposable
 
@@ -18,12 +21,9 @@
                     <i class="oi oi-crown text-warning"></i> Game Master Panel
                 </h2>
                 <div class="d-flex align-items-center gap-3">
-                    <button class="btn btn-outline-primary btn-sm" @onclick="RefreshData" title="Refresh data">
-                        <i class="oi oi-reload"></i> Refresh
+                    <button class="btn btn-danger btn-sm" @onclick="ShowRestartConfirmation" title="Restart Game - Reset all progress">
+                        <i class="oi oi-reload"></i> Restart Game
                     </button>
-                    <div class="text-muted">
-                        <small>Manage employees and game state</small>
-                    </div>
                 </div>
             </div>
         </div>
@@ -267,10 +267,16 @@
     <div class="modal-backdrop fade show"></div>
 }
 
+<RestartConfirmationModal 
+    IsVisible="@_showRestartConfirmation" 
+    IsVisibleChanged="@((bool value) => _showRestartConfirmation = value)"
+    OnRestartConfirmed="RestartGame" />
+
 @code {
     private List<Employee>? _employees;
     private bool _showVacationModal = false;
     private bool _showFireModal = false;
+    private bool _showRestartConfirmation = false;
     private Employee? _selectedEmployee;
     private int _vacationDuration = 7;
     private bool _isSummaryBoardVisible = true; // New field for checkbox state
@@ -498,15 +504,19 @@
         }
     }
 
-
-    private async Task RefreshData()
+    private void ShowRestartConfirmation()
     {
-        await LoadEmployees();
-        await NotificationService.ShowGlobalNotificationAsync(
-            "Data Refreshed", 
-            "Employee data has been refreshed.", 
-            NotificationType.Info
-        );
+        _showRestartConfirmation = true;
+    }
+
+    private async Task RestartGame()
+    {
+        var success = await GameRestartService.RestartGameAsync();
+        if (success)
+        {
+            // Reload the page to show the new state
+            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+        }
     }
 
     public void Dispose()
