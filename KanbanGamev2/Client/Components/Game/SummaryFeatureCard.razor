@@ -1,0 +1,157 @@
+@using KanbanGame.Shared
+@using KanbanGamev2.Client.Services
+@inject ITaskService TaskService
+
+<div class="card mb-2 summary-feature-card">
+    <div class="card-body p-2">
+        <h6 class="card-title mb-1">@Feature.Title</h6>
+        <p class="card-text small mb-1">@Feature.Description</p>
+        
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge @Feature.Priority.GetBadgeClass()">@Feature.Priority</span>
+            <small class="text-muted">@Feature.StoryPoints SP</small>
+        </div>
+        
+        <div class="text-success fw-bold mb-2">Profit: $@Feature.Profit.ToString("N0")</div>
+        <div class="labor-intensity mb-2">
+            <small class="text-muted">Labor Left: @(Feature.LaborLeft.ToString("P0"))</small>
+        </div>
+        
+        @if (Feature.IsAssigned)
+        {
+            <span class="badge bg-success mb-2">Assigned</span>
+        }
+        
+        <!-- Show tasks for this feature -->
+        @{
+            var featureTasks = GetFeatureTasks(Feature.Id);
+        }
+        
+        @if (featureTasks.Any())
+        {
+            <div class="feature-tasks mt-2">
+                <h6 class="text-muted mb-2">
+                    <span class="oi oi-list" aria-hidden="true"></span>
+                    Tasks (@featureTasks.Count)
+                </h6>
+                <div class="task-list">
+                    @foreach (var task in featureTasks)
+                    {
+                        <div class="task-item @(task.IsInDoneColumn ? "completed" : "") @(task.HasDependency && !task.IsDependencySatisfied ? "blocked" : "")">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="task-info">
+                                    <small class="fw-bold">@task.Title</small>
+                                    <div class="d-flex align-items-center gap-1 mt-1">
+                                        <span class="badge @task.Priority.GetBadgeClass() badge-sm">@task.Priority</span>
+                                        <small class="text-muted">@task.StoryPoints SP</small>
+                                        @if (task.IsAssigned)
+                                        {
+                                            <span class="badge bg-success badge-sm">Assigned</span>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="task-status">
+                                    @if (task.IsInDoneColumn)
+                                    {
+                                        <span class="badge bg-success badge-sm">
+                                            <span class="oi oi-check" aria-hidden="true"></span>
+                                        </span>
+                                    }
+                                    else if (task.HasDependency && !task.IsDependencySatisfied)
+                                    {
+                                        <span class="badge bg-danger badge-sm" title="Blocked by dependency">
+                                            <span class="oi oi-lock-locked" aria-hidden="true"></span>
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning badge-sm">
+                                            <span class="oi oi-clock" aria-hidden="true"></span>
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                            
+                            <!-- Show dependency information -->
+                            @if (task.HasDependency)
+                            {
+                                var dependencyTask = TaskService.Tasks.FirstOrDefault(t => t.Id == task.DependsOnTaskId!.Value);
+                                <div class="dependency-info mt-1">
+                                    @if (task.IsDependencySatisfied)
+                                    {
+                                        <small class="text-success">
+                                            <span class="oi oi-check" aria-hidden="true"></span>
+                                            Depends on: @dependencyTask?.Title
+                                        </small>
+                                    }
+                                    else
+                                    {
+                                        <small class="text-danger">
+                                            <span class="oi oi-lock-locked" aria-hidden="true"></span>
+                                            Blocked by: @dependencyTask?.Title
+                                        </small>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .summary-feature-card {
+        border-left: 4px solid #007bff;
+    }
+    
+    .task-list {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .task-item {
+        padding: 8px;
+        margin-bottom: 4px;
+        border-radius: 4px;
+        border: 1px solid #e9ecef;
+        background-color: #f8f9fa;
+    }
+    
+    .task-item.completed {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+    }
+    
+    .task-item.blocked {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+    }
+    
+    .badge-sm {
+        font-size: 0.65rem;
+        padding: 0.25rem 0.4rem;
+    }
+    
+    .dependency-info {
+        font-size: 0.75rem;
+    }
+    
+    .task-info small {
+        font-size: 0.8rem;
+    }
+</style>
+
+@code {
+    [Parameter] public Feature Feature { get; set; } = null!;
+    
+    private List<KanbanTask> GetFeatureTasks(Guid featureId)
+    {
+        return TaskService.Tasks
+            .Where(t => t.FeatureId == featureId)
+            .OrderBy(t => t.Priority)
+            .ThenBy(t => t.Title)
+            .ToList();
+    }
+}

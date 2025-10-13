@@ -3,6 +3,7 @@
 @using KanbanGamev2.Client.Services
 @using KanbanGamev2.Client.Components
 @inject IFeatureService FeatureService
+@inject ITaskService TaskService
 @inject ISignalRService SignalRService
 @inject IGlobalLoaderService GlobalLoaderService
 @implements IDisposable
@@ -12,11 +13,62 @@
 <link href="css/kanban.css" rel="stylesheet" />
 
 <div class="container-fluid">
-    <KanbanBoard 
-        Title="Summary Board"
-        Description="High-level overview of all features across the development lifecycle"
-        BoardType="@BoardType.Summary"
-        Columns="@summaryColumns" />
+    <div class="kanban-board">
+        <div class="board-header mb-3">
+            <h2>Summary Board</h2>
+            <p class="text-muted">High-level overview of all features across the development lifecycle</p>
+        </div>
+        <div class="board-content">
+            <div class="d-flex flex-row" style="gap: 15px;">
+                @foreach (var column in summaryColumns)
+                {
+                    <div class="flex-fill">
+                        <div class="kanban-column">
+                            <div class="column-header">
+                                <h5>@column.Title</h5>
+                                <span class="badge bg-secondary">@column.Cards.Count</span>
+                            </div>
+                            <div class="column-content">
+                                @if (column.ColumnId == "development")
+                                {
+                                    <!-- Custom rendering for development column with tasks -->
+                                    @foreach (var card in column.Cards)
+                                    {
+                                        @if (card is Feature feature)
+                                        {
+                                            <SummaryFeatureCard Feature="@feature" />
+                                        }
+                                        else
+                                        {
+                                            <DraggableCard 
+                                                Card="@card" 
+                                                ColumnId="@column.ColumnId"
+                                                BoardType="@BoardType.Summary"
+                                                OnCardMoved="@OnCardMoved"
+                                                OnWorkAssigned="@OnWorkAssigned" />
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    <!-- Standard rendering for other columns -->
+                                    @foreach (var card in column.Cards)
+                                    {
+                                        <DraggableCard 
+                                            Card="@card" 
+                                            ColumnId="@column.ColumnId"
+                                            BoardType="@BoardType.Summary"
+                                            OnCardMoved="@OnCardMoved"
+                                            OnWorkAssigned="@OnWorkAssigned" />
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
 </div>
 
 @code {
@@ -44,6 +96,7 @@
     private async Task LoadData()
     {
         await FeatureService.GetFeatures();
+        await TaskService.GetTasks();
     }
 
     private void OrganizeColumns()
@@ -77,6 +130,11 @@
         var features = FeatureService.Features.Where(f => f.ColumnId == columnId).ToList();
         return features.Cast<Card>().ToList();
     }
+    
+    private List<Feature> GetFeaturesInDevelopment()
+    {
+        return FeatureService.Features.Where(f => f.ColumnId == "development").ToList();
+    }
 
     private async void OnBoardUpdated(string boardType, string columnId, object cardData)
     {
@@ -95,8 +153,22 @@
         // Reload data from server to ensure we have the latest state
         // This is especially important for vacation status changes
         await FeatureService.GetFeatures();
+        await TaskService.GetTasks();
         OrganizeColumns();
         StateHasChanged();
+    }
+
+    private async Task OnCardMoved((Card card, string fromColumn, string toColumn) moveData)
+    {
+        // Handle card movement if needed
+        // For summary board, we might want to prevent certain movements
+        await Task.CompletedTask;
+    }
+    
+    private async Task OnWorkAssigned((Card workCard, Employee employee) assignmentData)
+    {
+        // Handle work assignment if needed
+        await Task.CompletedTask;
     }
 
     public void Dispose()
