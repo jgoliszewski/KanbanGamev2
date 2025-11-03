@@ -219,11 +219,11 @@ public class DragDropService : IDragDropService
     {
         if (card is Employee employee)
         {
-            // Check if employee can work in both the source and target columns
-            if (!employee.CanWorkInColumn(fromColumn) || !employee.CanWorkInColumn(toColumn))
+            // Check if employee can work in the target column (this already validates role restrictions)
+            if (!employee.CanWorkInColumn(toColumn))
                 return false;
 
-            // Employees can only move between "under analysis 1" and "under analysis 2"
+            // Both analysis columns require HighLevelAnalyst, so employees with that role can move between them
             var allowedEmployeeColumns = new[] { "analysis1", "analysis2" };
             return allowedEmployeeColumns.Contains(fromColumn) && allowedEmployeeColumns.Contains(toColumn);
         }

@@ -4,7 +4,7 @@ namespace KanbanGame.Shared;
 
 public class Feature : Card
 {
-    public Priority Priority { get; set; } = Priority.Medium;
+    public Priority? Priority { get; set; }
     public Status Status { get; set; } = Status.New;
     public Guid? AssignedToEmployeeId { get; set; }
     public DateTime? DueDate { get; set; }

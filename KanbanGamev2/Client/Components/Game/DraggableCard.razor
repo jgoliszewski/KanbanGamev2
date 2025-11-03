@@ -35,12 +35,9 @@
                         </div>
                         <div class="employee-right">
                         <div class="employee-status">
-                            <span class="badge @(employee.IsWorking ? "bg-danger" : "bg-success")">
-                                @(employee.IsWorking ? "Working" : "Free")
+                            <span class="@(employee.IsWorking ? "status-dot-working" : "status-dot-free")" 
+                                  title="@(employee.IsWorking ? "Working" : "Free")">
                             </span>
-                            </div>
-                            <div class="employee-efficiency">
-                                <small class="text-muted">@(employee.Efficiency.ToString("P0"))</small>
                             </div>
                         </div>
                     </div>
@@ -57,12 +54,25 @@
             else
             {
                 <h6 class="card-title mb-1">@Card.Title</h6>
-                <p class="card-text small mb-1">@Card.Description</p>
+                @if (!(Card is Feature) && !(Card is KanbanTask))
+                {
+                    <p class="card-text small mb-1">@Card.Description</p>
+                }
                 @if (Card is Feature feature)
                 {
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="badge @feature.Priority.GetBadgeClass()">@feature.Priority</span>
-                        <small class="text-muted">@feature.StoryPoints SP</small>
+                        @if (feature.Priority.HasValue)
+                        {
+                            <span class="badge @feature.Priority.GetBadgeClass()">@feature.Priority</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">No Priority</span>
+                        }
+                        @if (feature.ColumnId != "backlog" && feature.ColumnId != "analysis1" && feature.ColumnId != "analysis2")
+                        {
+                            <small class="text-muted">@feature.StoryPoints SP</small>
+                        }
                     </div>
                     @if (feature.IsInReadyDevColumn)
                     {
@@ -77,15 +87,6 @@
                     {
                         <div class="mt-2">
                             <div class="text-success fw-bold">Profit: $@feature.Profit.ToString("N0")</div>
-                            <div class="labor-intensity">
-                                <small class="text-muted">Labor Left: @(feature.LaborLeft.ToString("P0"))</small>
-                            </div>
-                        </div>
-                    }
-                    else if (!feature.IsInReadyDevColumn && !feature.IsInDevelopment)
-                    {
-                        <div class="labor-intensity">
-                            <small class="text-muted">Labor Left: @(feature.LaborLeft.ToString("P0"))</small>
                         </div>
                     }
                     @if (feature.IsAssigned)
@@ -96,15 +97,19 @@
                 else if (Card is KanbanTask task)
                 {
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="badge @task.Priority.GetBadgeClass()">@task.Priority</span>
+                        <select class="form-select form-select-sm priority-select @task.Priority.GetBadgeClass()" 
+                                style="width: auto; display: inline-block; padding: 0.25rem 0.5rem; font-size: 0.75rem;"
+                                @bind="task.Priority"
+                                @bind:event="onchange"
+                                @bind:after="async () => await OnTaskPriorityChanged(task)"
+                                @onclick:stopPropagation="true">
+                            @foreach (Priority priority in Enum.GetValues(typeof(Priority)))
+                            {
+                                <option value="@priority">@priority</option>
+                            }
+                        </select>
                         <small class="text-muted">@task.StoryPoints SP</small>
                     </div>
-                    @if (!task.IsInDoneColumn)
-                    {
-                        <div class="labor-intensity">
-                            <small class="text-muted">Labor Left: @(task.LaborLeft.ToString("P0"))</small>
-                        </div>
-                    }
                     @if (task.AssignedToEmployeeId.HasValue)
                     {
                         <span class="badge bg-success">Assigned</span>
@@ -112,26 +117,12 @@
 
 
                     
-                    @if (task.HasDependency)
+                    @if (task.HasDependency && !task.IsDependencySatisfied && !task.CanBeMoved)
                     {
                         <div class="mt-2">
-                            @if (task.IsDependencySatisfied)
-                            {
-                                <span class="badge bg-success">Dependency ✓</span>
-                            }
-                            else if (!task.CanBeMoved)
-                            {
-                                    <div class="mt-2">
-                                        @{
-                                        var dependencyTask = TaskService.Tasks.FirstOrDefault(t => t.Id == task.DependsOnTaskId!.Value);
-                                        <span class="badge bg-danger">Blocked by @dependencyTask?.Title</span>
-                                        }
-                                    </div>
-                            }
-                            else
-                            {
-                                var dependencyTask = TaskService.Tasks.FirstOrDefault(t => t.Id == task.DependsOnTaskId!.Value);
-                                <span class="badge bg-warning">Dependent on @dependencyTask?.Title</span>
+                            @{
+                            var dependencyTask = TaskService.Tasks.FirstOrDefault(t => t.Id == task.DependsOnTaskId!.Value);
+                            <span class="badge bg-danger">Blocked by @dependencyTask?.Title</span>
                             }
                         </div>
                     }
@@ -331,5 +322,12 @@
             // Handle error - you might want to show a toast notification
             Console.WriteLine($"Error moving employee: {ex.Message}");
         }
+    }
+
+
+    private async Task OnTaskPriorityChanged(KanbanTask task)
+    {
+        await TaskService.UpdateTask(task);
+        StateHasChanged();
     }
 } 

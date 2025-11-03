@@ -11,7 +11,7 @@
         <div class="d-flex flex-row" style="gap: 15px;">
             @foreach (var column in Columns)
             {
-                <div class="flex-fill">
+                <div class="flex-fill" style="flex: 1 1 0; min-width: 0;">
                     <DroppableColumn 
                         Title="@column.Title" 
                         ColumnId="@column.ColumnId"

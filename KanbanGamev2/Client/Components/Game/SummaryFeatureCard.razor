@@ -1,21 +1,28 @@
 @using KanbanGame.Shared
 @using KanbanGamev2.Client.Services
 @inject ITaskService TaskService
+@inject IFeatureService FeatureService
 
 <div class="card mb-2 summary-feature-card">
     <div class="card-body p-2">
         <h6 class="card-title mb-1">@Feature.Title</h6>
-        <p class="card-text small mb-1">@Feature.Description</p>
         
         <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="badge @Feature.Priority.GetBadgeClass()">@Feature.Priority</span>
-            <small class="text-muted">@Feature.StoryPoints SP</small>
+            @if (Feature.Priority.HasValue)
+            {
+                <span class="badge @Feature.Priority.GetBadgeClass()">@Feature.Priority</span>
+            }
+            else
+            {
+                <span class="badge bg-secondary">No Priority</span>
+            }
+            @if (Feature.ColumnId != "backlog" && Feature.ColumnId != "analysis1" && Feature.ColumnId != "analysis2")
+            {
+                <small class="text-muted">@Feature.StoryPoints SP</small>
+            }
         </div>
         
         <div class="text-success fw-bold mb-2">Profit: $@Feature.Profit.ToString("N0")</div>
-        <div class="labor-intensity mb-2">
-            <small class="text-muted">Labor Left: @(Feature.LaborLeft.ToString("P0"))</small>
-        </div>
         
         @if (Feature.IsAssigned)
         {
@@ -34,44 +41,28 @@
                     <span class="oi oi-list" aria-hidden="true"></span>
                     Tasks (@featureTasks.Count)
                 </h6>
-                <div class="task-list">
+                <div class="task-grid">
                     @foreach (var task in featureTasks)
                     {
                         <div class="task-item @(task.IsInDoneColumn ? "completed" : "") @(task.HasDependency && !task.IsDependencySatisfied ? "blocked" : "")">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="task-info">
-                                    <small class="fw-bold">@task.Title</small>
-                                    <div class="d-flex align-items-center gap-1 mt-1">
-                                        <span class="badge @task.Priority.GetBadgeClass() badge-sm">@task.Priority</span>
-                                        <small class="text-muted">@task.StoryPoints SP</small>
-                                        @if (task.IsAssigned)
-                                        {
-                                            <span class="badge bg-success badge-sm">Assigned</span>
-                                        }
-                                    </div>
-                                </div>
+                            <div class="task-header">
+                                <small class="fw-bold">@task.Title</small>
                                 <div class="task-status">
-                                    @if (task.IsInDoneColumn)
-                                    {
-                                        <span class="badge bg-success badge-sm">
-                                            <span class="oi oi-check" aria-hidden="true"></span>
-                                        </span>
-                                    }
-                                    else if (task.HasDependency && !task.IsDependencySatisfied)
+                                    @if (task.HasDependency && !task.IsDependencySatisfied && !task.CanBeMoved)
                                     {
                                         <span class="badge bg-danger badge-sm" title="Blocked by dependency">
                                             <span class="oi oi-lock-locked" aria-hidden="true"></span>
                                         </span>
                                     }
-                                    else
-                                    {
-                                        <span class="badge bg-warning badge-sm">
-                                            <span class="oi oi-clock" aria-hidden="true"></span>
-                                        </span>
-                                    }
                                 </div>
                             </div>
-                            
+                            <div class="task-meta">
+                                <small class="text-muted">@task.StoryPoints SP</small>
+                                @if (task.IsAssigned)
+                                {
+                                    <span class="badge bg-success badge-sm">Assigned</span>
+                                }
+                            </div>
                             <!-- Show dependency information -->
                             @if (task.HasDependency)
                             {
@@ -106,17 +97,35 @@
         border-left: 4px solid #007bff;
     }
     
-    .task-list {
+    .task-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 8px;
         max-height: 200px;
         overflow-y: auto;
     }
     
     .task-item {
         padding: 8px;
-        margin-bottom: 4px;
         border-radius: 4px;
         border: 1px solid #e9ecef;
         background-color: #f8f9fa;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .task-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 4px;
+    }
+    
+    .task-meta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: auto;
     }
     
     .task-item.completed {
@@ -154,4 +163,5 @@
             .ThenBy(t => t.Title)
             .ToList();
     }
+
 }

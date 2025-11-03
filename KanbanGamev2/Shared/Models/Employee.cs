@@ -37,14 +37,15 @@ public class Employee : Card
     {
         return columnId switch
         {
-            // Analysis columns - only analysts can work here
-            "analysis1" or "analysis2" => LearnedRoles.Contains(Role.Analyst) || LearnedRoles.Contains(Role.HighLevelAnalyst),
+            // High-level analysis columns - only HighLevelAnalyst can work here
+            "analysis1" => LearnedRoles.Contains(Role.HighLevelAnalyst),
+            "analysis2" => LearnedRoles.Contains(Role.HighLevelAnalyst),
 
-            // Backend analysis - only analysts can work here
-            "backend-analysis" => LearnedRoles.Contains(Role.Analyst) || LearnedRoles.Contains(Role.HighLevelAnalyst),
+            // Backend analysis - only regular Analyst can work here (not HighLevelAnalyst)
+            "backend-analysis" => LearnedRoles.Contains(Role.Analyst) && !LearnedRoles.Contains(Role.HighLevelAnalyst),
 
-            // Frontend analysis - only analysts can work here
-            "frontend-analysis" => LearnedRoles.Contains(Role.Analyst) || LearnedRoles.Contains(Role.HighLevelAnalyst),
+            // Frontend analysis - only regular Analyst can work here (not HighLevelAnalyst)
+            "frontend-analysis" => LearnedRoles.Contains(Role.Analyst) && !LearnedRoles.Contains(Role.HighLevelAnalyst),
 
             // Development columns - only developers can work here
             "backend-dev-doing" or "frontend-dev-doing" => LearnedRoles.Contains(Role.Developer),

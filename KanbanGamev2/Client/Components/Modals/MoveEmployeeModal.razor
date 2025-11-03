@@ -35,7 +35,7 @@
                                                 <div class="unavailable-reason mt-2">
                                                     <small class="text-danger">
                                                         <i class="oi oi-lock-locked"></i> 
-                                                        Role not available
+                                                        @GetUnavailableReason(column.Id)
                                                     </small>
                                                 </div>
                                             }
@@ -110,7 +110,9 @@
         }
     }
 
-    private bool CanConfirm => !string.IsNullOrEmpty(SelectedColumnId);
+    private bool CanConfirm => !string.IsNullOrEmpty(SelectedColumnId) && 
+                               Employee != null && 
+                               Employee.CanWorkInColumn(SelectedColumnId);
 
     protected override void OnParametersSet()
     {
@@ -207,11 +209,44 @@
         };
     }
 
+    private string GetUnavailableReason(string columnId)
+    {
+        if (Employee == null) return "Role not available";
+        
+        // Check role restrictions for analysis columns
+        if (columnId == "analysis1" || columnId == "analysis2")
+        {
+            if (!Employee.HasRole(Role.HighLevelAnalyst))
+                return "High-level analysis role required";
+        }
+        else if (columnId == "backend-analysis" || columnId == "frontend-analysis")
+        {
+            if (!Employee.HasRole(Role.Analyst) || Employee.HasRole(Role.HighLevelAnalyst))
+                return "Regular analysis role required (no high-level)";
+        }
+        else if (columnId == "backend-dev-doing" || columnId == "frontend-dev-doing")
+        {
+            if (!Employee.HasRole(Role.Developer))
+                return "Developer role required";
+        }
+        else if (columnId == "backend-test-doing" || columnId == "frontend-test-doing")
+        {
+            if (!Employee.HasRole(Role.Tester))
+                return "Tester role required";
+        }
+        
+        return "Role not available";
+    }
+
     private async Task OnConfirmClicked()
     {
         if (Employee != null && !string.IsNullOrEmpty(SelectedColumnId))
         {
-            await OnConfirm.InvokeAsync((Employee, SelectedBoardType, SelectedColumnId));
+            // Double-check validation before confirming
+            if (Employee.CanWorkInColumn(SelectedColumnId))
+            {
+                await OnConfirm.InvokeAsync((Employee, SelectedBoardType, SelectedColumnId));
+            }
         }
     }
 

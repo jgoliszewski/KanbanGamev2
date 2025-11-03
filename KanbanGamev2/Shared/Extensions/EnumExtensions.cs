@@ -29,6 +29,13 @@ public static class EnumExtensions
         };
     }
 
+    public static string GetBadgeClass(this Priority? priority)
+    {
+        if (!priority.HasValue)
+            return "bg-secondary";
+        return priority.Value.GetBadgeClass();
+    }
+
     public static string GetBadgeClass(this Status status)
     {
         return status switch

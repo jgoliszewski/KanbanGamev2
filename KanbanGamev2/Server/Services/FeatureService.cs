@@ -159,9 +159,9 @@ public class FeatureService : IFeatureService
         // UI Design task
         tasks.Add(new KanbanTask
         {
-            Title = $"{feature.Title} - UI Design",
+            Title = $"{feature.Title} - A",
             Description = $"Design user interface for {feature.Title}",
-            Priority = feature.Priority,
+            Priority = feature.Priority ?? Priority.Medium,
             Status = Status.ToDo,
             StoryPoints = Math.Max(2, baseStoryPoints / numFrontendTasks),
             ColumnId = "frontend-backlog",
@@ -176,9 +176,9 @@ public class FeatureService : IFeatureService
         // Component Development task
         tasks.Add(new KanbanTask
         {
-            Title = $"{feature.Title} - Component Development",
+            Title = $"{feature.Title} - B",
             Description = $"Develop React components for {feature.Title}",
-            Priority = feature.Priority,
+            Priority = feature.Priority ?? Priority.Medium,
             Status = Status.ToDo,
             StoryPoints = Math.Max(3, baseStoryPoints / numFrontendTasks),
             ColumnId = "frontend-backlog",
@@ -193,9 +193,9 @@ public class FeatureService : IFeatureService
         // State Management task
         tasks.Add(new KanbanTask
         {
-            Title = $"{feature.Title} - State Management",
+            Title = $"{feature.Title} - C",
             Description = $"Implement state management for {feature.Title}",
-            Priority = feature.Priority,
+            Priority = feature.Priority ?? Priority.Medium,
             Status = Status.ToDo,
             StoryPoints = Math.Max(2, baseStoryPoints / numFrontendTasks),
             ColumnId = "frontend-backlog",
@@ -210,9 +210,9 @@ public class FeatureService : IFeatureService
         // Routing and Navigation task
         tasks.Add(new KanbanTask
         {
-            Title = $"{feature.Title} - Routing and Navigation",
+            Title = $"{feature.Title} - D",
             Description = $"Set up routing and navigation for {feature.Title}",
-            Priority = feature.Priority,
+            Priority = feature.Priority ?? Priority.Medium,
             Status = Status.ToDo,
             StoryPoints = Math.Max(2, baseStoryPoints / numFrontendTasks),
             ColumnId = "frontend-backlog",
@@ -230,9 +230,9 @@ public class FeatureService : IFeatureService
             // Form Handling task
             tasks.Add(new KanbanTask
             {
-                Title = $"{feature.Title} - Form Handling",
+                Title = $"{feature.Title} - E",
                 Description = $"Implement form handling and validation for {feature.Title}",
-                Priority = feature.Priority,
+                Priority = feature.Priority ?? Priority.Medium,
                 Status = Status.ToDo,
                 StoryPoints = Math.Max(2, baseStoryPoints / numFrontendTasks),
                 ColumnId = "frontend-backlog",
@@ -250,9 +250,9 @@ public class FeatureService : IFeatureService
             // Error Handling task
             tasks.Add(new KanbanTask
             {
-                Title = $"{feature.Title} - Error Handling",
+                Title = $"{feature.Title} - F",
                 Description = $"Implement error handling and user feedback for {feature.Title}",
-                Priority = feature.Priority,
+                Priority = feature.Priority ?? Priority.Medium,
                 Status = Status.ToDo,
                 StoryPoints = Math.Max(2, baseStoryPoints / numFrontendTasks),
                 ColumnId = "frontend-backlog",
@@ -270,9 +270,9 @@ public class FeatureService : IFeatureService
             // Performance Optimization task
             tasks.Add(new KanbanTask
             {
-                Title = $"{feature.Title} - Performance Optimization",
+                Title = $"{feature.Title} - G",
                 Description = $"Optimize performance and loading times for {feature.Title}",
-                Priority = feature.Priority,
+                Priority = feature.Priority ?? Priority.Medium,
                 Status = Status.ToDo,
                 StoryPoints = Math.Max(2, baseStoryPoints / numFrontendTasks),
                 ColumnId = "frontend-backlog",
@@ -290,9 +290,9 @@ public class FeatureService : IFeatureService
             // Frontend Integration task
             tasks.Add(new KanbanTask
             {
-                Title = $"{feature.Title} - Frontend Integration",
+                Title = $"{feature.Title} - H",
                 Description = $"Final integration and testing for {feature.Title}",
-                Priority = feature.Priority,
+                Priority = feature.Priority ?? Priority.Medium,
                 Status = Status.ToDo,
                 StoryPoints = Math.Max(2, baseStoryPoints / numFrontendTasks),
                 ColumnId = "frontend-backlog",
@@ -319,9 +319,9 @@ public class FeatureService : IFeatureService
         // API Design task
         tasks.Add(new KanbanTask
         {
-            Title = $"{feature.Title} - API Design",
+            Title = $"{feature.Title} - A",
             Description = $"Design REST API endpoints for {feature.Title}",
-            Priority = feature.Priority,
+            Priority = feature.Priority ?? Priority.Medium,
             Status = Status.ToDo,
             StoryPoints = Math.Max(2, baseStoryPoints / numBackendTasks),
             ColumnId = "backend-backlog",
@@ -336,9 +336,9 @@ public class FeatureService : IFeatureService
         // Database Schema task
         tasks.Add(new KanbanTask
         {
-            Title = $"{feature.Title} - Database Schema",
+            Title = $"{feature.Title} - B",
             Description = $"Create database schema for {feature.Title}",
-            Priority = feature.Priority,
+            Priority = feature.Priority ?? Priority.Medium,
             Status = Status.ToDo,
             StoryPoints = Math.Max(2, baseStoryPoints / numBackendTasks),
             ColumnId = "backend-backlog",
@@ -356,9 +356,9 @@ public class FeatureService : IFeatureService
             // Backend Implementation task
             tasks.Add(new KanbanTask
             {
-                Title = $"{feature.Title} - Backend Implementation",
+                Title = $"{feature.Title} - C",
                 Description = $"Implement core backend logic for {feature.Title}",
-                Priority = feature.Priority,
+                Priority = feature.Priority ?? Priority.Medium,
                 Status = Status.ToDo,
                 StoryPoints = Math.Max(3, baseStoryPoints / numBackendTasks),
                 ColumnId = "backend-backlog",
@@ -376,9 +376,9 @@ public class FeatureService : IFeatureService
             // Testing and Validation task
             tasks.Add(new KanbanTask
             {
-                Title = $"{feature.Title} - Testing and Validation",
+                Title = $"{feature.Title} - D",
                 Description = $"Implement testing and validation for {feature.Title}",
-                Priority = feature.Priority,
+                Priority = feature.Priority ?? Priority.Medium,
                 Status = Status.ToDo,
                 StoryPoints = Math.Max(2, baseStoryPoints / numBackendTasks),
                 ColumnId = "backend-backlog",
@@ -402,7 +402,7 @@ public class FeatureService : IFeatureService
             new Feature
             {
                 Id = Guid.NewGuid(),
-                Title = "User Authentication",
+                Title = "F1",
                 Description = "Implement secure user authentication system",
                 Priority = Priority.High,
                 Status = Status.Waiting,
@@ -418,7 +418,7 @@ public class FeatureService : IFeatureService
             new Feature
             {
                 Id = Guid.NewGuid(),
-                Title = "Dashboard Analytics",
+                Title = "F2",
                 Description = "Create analytics dashboard with charts and metrics",
                 Priority = Priority.Medium,
                 Status = Status.Waiting,
@@ -435,13 +435,13 @@ public class FeatureService : IFeatureService
             new Feature
             {
                 Id = Guid.NewGuid(),
-                Title = "Payment Integration",
+                Title = "F3",
                 Description = "Integrate payment gateway for subscription management",
-                Priority = Priority.High,
+                Priority = null,
                 Status = Status.ToDo,
                 AssignedToEmployeeId = null,
                 DueDate = DateTime.Now.AddDays(10),
-                StoryPoints = 21,
+                StoryPoints = 0,
                 ColumnId = "backlog",
                 Order = 3,
                 LaborIntensity = 1.0,
@@ -451,13 +451,13 @@ public class FeatureService : IFeatureService
             new Feature
             {
                 Id = Guid.NewGuid(),
-                Title = "Mobile App",
+                Title = "F4",
                 Description = "Develop mobile application for iOS and Android",
-                Priority = Priority.Medium,
+                Priority = null,
                 Status = Status.ToDo,
                 AssignedToEmployeeId = null,
                 DueDate = DateTime.Now.AddDays(30),
-                StoryPoints = 34,
+                StoryPoints = 0,
                 ColumnId = "backlog",
                 Order = 4,
                 LaborIntensity = 1.0,
@@ -467,13 +467,13 @@ public class FeatureService : IFeatureService
             new Feature
             {
                 Id = Guid.NewGuid(),
-                Title = "Real-time Chat",
+                Title = "F5",
                 Description = "Implement real-time messaging system",
-                Priority = Priority.High,
+                Priority = null,
                 Status = Status.ToDo,
                 AssignedToEmployeeId = null,
                 DueDate = DateTime.Now.AddDays(12),
-                StoryPoints = 13,
+                StoryPoints = 0,
                 ColumnId = "backlog",
                 Order = 5,
                 LaborIntensity = 1.0,
@@ -483,13 +483,13 @@ public class FeatureService : IFeatureService
             new Feature
             {
                 Id = Guid.NewGuid(),
-                Title = "File Upload System",
+                Title = "F6",
                 Description = "Create secure file upload and storage system",
-                Priority = Priority.Medium,
+                Priority = null,
                 Status = Status.ToDo,
                 AssignedToEmployeeId = null,
                 DueDate = DateTime.Now.AddDays(8),
-                StoryPoints = 8,
+                StoryPoints = 0,
                 ColumnId = "backlog",
                 Order = 6,
                 LaborIntensity = 1.0,
@@ -499,13 +499,13 @@ public class FeatureService : IFeatureService
             new Feature
             {
                 Id = Guid.NewGuid(),
-                Title = "Email Notifications",
+                Title = "F7",
                 Description = "Add email notification system for important events",
-                Priority = Priority.Low,
+                Priority = null,
                 Status = Status.ToDo,
                 AssignedToEmployeeId = null,
                 DueDate = DateTime.Now.AddDays(5),
-                StoryPoints = 5,
+                StoryPoints = 0,
                 ColumnId = "backlog",
                 Order = 7,
                 LaborIntensity = 1.0,
@@ -515,13 +515,13 @@ public class FeatureService : IFeatureService
             new Feature
             {
                 Id = Guid.NewGuid(),
-                Title = "Search Functionality",
+                Title = "F8",
                 Description = "Implement advanced search with filters",
-                Priority = Priority.Medium,
+                Priority = null,
                 Status = Status.ToDo,
                 AssignedToEmployeeId = null,
                 DueDate = DateTime.Now.AddDays(15),
-                StoryPoints = 13,
+                StoryPoints = 0,
                 ColumnId = "backlog",
                 Order = 8,
                 LaborIntensity = 1.0,

@@ -75,140 +75,73 @@ public class EmployeeService : IEmployeeService
         _employees = new List<Employee>
         {
             // Analysis Board Employees
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Alex",
-                Email = "alex@company.com",
-                LearnedRoles = new List<Role> { Role.Analyst },
-                LearnableRoles = new List<Role> { Role.HighLevelAnalyst, Role.Tester },
-                Department = Department.Engineering,
-                Seniority = Seniority.Mid,
-                BoardType = BoardType.Analysis,
-                ColumnId = "analysis1",
-                Status = EmployeeStatus.Active
-            },
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Alice",
-                Email = "alice@company.com",
-                LearnedRoles = new List<Role> { Role.HighLevelAnalyst },
-                LearnableRoles = new List<Role> { Role.Analyst, Role.Tester },
-                Department = Department.Engineering,
-                Seniority = Seniority.Senior,
-                BoardType = BoardType.Analysis,
-                ColumnId = "analysis2",
-                Status = EmployeeStatus.Active
-            },
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Beth",
-                Email = "beth@company.com",
-                LearnedRoles = new List<Role> { Role.Analyst, Role.Tester },
-                LearnableRoles = new List<Role> { Role.Developer, Role.HighLevelAnalyst },
-                Department = Department.Engineering,
-                Seniority = Seniority.Mid,
-                BoardType = BoardType.Analysis,
-                ColumnId = "analysis1",
-                Status = EmployeeStatus.Active
-            },
+            // analysis1 - HighLevelAnalyst
+            CreateEmployeeWithRoles("Alex", "alex@company.com", "analysis1", BoardType.Analysis, 
+                Role.HighLevelAnalyst, 
+                new List<Role> { Role.Analyst, Role.Developer }, 
+                Role.Tester),
+            
+            // analysis2 - HighLevelAnalyst (same as analysis1)
+            CreateEmployeeWithRoles("Alice", "alice@company.com", "analysis2", BoardType.Analysis, 
+                Role.HighLevelAnalyst, 
+                new List<Role> { Role.Developer, Role.Tester }, 
+                Role.Analyst),
             
             // Backend Board Employees
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Brian",
-                Email = "brian@company.com",
-                LearnedRoles = new List<Role> { Role.Developer },
-                LearnableRoles = new List<Role> { Role.Analyst, Role.Tester },
-                Department = Department.Engineering,
-                Seniority = Seniority.Senior,
-                BoardType = BoardType.Backend,
-                ColumnId = "backend-dev-doing",
-                Status = EmployeeStatus.Active
-            },
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Charles",
-                Email = "charles@company.com",
-                LearnedRoles = new List<Role> { Role.Tester },
-                LearnableRoles = new List<Role> { Role.Analyst, Role.Developer },
-                Department = Department.Engineering,
-                Seniority = Seniority.Junior,
-                BoardType = BoardType.Backend,
-                ColumnId = "backend-test-doing",
-                Status = EmployeeStatus.Active
-            },
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Claire",
-                Email = "claire@company.com",
-                LearnedRoles = new List<Role> { Role.Analyst, Role.Developer },
-                LearnableRoles = new List<Role> { Role.HighLevelAnalyst, Role.Tester },
-                Department = Department.Engineering,
-                Seniority = Seniority.Mid,
-                BoardType = BoardType.Backend,
-                ColumnId = "backend-analysis",
-                Status = EmployeeStatus.Active
-            },
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "David",
-                Email = "david@company.com",
-                LearnedRoles = new List<Role> { Role.Developer, Role.HighLevelAnalyst },
-                LearnableRoles = new List<Role> { Role.Analyst, Role.Tester },
-                Department = Department.Engineering,
-                Seniority = Seniority.Senior,
-                BoardType = BoardType.Backend,
-                ColumnId = "backend-dev-doing",
-                Status = EmployeeStatus.Active
-            },
+            // backend-analysis - Analyst
+            CreateEmployeeWithRoles("Brian", "brian@company.com", "backend-analysis", BoardType.Backend, 
+                Role.Analyst, 
+                new List<Role> { Role.Developer, Role.Tester }, 
+                Role.HighLevelAnalyst),
+            
+            // backend-dev-doing - Developer
+            CreateEmployeeWithRoles("Charles", "charles@company.com", "backend-dev-doing", BoardType.Backend, 
+                Role.Developer, 
+                new List<Role> { Role.Analyst, Role.Tester }, 
+                Role.HighLevelAnalyst),
+            
+            // backend-test-doing - Tester
+            CreateEmployeeWithRoles("Claire", "claire@company.com", "backend-test-doing", BoardType.Backend, 
+                Role.Tester, 
+                new List<Role> { Role.Analyst, Role.Developer }, 
+                Role.HighLevelAnalyst),
             
             // Frontend Board Employees
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Diana",
-                Email = "diana@company.com",
-                LearnedRoles = new List<Role> { Role.Developer },
-                LearnableRoles = new List<Role> { Role.Analyst, Role.Tester },
-                Department = Department.Engineering,
-                Seniority = Seniority.Mid,
-                BoardType = BoardType.Frontend,
-                ColumnId = "frontend-dev-doing",
-                Status = EmployeeStatus.Active
-            },
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Emma",
-                Email = "emma@company.com",
-                LearnedRoles = new List<Role> { Role.Developer, Role.Tester },
-                LearnableRoles = new List<Role> { Role.Analyst, Role.HighLevelAnalyst },
-                Department = Department.Engineering,
-                Seniority = Seniority.Senior,
-                BoardType = BoardType.Frontend,
-                ColumnId = "frontend-test-doing",
-                Status = EmployeeStatus.Active
-            },
-            new Employee
-            {
-                Id = Guid.NewGuid(),
-                Name = "Ethan",
-                Email = "ethan@company.com",
-                LearnedRoles = new List<Role> { Role.Tester, Role.Analyst },
-                LearnableRoles = new List<Role> { Role.Developer, Role.HighLevelAnalyst },
-                Department = Department.Engineering,
-                Seniority = Seniority.Junior,
-                BoardType = BoardType.Frontend,
-                ColumnId = "frontend-analysis",
-                Status = EmployeeStatus.Active
-            }
+            // frontend-analysis - Analyst
+            CreateEmployeeWithRoles("Diana", "diana@company.com", "frontend-analysis", BoardType.Frontend, 
+                Role.Analyst, 
+                new List<Role> { Role.Developer, Role.Tester }, 
+                Role.HighLevelAnalyst),
+            
+            // frontend-dev-doing - Developer
+            CreateEmployeeWithRoles("Emma", "emma@company.com", "frontend-dev-doing", BoardType.Frontend, 
+                Role.Developer, 
+                new List<Role> { Role.Analyst, Role.Tester }, 
+                Role.HighLevelAnalyst),
+            
+            // frontend-test-doing - Tester
+            CreateEmployeeWithRoles("Ethan", "ethan@company.com", "frontend-test-doing", BoardType.Frontend, 
+                Role.Tester, 
+                new List<Role> { Role.Analyst, Role.Developer }, 
+                Role.HighLevelAnalyst)
+        };
+    }
+
+    private Employee CreateEmployeeWithRoles(string name, string email, string columnId, BoardType boardType, 
+        Role learnedRole, List<Role> learnableRoles, Role blockedRole)
+    {
+        return new Employee
+        {
+            Id = Guid.NewGuid(),
+            Name = name,
+            Email = email,
+            LearnedRoles = new List<Role> { learnedRole },
+            LearnableRoles = learnableRoles,
+            Department = Department.Engineering,
+            Seniority = Seniority.Mid,
+            BoardType = boardType,
+            ColumnId = columnId,
+            Status = EmployeeStatus.Active
         };
     }
 
