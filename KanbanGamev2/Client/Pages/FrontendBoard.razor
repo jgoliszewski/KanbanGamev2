@@ -128,6 +128,63 @@
         // Update the card in the appropriate service
         if (card is Employee employee)
         {
+            var oldBoardType = employee.BoardType;
+            var newBoardType = BoardType.Frontend;
+            
+            // Check if employee should be learning in the new column
+            bool shouldBeLearning = employee.ShouldBeLearningInColumn(toColumn);
+            
+            // Check if employee is changing teams (moving to a different board)
+            if (oldBoardType != newBoardType)
+            {
+                // Reset learning state if they were learning
+                if (employee.Status == EmployeeStatus.IsLearning)
+                {
+                    employee.LearningDays = 0;
+                    employee.LearningRole = null;
+                }
+                
+                // If moving to different team to learn a role, skip ChangingTeams and start learning
+                if (shouldBeLearning)
+                {
+                    var requiredRole = employee.GetRoleRequiredForColumn(toColumn);
+                    employee.Status = EmployeeStatus.IsLearningInOtherTeam; // Set to learning in other team
+                    employee.LearningDays = 0;
+                    employee.LearningRole = requiredRole;
+                    employee.PreviousBoardType = oldBoardType; // Store previous board type
+                    employee.BoardType = newBoardType;
+                }
+                else
+                {
+                    // Employee is changing teams but not learning - set status to ChangingTeams
+                    employee.Status = EmployeeStatus.ChangingTeams;
+                    employee.ChangingTeamsDays = 0;
+                    employee.PreviousBoardType = oldBoardType;
+                    employee.BoardType = newBoardType;
+                }
+            }
+            // Same board - check if employee should be learning
+            else if (shouldBeLearning)
+            {
+                var requiredRole = employee.GetRoleRequiredForColumn(toColumn);
+                
+                // If moving to a different column or different role, reset learning counter
+                if (fromColumn != toColumn || employee.LearningRole != requiredRole)
+                {
+                    employee.LearningDays = 0;
+                }
+                
+                employee.Status = EmployeeStatus.IsLearning;
+                employee.LearningRole = requiredRole;
+            }
+            else if (employee.Status == EmployeeStatus.IsLearning)
+            {
+                // If employee was learning but no longer should be, reset learning state
+                employee.Status = EmployeeStatus.Active;
+                employee.LearningDays = 0;
+                employee.LearningRole = null;
+            }
+            
             await EmployeeService.UpdateEmployee(employee);
         }
         else if (card is KanbanTask task)

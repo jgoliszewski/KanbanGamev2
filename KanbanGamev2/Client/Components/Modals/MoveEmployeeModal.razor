@@ -18,8 +18,9 @@
                             <div class="column-tiles">
                                 @foreach (var column in boardGroup.AvailableColumns)
                                 {
-                                    var isAvailable = Employee?.CanWorkInColumn(column.Id) ?? false;
+                                    var isAvailable = Employee?.CanBePlacedInColumn(column.Id) ?? false;
                                     var isSelected = SelectedColumnId == column.Id;
+                                    var willLearn = Employee?.ShouldBeLearningInColumn(column.Id) ?? false;
                                     
                                     <div class="column-tile @(isSelected ? "selected" : "") @(isAvailable ? "" : "unavailable")" 
                                          @onclick="() => SelectColumn(column.Id, boardGroup.BoardType, isAvailable)"
@@ -30,6 +31,15 @@
                                         </div>
                                         <div class="column-tile-body">
                                             <small class="text-muted">@GetColumnDescription(column.Id)</small>
+                                            @if (willLearn)
+                                            {
+                                                <div class="mt-2">
+                                                    <small class="text-info">
+                                                        <i class="oi oi-book"></i> 
+                                                        Will learn role here
+                                                    </small>
+                                                </div>
+                                            }
                                             @if (!isAvailable)
                                             {
                                                 <div class="unavailable-reason mt-2">
@@ -112,7 +122,7 @@
 
     private bool CanConfirm => !string.IsNullOrEmpty(SelectedColumnId) && 
                                Employee != null && 
-                               Employee.CanWorkInColumn(SelectedColumnId);
+                               Employee.CanBePlacedInColumn(SelectedColumnId);
 
     protected override void OnParametersSet()
     {
@@ -242,8 +252,8 @@
     {
         if (Employee != null && !string.IsNullOrEmpty(SelectedColumnId))
         {
-            // Double-check validation before confirming
-            if (Employee.CanWorkInColumn(SelectedColumnId))
+            // Double-check validation before confirming - allow placement if they can be placed (either has role or can learn)
+            if (Employee.CanBePlacedInColumn(SelectedColumnId))
             {
                 await OnConfirm.InvokeAsync((Employee, SelectedBoardType, SelectedColumnId));
             }

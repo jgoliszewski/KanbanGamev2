@@ -20,8 +20,27 @@ public class Employee : Card
     public DateTime? VacationStartDate { get; set; }
     public DateTime? VacationEndDate { get; set; }
 
+    // Learning properties
+    public int LearningDays { get; set; } = 0;
+    public Role? LearningRole { get; set; } = null;
+    public const int DaysRequiredToLearnRole = 8;
+
+    // Team changing properties
+    public int ChangingTeamsDays { get; set; } = 0;
+    public BoardType? PreviousBoardType { get; set; } = null;
+    public const int DaysRequiredToChangeTeams = 3;
+
     // Computed property to check if employee is working on something
     public bool IsWorking => AssignedTaskId.HasValue || AssignedFeatureId.HasValue;
+
+    // Computed property to check if employee is learning
+    public bool IsLearning => Status == EmployeeStatus.IsLearning || Status == EmployeeStatus.IsLearningInOtherTeam;
+
+    // Computed property to check if employee is learning in other team
+    public bool IsLearningInOtherTeam => Status == EmployeeStatus.IsLearningInOtherTeam;
+
+    // Computed property to check if employee is changing teams
+    public bool IsChangingTeams => Status == EmployeeStatus.ChangingTeams;
 
     // Efficiency based on seniority (0-1 scale)
     public double Efficiency => Seniority switch
@@ -32,9 +51,76 @@ public class Employee : Card
         _ => 0.3
     };
 
+    // Get the role required for a specific column
+    public Role? GetRoleRequiredForColumn(string columnId)
+    {
+        return columnId switch
+        {
+            // High-level analysis columns - require HighLevelAnalyst
+            "analysis1" or "analysis2" => Role.HighLevelAnalyst,
+
+            // Backend and frontend analysis - require Analyst
+            "backend-analysis" or "frontend-analysis" => Role.Analyst,
+
+            // Development columns - require Developer
+            "backend-dev-doing" or "frontend-dev-doing" => Role.Developer,
+
+            // Testing columns - require Tester
+            "backend-test-doing" or "frontend-test-doing" => Role.Tester,
+
+            // Default - no specific role required
+            _ => null
+        };
+    }
+
+    // Check if employee can be placed in a column (either has the role or can learn it)
+    public bool CanBePlacedInColumn(string columnId)
+    {
+        var requiredRole = GetRoleRequiredForColumn(columnId);
+        
+        // If no role required, allow placement
+        if (requiredRole == null)
+            return true;
+
+        // If employee has the role, they can be placed
+        if (LearnedRoles.Contains(requiredRole.Value))
+            return true;
+
+        // If employee can learn the role, they can be placed (to learn it)
+        if (CanLearnRole(requiredRole.Value))
+            return true;
+
+        return false;
+    }
+
+    // Check if employee should be learning in a column (can learn but doesn't have the role)
+    public bool ShouldBeLearningInColumn(string columnId)
+    {
+        var requiredRole = GetRoleRequiredForColumn(columnId);
+        
+        // If no role required, no learning needed
+        if (requiredRole == null)
+            return false;
+
+        // If employee already has the role, no learning needed
+        if (LearnedRoles.Contains(requiredRole.Value))
+            return false;
+
+        // If employee can learn the role but doesn't have it, they should be learning
+        return CanLearnRole(requiredRole.Value);
+    }
+
     // Check if employee can work in a specific column based on their learned roles
     public bool CanWorkInColumn(string columnId)
     {
+        // If employee is learning, they cannot work
+        if (IsLearning)
+            return false;
+
+        // If employee is changing teams, they cannot work
+        if (IsChangingTeams)
+            return false;
+
         return columnId switch
         {
             // High-level analysis columns - only HighLevelAnalyst can work here

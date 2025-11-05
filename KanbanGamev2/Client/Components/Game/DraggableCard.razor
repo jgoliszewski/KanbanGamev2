@@ -8,7 +8,7 @@
 @inject KanbanGamev2.Shared.Services.IGameStateService GameStateService
 
 <div class="draggable-card @(IsDragging ? "dragging" : "") @(IsAssignedWorkItem ? "assigned-work-item" : "") @(IsDragOverEmployee ? "drag-over-employee" : "")"
-     draggable="true"
+     draggable="@GetDraggableValue()"
      @ondragstart="OnDragStart"
      @ondragend="OnDragEnd"
      @ondragover="OnDragOver"
@@ -20,7 +20,7 @@
         <div class="card-body p-2">
             @if (Card is Employee employee)
             {
-                <div class="employee-card @(employee.IsWorking ? "assigned" : "")">
+                <div class="employee-card @(employee.IsWorking ? "assigned" : "") @(employee.IsLearning ? "learning" : "") @(employee.IsChangingTeams ? "changing-teams" : "") @(employee.IsLearningInOtherTeam ? "learning-other-team" : "")">
                     <div class="employee-top">
                         <div class="employee-left">
                     <img src="@GetEmployeeAvatar(employee.Name)" alt="@employee.Name" class="employee-avatar" />
@@ -35,9 +35,45 @@
                         </div>
                         <div class="employee-right">
                         <div class="employee-status">
-                            <span class="@(employee.IsWorking ? "status-dot-working" : "status-dot-free")" 
-                                  title="@(employee.IsWorking ? "Working" : "Free")">
-                            </span>
+                            @if (employee.IsLearningInOtherTeam)
+                            {
+                                <div class="d-flex flex-column align-items-end gap-1">
+                                    <span class="badge bg-info" title="Learning in Other Team">
+                                        <i class="oi oi-book"></i> Learning
+                                    </span>
+                                    <small class="text-muted" style="font-size: 0.7rem; line-height: 1;">
+                                        Day @employee.LearningDays / @Employee.DaysRequiredToLearnRole
+                                    </small>
+                                </div>
+                            }
+                            else if (employee.IsChangingTeams)
+                            {
+                                <div class="d-flex flex-column align-items-end gap-1">
+                                    <span class="badge bg-warning" title="Changing Teams">
+                                        <i class="oi oi-people"></i> Changing Teams
+                                    </span>
+                                    <small class="text-muted" style="font-size: 0.7rem; line-height: 1;">
+                                        Day @employee.ChangingTeamsDays / @Employee.DaysRequiredToChangeTeams
+                                    </small>
+                                </div>
+                            }
+                            else if (employee.IsLearning)
+                            {
+                                <div class="d-flex flex-column align-items-end gap-1">
+                                    <span class="badge bg-info" title="Learning">
+                                        <i class="oi oi-book"></i> Learning
+                                    </span>
+                                    <small class="text-muted" style="font-size: 0.7rem; line-height: 1;">
+                                        Day @employee.LearningDays / @Employee.DaysRequiredToLearnRole
+                                    </small>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="@(employee.IsWorking ? "status-dot-working" : "status-dot-free")" 
+                                      title="@(employee.IsWorking ? "Working" : "Free")">
+                                </span>
+                            }
                             </div>
                         </div>
                     </div>
@@ -46,7 +82,10 @@
                             <RoleBadges Employee="@employee" />
                         </div>
                     </div>
-                    <button class="btn btn-sm btn-outline-primary move-employee-btn" @onclick="() => ShowMoveModal(employee)" title="Move Employee">
+                    <button class="btn btn-sm btn-outline-primary move-employee-btn" 
+                            @onclick="() => ShowMoveModal(employee)" 
+                            disabled="@(employee.IsChangingTeams || employee.IsLearningInOtherTeam)"
+                            title="@(employee.IsChangingTeams || employee.IsLearningInOtherTeam ? "Cannot move while changing teams or learning in other team" : "Move Employee")">
                         <i class="oi oi-arrow-right"></i>
                     </button>
                 </div>
@@ -147,8 +186,37 @@
     [Parameter] public EventCallback<(Card workCard, Employee employee)> OnWorkAssigned { get; set; }
 
     private bool IsDragging => DragDropService.IsDragging && DragDropService.DraggedCard?.Id == Card.Id;
-    private bool IsDraggable => !DragDropService.IsReadOnlyBoard(BoardType) && 
-                                 !(Card is KanbanTask task && !task.CanBeMoved);
+    private bool IsDraggable 
+    {
+        get
+        {
+            // Summary board is read-only
+            if (DragDropService.IsReadOnlyBoard(BoardType))
+                return false;
+            
+            // Tasks that can't be moved
+            if (Card is KanbanTask task && !task.CanBeMoved)
+                return false;
+            
+            // Employees: check if they can be dragged
+            if (Card is Employee employee)
+            {
+                // Cannot drag employees who are changing teams
+                if (employee.Status == EmployeeStatus.ChangingTeams)
+                    return false;
+                    
+                // Cannot drag employees who are learning in other team
+                if (employee.Status == EmployeeStatus.IsLearningInOtherTeam)
+                    return false;
+                    
+                // Cannot drag employees who are working
+                if (employee.IsWorking)
+                    return false;
+            }
+            
+            return true;
+        }
+    }
 
     private bool IsDragOverEmployee => DragDropService.IsDragging && 
                                       Card is Employee && 
@@ -179,12 +247,35 @@
         return fullName.Split(' ').FirstOrDefault() ?? fullName;
     }
 
+    private string GetDraggableValue()
+    {
+        return IsDraggable ? "true" : "false";
+    }
+
     private void OnDragStart(DragEventArgs e)
     {
-        if (Card is KanbanTask task && !task.CanBeMoved)
+        // Prevent dragging if not draggable
+        if (!IsDraggable)
         {
+            e.DataTransfer.EffectAllowed = "none";
             return;
         }
+        
+        if (Card is KanbanTask task && !task.CanBeMoved)
+        {
+            e.DataTransfer.EffectAllowed = "none";
+            return;
+        }
+        
+        if (Card is Employee employee)
+        {
+            if (employee.IsChangingTeams || employee.IsWorking || employee.IsLearningInOtherTeam)
+            {
+                e.DataTransfer.EffectAllowed = "none";
+                return;
+            }
+        }
+        
         DragDropService.StartDrag(Card, ColumnId);
         e.DataTransfer.EffectAllowed = "move";
         StateHasChanged();

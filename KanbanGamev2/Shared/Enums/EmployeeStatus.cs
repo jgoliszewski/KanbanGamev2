@@ -4,5 +4,8 @@ public enum EmployeeStatus
 {
     Active,
     OnVacation,
-    Fired
+    Fired,
+    IsLearning,
+    ChangingTeams,
+    IsLearningInOtherTeam
 } 

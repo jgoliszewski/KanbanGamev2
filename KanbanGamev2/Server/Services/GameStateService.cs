@@ -52,6 +52,12 @@ public class GameStateService : IGameStateService
         // Process vacation days for all employees
         await ProcessVacationDays();
 
+        // Process learning days for all employees
+        await ProcessLearningDays();
+
+        // Process team changing days for all employees
+        await ProcessTeamChangingDays();
+
         // No more daily achievements - only feature completion achievements
         await Task.CompletedTask;
     }
@@ -106,6 +112,184 @@ public class GameStateService : IGameStateService
         {
             // Log error but don't fail the day advancement
             Console.WriteLine($"Error processing vacation days: {ex.Message}");
+        }
+    }
+
+    private async Task ProcessLearningDays()
+    {
+        try
+        {
+            Console.WriteLine($"Processing learning days for day {_currentDay}...");
+
+            // Get all employees currently learning
+            var employees = _employeeService.GetEmployees();
+            var employeesLearning = employees.Where(e => e.Status == EmployeeStatus.IsLearning || e.Status == EmployeeStatus.IsLearningInOtherTeam).ToList();
+
+            Console.WriteLine($"Found {employeesLearning.Count} employees with learning status");
+
+            foreach (var employee in employeesLearning)
+            {
+                // For IsLearningInOtherTeam, we don't check if they should be learning in the column
+                // because they're learning in a different team - just process the learning days
+                if (employee.Status == EmployeeStatus.IsLearningInOtherTeam)
+                {
+                    if (employee.LearningRole.HasValue)
+                    {
+                        // Increment learning days
+                        employee.LearningDays++;
+                        Console.WriteLine($"Employee {employee.Name} has been learning {employee.LearningRole.Value} in other team for {employee.LearningDays} days");
+
+                        // Check if employee has learned the role (8 days)
+                        if (employee.LearningDays >= Employee.DaysRequiredToLearnRole)
+                        {
+                            Console.WriteLine($"Employee {employee.Name} has learned the role {employee.LearningRole.Value}!");
+                            
+                            // Add the role to learned roles
+                            if (!employee.LearnedRoles.Contains(employee.LearningRole.Value))
+                            {
+                                employee.LearnedRoles.Add(employee.LearningRole.Value);
+                            }
+
+                            // Remove from learnable roles
+                            employee.LearnableRoles.Remove(employee.LearningRole.Value);
+
+                            // Reset learning state
+                            employee.Status = EmployeeStatus.Active;
+                            employee.LearningDays = 0;
+                            employee.LearningRole = null;
+                            employee.PreviousBoardType = null;
+
+                            // Update employee
+                            await _employeeService.UpdateEmployee(employee);
+                        }
+                        else
+                        {
+                            // Just update the learning days counter
+                            await _employeeService.UpdateEmployee(employee);
+                        }
+                    }
+                    continue;
+                }
+
+                // For regular IsLearning status, verify employee is still in a column where they should be learning
+                if (!employee.ShouldBeLearningInColumn(employee.ColumnId))
+                {
+                    Console.WriteLine($"Employee {employee.Name} has IsLearning status but is in column {employee.ColumnId} where they shouldn't learn. Resetting status.");
+                    employee.Status = EmployeeStatus.Active;
+                    employee.LearningDays = 0;
+                    employee.LearningRole = null;
+                    await _employeeService.UpdateEmployee(employee);
+                    continue;
+                }
+
+                // Ensure LearningRole is set based on current column
+                var requiredRole = employee.GetRoleRequiredForColumn(employee.ColumnId);
+                if (requiredRole == null)
+                {
+                    Console.WriteLine($"Employee {employee.Name} is learning but column {employee.ColumnId} doesn't require a role. Resetting status.");
+                    employee.Status = EmployeeStatus.Active;
+                    employee.LearningDays = 0;
+                    employee.LearningRole = null;
+                    await _employeeService.UpdateEmployee(employee);
+                    continue;
+                }
+
+                // Set LearningRole if not set or if it changed
+                if (!employee.LearningRole.HasValue || employee.LearningRole.Value != requiredRole.Value)
+                {
+                    Console.WriteLine($"Setting LearningRole for {employee.Name} to {requiredRole.Value}");
+                    // Reset counter if role changed
+                    if (employee.LearningRole.HasValue && employee.LearningRole.Value != requiredRole.Value)
+                    {
+                        employee.LearningDays = 0;
+                    }
+                    employee.LearningRole = requiredRole.Value;
+                }
+
+                // Increment learning days
+                employee.LearningDays++;
+                Console.WriteLine($"Employee {employee.Name} has been learning {employee.LearningRole.Value} for {employee.LearningDays} days in column {employee.ColumnId}");
+
+                // Check if employee has learned the role (8 days)
+                if (employee.LearningDays >= Employee.DaysRequiredToLearnRole)
+                {
+                    Console.WriteLine($"Employee {employee.Name} has learned the role {employee.LearningRole.Value}!");
+                    
+                    // Add the role to learned roles
+                    if (!employee.LearnedRoles.Contains(employee.LearningRole.Value))
+                    {
+                        employee.LearnedRoles.Add(employee.LearningRole.Value);
+                    }
+
+                    // Remove from learnable roles
+                    employee.LearnableRoles.Remove(employee.LearningRole.Value);
+
+                    // Reset learning state
+                    employee.Status = EmployeeStatus.Active;
+                    employee.LearningDays = 0;
+                    employee.LearningRole = null;
+
+                    // Update employee
+                    await _employeeService.UpdateEmployee(employee);
+                }
+                else
+                {
+                    // Just update the learning days counter
+                    await _employeeService.UpdateEmployee(employee);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't fail the day advancement
+            Console.WriteLine($"Error processing learning days: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+        }
+    }
+
+    private async Task ProcessTeamChangingDays()
+    {
+        try
+        {
+            Console.WriteLine($"Processing team changing days for day {_currentDay}...");
+
+            // Get all employees currently changing teams
+            var employees = _employeeService.GetEmployees();
+            var employeesChangingTeams = employees.Where(e => e.Status == EmployeeStatus.ChangingTeams).ToList();
+
+            Console.WriteLine($"Found {employeesChangingTeams.Count} employees changing teams");
+
+            foreach (var employee in employeesChangingTeams)
+            {
+                // Increment team changing days
+                employee.ChangingTeamsDays++;
+                Console.WriteLine($"Employee {employee.Name} has been changing teams for {employee.ChangingTeamsDays} days (from {employee.PreviousBoardType} to {employee.BoardType})");
+
+                // Check if employee has completed team change (3 days)
+                if (employee.ChangingTeamsDays >= Employee.DaysRequiredToChangeTeams)
+                {
+                    Console.WriteLine($"Employee {employee.Name} has completed team change!");
+                    
+                    // Reset team changing state
+                    employee.Status = EmployeeStatus.Active;
+                    employee.ChangingTeamsDays = 0;
+                    employee.PreviousBoardType = null;
+
+                    // Update employee
+                    await _employeeService.UpdateEmployee(employee);
+                }
+                else
+                {
+                    // Just update the team changing days counter
+                    await _employeeService.UpdateEmployee(employee);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't fail the day advancement
+            Console.WriteLine($"Error processing team changing days: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
         }
     }
 

@@ -51,9 +51,18 @@ public class EmployeeService : IEmployeeService
         existingEmployee.Department = employee.Department;
         existingEmployee.Seniority = employee.Seniority;
         existingEmployee.ColumnId = employee.ColumnId;
+        existingEmployee.BoardType = employee.BoardType;
         existingEmployee.Status = employee.Status;
         existingEmployee.VacationStartDate = employee.VacationStartDate;
         existingEmployee.VacationEndDate = employee.VacationEndDate;
+        
+        // Update learning properties
+        existingEmployee.LearningDays = employee.LearningDays;
+        existingEmployee.LearningRole = employee.LearningRole;
+        
+        // Update team changing properties
+        existingEmployee.ChangingTeamsDays = employee.ChangingTeamsDays;
+        existingEmployee.PreviousBoardType = employee.PreviousBoardType;
         
         // Update work assignment properties
         existingEmployee.AssignedTaskId = employee.AssignedTaskId;
@@ -169,7 +178,74 @@ public class EmployeeService : IEmployeeService
         var employee = _employees.FirstOrDefault(e => e.Id == id);
         if (employee == null) return false;
 
+        var oldColumnId = employee.ColumnId;
+        var oldBoardType = employee.BoardType;
         employee.ColumnId = columnId;
+        employee.BoardType = boardType;
+        
+        // Check if employee should be learning in the new column
+        bool shouldBeLearning = employee.ShouldBeLearningInColumn(columnId);
+        
+        // Check if employee is changing teams (moving to a different board)
+        if (oldBoardType != boardType)
+        {
+            // Reset learning state if they were learning
+            if (employee.Status == EmployeeStatus.IsLearning)
+            {
+                employee.LearningDays = 0;
+                employee.LearningRole = null;
+            }
+            
+            // If moving to different team to learn a role, skip ChangingTeams and start learning
+            if (shouldBeLearning)
+            {
+                var requiredRole = employee.GetRoleRequiredForColumn(columnId);
+                employee.Status = EmployeeStatus.IsLearningInOtherTeam; // Set to learning in other team
+                employee.LearningDays = 0;
+                employee.LearningRole = requiredRole;
+                employee.PreviousBoardType = oldBoardType; // Store previous board type
+            }
+            else
+            {
+                // Employee is changing teams but not learning - set status to ChangingTeams
+                employee.Status = EmployeeStatus.ChangingTeams;
+                employee.ChangingTeamsDays = 0;
+                employee.PreviousBoardType = oldBoardType;
+            }
+        }
+        // Same board - check if employee should be learning
+        else if (shouldBeLearning)
+        {
+            var requiredRole = employee.GetRoleRequiredForColumn(columnId);
+            
+            // If moving to a different column or different role, reset learning counter
+            if (oldColumnId != columnId || employee.LearningRole != requiredRole)
+            {
+                employee.LearningDays = 0;
+            }
+            
+            employee.Status = EmployeeStatus.IsLearning;
+            employee.LearningRole = requiredRole;
+        }
+        else if (employee.Status == EmployeeStatus.IsLearning)
+        {
+            // If employee was learning but no longer should be, reset learning state
+            employee.Status = EmployeeStatus.Active;
+            employee.LearningDays = 0;
+            employee.LearningRole = null;
+        }
+        else if (employee.Status == EmployeeStatus.ChangingTeams && oldBoardType == boardType)
+        {
+            // If employee was changing teams but is now in the same board, keep the status
+            // (they need to complete the team change period)
+        }
+        else if (employee.Status != EmployeeStatus.ChangingTeams)
+        {
+            // Otherwise set to Active if not already changing teams
+            employee.Status = EmployeeStatus.Active;
+        }
+        
+        employee.UpdatedAt = DateTime.Now;
         return true;
     }
 

@@ -74,10 +74,18 @@ public class DragDropService : IDragDropService
         if (card is Employee employee && employee.IsWorking)
             return false;
 
-        // For employees, check role-based column restrictions first
+        // Employees changing teams cannot be moved between columns
+        if (card is Employee empChangingTeams && empChangingTeams.IsChangingTeams)
+            return false;
+
+        // Employees learning in other team cannot be moved between columns
+        if (card is Employee empLearningOtherTeam && empLearningOtherTeam.IsLearningInOtherTeam)
+            return false;
+
+        // For employees, check if they can be placed in the column (either has role or can learn it)
         if (card is Employee emp)
         {
-            if (!emp.CanWorkInColumn(toColumn))
+            if (!emp.CanBePlacedInColumn(toColumn))
                 return false;
         }
 
@@ -132,6 +140,14 @@ public class DragDropService : IDragDropService
     {
         // Check if the work card is a task or feature
         if (workCard is not KanbanTask && workCard is not Feature)
+            return false;
+
+        // Check if employee is learning - they cannot work while learning
+        if (employee.IsLearning)
+            return false;
+
+        // Check if employee is changing teams - they cannot work while changing teams
+        if (employee.IsChangingTeams)
             return false;
 
         // Check if employee is already working on something
@@ -219,8 +235,8 @@ public class DragDropService : IDragDropService
     {
         if (card is Employee employee)
         {
-            // Check if employee can work in the target column (this already validates role restrictions)
-            if (!employee.CanWorkInColumn(toColumn))
+            // Check if employee can be placed in the target column (either has role or can learn it)
+            if (!employee.CanBePlacedInColumn(toColumn))
                 return false;
 
             // Both analysis columns require HighLevelAnalyst, so employees with that role can move between them
@@ -246,8 +262,8 @@ public class DragDropService : IDragDropService
     {
         if (card is Employee employee)
         {
-            // Check if employee can work in both the source and target columns
-            if (!employee.CanWorkInColumn(fromColumn) || !employee.CanWorkInColumn(toColumn))
+            // Check if employee can be placed in both the source and target columns (either has role or can learn it)
+            if (!employee.CanBePlacedInColumn(fromColumn) || !employee.CanBePlacedInColumn(toColumn))
                 return false;
 
             // Employees can only move between Analysis, Development Doing, and Testing Doing
