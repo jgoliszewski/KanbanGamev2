@@ -250,6 +250,26 @@
     background-color: #e3f2fd;
 }
 
+/* Non-draggable card styling - grayed out */
+.draggable-card.not-draggable {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.draggable-card.not-draggable .card {
+    background-color: #e9ecef;
+    border-color: #ced4da;
+    color: #6c757d;
+}
+
+.draggable-card.not-draggable .card-body {
+    filter: grayscale(0.3);
+}
+
+.draggable-card.not-draggable:hover {
+    opacity: 0.7;
+}
+
 /* Employee move button styling */
 .employee-status .btn {
     padding: 2px 6px;
@@ -1204,4 +1224,46 @@
 .spinner-border-sm {
     width: 1rem;
     height: 1rem;
+}
+
+/* Priority Badge Styles - Modern and Light */
+.priority-low,
+.priority-select.priority-low {
+    background-color: #e8e9ea !important;
+    color: #5a6268 !important;
+    border: 1px solid #d1d3d5 !important;
+    font-weight: 500;
+}
+
+.priority-medium,
+.priority-select.priority-medium {
+    background-color: #d1ecf1 !important;
+    color: #0c5460 !important;
+    border: 1px solid #bee5eb !important;
+    font-weight: 500;
+}
+
+.priority-high,
+.priority-select.priority-high {
+    background-color: #fff3cd !important;
+    color: #856404 !important;
+    border: 1px solid #ffeaa7 !important;
+    font-weight: 500;
+}
+
+.priority-critical,
+.priority-select.priority-critical {
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
+    border: 1px solid #f5c6cb !important;
+    font-weight: 600;
+}
+
+/* Badge styling for priority badges */
+.badge.priority-low,
+.badge.priority-medium,
+.badge.priority-high,
+.badge.priority-critical {
+    border-radius: 6px;
+    padding: 0.35em 0.65em;
 }

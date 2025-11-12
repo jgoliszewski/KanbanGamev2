@@ -2,6 +2,7 @@
 @using KanbanGamev2.Client.Services
 @inject ITaskService TaskService
 @inject IFeatureService FeatureService
+@inject KanbanGamev2.Shared.Services.IGameStateService GameStateService
 
 <div class="card mb-2 summary-feature-card">
     <div class="card-body p-2">
@@ -21,6 +22,15 @@
                 <small class="text-muted">@Feature.StoryPoints SP</small>
             }
         </div>
+        
+        @if (Feature.ColumnId != "backlog" && Feature.ColumnId != "analysis1" && Feature.ColumnId != "analysis2" && Feature.DueDate.HasValue)
+        {
+            <div class="mb-2">
+                <small class="@GetDeadlineClass(Feature.DueDate.Value)">
+                    <i class="oi oi-calendar"></i> Due: @GetDeadlineText(Feature.DueDate.Value)
+                </small>
+            </div>
+        }
         
         <div class="text-success fw-bold mb-2">Profit: $@Feature.Profit.ToString("N0")</div>
         
@@ -164,4 +174,49 @@
             .ToList();
     }
 
+    private string GetDeadlineText(DateTime dueDate)
+    {
+        var currentGameDate = GameStateService.GameStartDate.AddDays(GameStateService.CurrentDay - 1);
+        var daysUntilDeadline = (dueDate.Date - currentGameDate.Date).Days;
+        
+        if (daysUntilDeadline < 0)
+        {
+            return $"Overdue ({Math.Abs(daysUntilDeadline)} day{(Math.Abs(daysUntilDeadline) == 1 ? "" : "s")} ago)";
+        }
+        else if (daysUntilDeadline == 0)
+        {
+            return "Today";
+        }
+        else if (daysUntilDeadline == 1)
+        {
+            return "Tomorrow";
+        }
+        else if (daysUntilDeadline <= 7)
+        {
+            return $"{daysUntilDeadline} days ({dueDate:MM/dd/yyyy})";
+        }
+        else
+        {
+            return dueDate.ToString("MM/dd/yyyy");
+        }
+    }
+
+    private string GetDeadlineClass(DateTime dueDate)
+    {
+        var currentGameDate = GameStateService.GameStartDate.AddDays(GameStateService.CurrentDay - 1);
+        var daysUntilDeadline = (dueDate.Date - currentGameDate.Date).Days;
+        
+        if (daysUntilDeadline < 0)
+        {
+            return "text-danger fw-bold";
+        }
+        else if (daysUntilDeadline <= 3)
+        {
+            return "text-danger";
+        }
+        else
+        {
+            return "text-muted";
+        }
+    }
 }

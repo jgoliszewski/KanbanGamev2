@@ -7,7 +7,7 @@
 @inject IEmployeeService EmployeeService
 @inject KanbanGamev2.Shared.Services.IGameStateService GameStateService
 
-<div class="draggable-card @(IsDragging ? "dragging" : "") @(IsAssignedWorkItem ? "assigned-work-item" : "") @(IsDragOverEmployee ? "drag-over-employee" : "")"
+<div class="draggable-card @(IsDragging ? "dragging" : "") @(IsAssignedWorkItem ? "assigned-work-item" : "") @(IsDragOverEmployee ? "drag-over-employee" : "") @(!IsDraggable ? "not-draggable" : "")"
      draggable="@GetDraggableValue()"
      @ondragstart="OnDragStart"
      @ondragend="OnDragEnd"
@@ -113,6 +113,14 @@
                             <small class="text-muted">@feature.StoryPoints SP</small>
                         }
                     </div>
+                    @if (feature.ColumnId != "backlog" && feature.ColumnId != "analysis1" && feature.ColumnId != "analysis2" && feature.DueDate.HasValue)
+                    {
+                        <div class="mt-1">
+                            <small class="@GetDeadlineClass(feature.DueDate.Value)">
+                                <i class="oi oi-calendar"></i> Due: @GetDeadlineText(feature.DueDate.Value)
+                            </small>
+                        </div>
+                    }
                     @if (feature.IsInReadyDevColumn)
                     {
                         <div class="mt-2">
@@ -431,5 +439,51 @@
     {
         await TaskService.UpdateTask(task);
         StateHasChanged();
+    }
+
+    private string GetDeadlineText(DateTime dueDate)
+    {
+        var currentGameDate = GameStateService.GameStartDate.AddDays(GameStateService.CurrentDay - 1);
+        var daysUntilDeadline = (dueDate.Date - currentGameDate.Date).Days;
+        
+        if (daysUntilDeadline < 0)
+        {
+            return $"Overdue ({Math.Abs(daysUntilDeadline)} day{(Math.Abs(daysUntilDeadline) == 1 ? "" : "s")} ago)";
+        }
+        else if (daysUntilDeadline == 0)
+        {
+            return "Today";
+        }
+        else if (daysUntilDeadline == 1)
+        {
+            return "Tomorrow";
+        }
+        else if (daysUntilDeadline <= 7)
+        {
+            return $"{daysUntilDeadline} days ({dueDate:MM/dd/yyyy})";
+        }
+        else
+        {
+            return dueDate.ToString("MM/dd/yyyy");
+        }
+    }
+
+    private string GetDeadlineClass(DateTime dueDate)
+    {
+        var currentGameDate = GameStateService.GameStartDate.AddDays(GameStateService.CurrentDay - 1);
+        var daysUntilDeadline = (dueDate.Date - currentGameDate.Date).Days;
+        
+        if (daysUntilDeadline < 0)
+        {
+            return "text-danger fw-bold";
+        }
+        else if (daysUntilDeadline <= 3)
+        {
+            return "text-danger";
+        }
+        else
+        {
+            return "text-muted";
+        }
     }
 } 

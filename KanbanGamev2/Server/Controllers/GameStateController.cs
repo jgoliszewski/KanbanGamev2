@@ -40,9 +40,9 @@ public class GameStateController : ControllerBase
     }
 
     [HttpPost("addmoney/{amount}")]
-    public async Task<IActionResult> AddMoney(decimal amount)
+    public async Task<IActionResult> AddMoney(decimal amount, [FromQuery] string? description = null)
     {
-        await _gameStateService.AddMoney(amount);
+        await _gameStateService.AddMoney(amount, description ?? "Feature completed");
         return Ok(new { CompanyMoney = _gameStateService.CompanyMoney });
     }
 

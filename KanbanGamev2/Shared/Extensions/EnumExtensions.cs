@@ -21,18 +21,18 @@ public static class EnumExtensions
     {
         return priority switch
         {
-            Priority.Low => "bg-secondary",
-            Priority.Medium => "bg-primary",
-            Priority.High => "bg-warning",
-            Priority.Critical => "bg-danger",
-            _ => "bg-secondary"
+            Priority.Low => "priority-low",
+            Priority.Medium => "priority-medium",
+            Priority.High => "priority-high",
+            Priority.Critical => "priority-critical",
+            _ => "priority-low"
         };
     }
 
     public static string GetBadgeClass(this Priority? priority)
     {
         if (!priority.HasValue)
-            return "bg-secondary";
+            return "priority-low";
         return priority.Value.GetBadgeClass();
     }
 

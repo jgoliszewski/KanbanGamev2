@@ -147,22 +147,22 @@
     }
 
     .calendar-day.current-game-day {
-        background: #007bff;
-        color: white;
-        border-color: #0056b3;
+        background: #f8f9fa;
+        color: #212529;
+        border: 2px solid #dc3545;
         font-weight: bold;
     }
 
     .calendar-day.past-game-day {
-        background: #28a745;
-        color: white;
-        border-color: #1e7e34;
+        background: #f8f9fa;
+        color: #212529;
+        border-color: #e9ecef;
     }
 
     .calendar-day.future-game-day {
-        background: #ffc107;
+        background: #f8f9fa;
         color: #212529;
-        border-color: #e0a800;
+        border-color: #e9ecef;
     }
 
     .day-number {
@@ -276,7 +276,8 @@
         for (int i = 0; i < 42; i++) // 6 weeks * 7 days
         {
             var dayDate = firstDisplayDay.AddDays(i);
-            var gameDay = (dayDate - GameStateService.GameStartDate).Days + 1;
+            var gameStartDate = GameStateService.GameStartDate.Date; // Use date only, no time component
+            var gameDay = (dayDate.Date - gameStartDate).Days + 1;
             
             days.Add(new CalendarDay
             {

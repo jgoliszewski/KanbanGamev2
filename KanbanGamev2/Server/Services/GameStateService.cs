@@ -13,13 +13,17 @@ public class GameStateService : IGameStateService
     private decimal _companyMoney = 10000; // Starting money
     private readonly List<MoneyTransaction> _moneyTransactions = new();
     private readonly IEmployeeService _employeeService;
+    private readonly IFeatureService _featureService;
+    private readonly ITaskService _taskService;
     private readonly IHubContext<GameHub> _gameHub;
     private bool _isSummaryBoardVisible = true; // Default to visible
     private bool _isReadyForDevelopmentColumnVisible = true; // Default to visible
 
-    public GameStateService(IEmployeeService employeeService, IHubContext<GameHub> gameHub)
+    public GameStateService(IEmployeeService employeeService, IFeatureService featureService, ITaskService taskService, IHubContext<GameHub> gameHub)
     {
         _employeeService = employeeService;
+        _featureService = featureService;
+        _taskService = taskService;
         _gameHub = gameHub;
         // Start with initial values
         _currentDay = 1;
@@ -57,6 +61,9 @@ public class GameStateService : IGameStateService
 
         // Process team changing days for all employees
         await ProcessTeamChangingDays();
+
+        // Process feature deadlines
+        await ProcessFeatureDeadlines();
 
         // No more daily achievements - only feature completion achievements
         await Task.CompletedTask;
@@ -143,7 +150,7 @@ public class GameStateService : IGameStateService
                         if (employee.LearningDays >= Employee.DaysRequiredToLearnRole)
                         {
                             Console.WriteLine($"Employee {employee.Name} has learned the role {employee.LearningRole.Value}!");
-                            
+
                             // Add the role to learned roles
                             if (!employee.LearnedRoles.Contains(employee.LearningRole.Value))
                             {
@@ -214,7 +221,7 @@ public class GameStateService : IGameStateService
                 if (employee.LearningDays >= Employee.DaysRequiredToLearnRole)
                 {
                     Console.WriteLine($"Employee {employee.Name} has learned the role {employee.LearningRole.Value}!");
-                    
+
                     // Add the role to learned roles
                     if (!employee.LearnedRoles.Contains(employee.LearningRole.Value))
                     {
@@ -269,7 +276,7 @@ public class GameStateService : IGameStateService
                 if (employee.ChangingTeamsDays >= Employee.DaysRequiredToChangeTeams)
                 {
                     Console.WriteLine($"Employee {employee.Name} has completed team change!");
-                    
+
                     // Reset team changing state
                     employee.Status = EmployeeStatus.Active;
                     employee.ChangingTeamsDays = 0;
@@ -289,6 +296,94 @@ public class GameStateService : IGameStateService
         {
             // Log error but don't fail the day advancement
             Console.WriteLine($"Error processing team changing days: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+        }
+    }
+
+    private DateTime GetCurrentGameDate()
+    {
+        return _gameStartDate.AddDays(_currentDay - 1);
+    }
+
+    private async Task ProcessFeatureDeadlines()
+    {
+        try
+        {
+            var currentGameDate = GetCurrentGameDate();
+            Console.WriteLine($"Processing feature deadlines for day {_currentDay}...");
+            Console.WriteLine($"Current game date: {currentGameDate:yyyy-MM-dd}");
+
+            // Get all features with deadlines that are not yet delivered
+            var features = _featureService.GetFeatures();
+            var featuresWithDeadlines = features
+                .Where(f => f.DueDate.HasValue && !f.IsDelivered)
+                .ToList();
+
+            Console.WriteLine($"Found {featuresWithDeadlines.Count} features with deadlines");
+
+            foreach (var feature in featuresWithDeadlines)
+            {
+                if (feature.DueDate.HasValue)
+                {
+                    var deadlineDate = feature.DueDate.Value.Date;
+                    var currentDate = currentGameDate.Date;
+
+                    Console.WriteLine($"Feature '{feature.Title}': Deadline = {deadlineDate:yyyy-MM-dd}, Current Game Date = {currentDate:yyyy-MM-dd}");
+
+                    // Check if deadline has passed (deadline is before or equal to current game date)
+                    if (deadlineDate <= currentDate)
+                    {
+                        Console.WriteLine($"Feature '{feature.Title}' deadline has passed! Removing feature and all its tasks.");
+
+                        // Unassign any employees working on this feature
+                        var employees = _employeeService.GetEmployees();
+                        var employeesAssignedToFeature = employees.Where(e => e.AssignedFeatureId == feature.Id).ToList();
+                        foreach (var employee in employeesAssignedToFeature)
+                        {
+                            employee.AssignedFeatureId = null;
+                            await _employeeService.UpdateEmployee(employee);
+                            Console.WriteLine($"Unassigned employee '{employee.Name}' from expired feature '{feature.Title}'");
+                        }
+
+                        // Delete all tasks associated with this feature
+                        if (feature.GeneratedTaskIds != null && feature.GeneratedTaskIds.Any())
+                        {
+                            Console.WriteLine($"Deleting {feature.GeneratedTaskIds.Count} tasks for feature '{feature.Title}'");
+
+                            // Also unassign employees from tasks before deleting
+                            var allTasks = _taskService.GetTasks();
+                            var featureTasks = allTasks.Where(t => feature.GeneratedTaskIds.Contains(t.Id)).ToList();
+                            foreach (var task in featureTasks)
+                            {
+                                if (task.AssignedToEmployeeId.HasValue)
+                                {
+                                    var taskEmployee = employees.FirstOrDefault(e => e.Id == task.AssignedToEmployeeId.Value);
+                                    if (taskEmployee != null)
+                                    {
+                                        taskEmployee.AssignedTaskId = null;
+                                        await _employeeService.UpdateEmployee(taskEmployee);
+                                        Console.WriteLine($"Unassigned employee '{taskEmployee.Name}' from task '{task.Title}'");
+                                    }
+                                }
+                                _taskService.DeleteTask(task.Id);
+                            }
+                        }
+
+                        // Delete the feature itself
+                        await _featureService.DeleteFeature(feature.Id);
+
+                        Console.WriteLine($"Feature '{feature.Title}' and all its tasks have been removed due to missed deadline. No profit awarded.");
+
+                        // Notify all connected users to refresh their boards
+                        await _gameHub.Clients.All.SendAsync("RefreshAllBoards");
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't fail the day advancement
+            Console.WriteLine($"Error processing feature deadlines: {ex.Message}");
             Console.WriteLine($"Stack trace: {ex.StackTrace}");
         }
     }

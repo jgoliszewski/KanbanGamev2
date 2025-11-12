@@ -22,7 +22,7 @@ public interface IGameStateManager
     void UpdateFromServer(int currentDay, DateTime gameStartDate, List<Achievement> achievements, decimal companyMoney, List<MoneyTransaction> moneyTransactions, bool isSummaryBoardVisible, bool isReadyForDevelopmentColumnVisible);
     void NotifyDayChanged(int newDay);
     void NotifyAchievementUnlocked(Achievement achievement);
-    void AddMoney(decimal amount);
+    void AddMoney(decimal amount, string description = "Feature completed");
     void SetMoney(decimal amount);
     void SetSummaryBoardVisibility(bool isVisible);
     void SetReadyForDevelopmentColumnVisibility(bool isVisible);
@@ -116,9 +116,20 @@ public class GameStateManager : IGameStateManager
         }
     }
 
-    public void AddMoney(decimal amount)
+    public void AddMoney(decimal amount, string description = "Feature completed")
     {
         _companyMoney += amount;
+        
+        // Record the transaction locally for immediate UI update
+        var transaction = new MoneyTransaction
+        {
+            Amount = amount,
+            Description = description,
+            Type = TransactionType.Income,
+            Timestamp = DateTime.Now
+        };
+        _moneyTransactions.Add(transaction);
+        
         MoneyChanged?.Invoke(_companyMoney);
     }
 

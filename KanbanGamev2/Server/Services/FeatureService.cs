@@ -92,10 +92,25 @@ public class FeatureService : IFeatureService
         feature.Status = Status.InProgress;
         UpdateFeature(feature);
 
-        // Create frontend tasks first (without dependencies)
-        var frontendTasks = CreateFrontendTasks(feature);
+        List<KanbanTask> frontendTasks;
+        List<KanbanTask> backendTasks;
+
+        // Check if this is a test feature (StoryPoints == 1)
+        if (feature.StoryPoints == 1)
+        {
+            // Create test feature with exactly 1 FE and 1 BE task
+            frontendTasks = CreateTestFeatureTasks(feature, BoardType.Frontend);
+            backendTasks = CreateTestFeatureTasks(feature, BoardType.Backend);
+        }
+        else
+        {
+            // Create frontend tasks first (without dependencies)
+            frontendTasks = CreateFrontendTasks(feature);
+            // Create backend tasks first (without dependencies)
+            backendTasks = CreateBackendTasks(feature);
+        }
+
         var createdFrontendTasks = new List<KanbanTask>();
-        
         foreach (var task in frontendTasks)
         {
             var createdTask = _taskService.CreateTask(task);
@@ -103,10 +118,7 @@ public class FeatureService : IFeatureService
             feature.GeneratedTaskIds.Add(createdTask.Id);
         }
 
-        // Create backend tasks first (without dependencies)
-        var backendTasks = CreateBackendTasks(feature);
         var createdBackendTasks = new List<KanbanTask>();
-        
         foreach (var task in backendTasks)
         {
             var createdTask = _taskService.CreateTask(task);
@@ -399,6 +411,50 @@ public class FeatureService : IFeatureService
             });
         }
 
+        return tasks;
+    }
+
+    private List<KanbanTask> CreateTestFeatureTasks(Feature feature, BoardType boardType)
+    {
+        var tasks = new List<KanbanTask>();
+        
+        if (boardType == BoardType.Frontend)
+        {
+            tasks.Add(new KanbanTask
+            {
+                Title = $"{feature.Title} - FE",
+                Description = $"Frontend implementation for {feature.Title}",
+                Priority = feature.Priority ?? Priority.Medium,
+                Status = Status.ToDo,
+                StoryPoints = 3,
+                ColumnId = "frontend-backlog",
+                Order = 1,
+                LaborIntensity = 1.0,
+                LaborLeft = 1.0,
+                DependsOnTaskId = null,
+                FeatureId = feature.Id,
+                BoardType = BoardType.Frontend
+            });
+        }
+        else if (boardType == BoardType.Backend)
+        {
+            tasks.Add(new KanbanTask
+            {
+                Title = $"{feature.Title} - BE",
+                Description = $"Backend implementation for {feature.Title}",
+                Priority = feature.Priority ?? Priority.Medium,
+                Status = Status.ToDo,
+                StoryPoints = 3,
+                ColumnId = "backend-backlog",
+                Order = 1,
+                LaborIntensity = 1.0,
+                LaborLeft = 1.0,
+                DependsOnTaskId = null,
+                FeatureId = feature.Id,
+                BoardType = BoardType.Backend
+            });
+        }
+        
         return tasks;
     }
 

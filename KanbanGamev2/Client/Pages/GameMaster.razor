@@ -234,6 +234,9 @@
                         <button class="btn btn-outline-primary" @onclick="() => AddFeatureToBacklog(21, 40000)" title="Very Large Feature - 21 Story Points">
                             <i class="oi oi-plus"></i> Very Large
                         </button>
+                        <button class="btn btn-outline-info" @onclick="AddTestFeatureToBacklog" title="Test Feature - 1 FE task, 1 BE task">
+                            <i class="oi oi-plus"></i> Test Feature
+                        </button>
                     </div>
                 </div>
                 
@@ -253,6 +256,7 @@
                                         <th>Description</th>
                                         <th>Column</th>
                                         <th>Story Points</th>
+                                        <th>Deadline</th>
                                         <th>Profit</th>
                                         <th>Actions</th>
                                     </tr>
@@ -268,6 +272,18 @@
                                             </td>
                                             <td>
                                                 <span class="badge bg-info">@feature.StoryPoints SP</span>
+                                            </td>
+                                            <td>
+                                                @if (feature.DueDate.HasValue)
+                                                {
+                                                    <small class="@GetDeadlineClass(feature.DueDate.Value)">
+                                                        <i class="oi oi-calendar"></i> @GetDeadlineText(feature.DueDate.Value)
+                                                    </small>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
                                             </td>
                                             <td>
                                                 <span class="badge bg-success">$@feature.Profit.ToString("N0")</span>
@@ -412,6 +428,11 @@
             var maxOrder = existingFeatures.Any() ? existingFeatures.Max(f => f.Order) : 0;
             var featureNumber = existingFeatures.Count(f => f.ColumnId == "backlog") + 1;
             
+            // Calculate deadline: 2-3 days per story point, minimum 7 days, maximum 30 days
+            var currentGameDate = GameStateService.GameStartDate.AddDays(GameStateService.CurrentDay - 1);
+            var daysUntilDeadline = Math.Max(7, Math.Min(30, storyPoints * 2 + 5));
+            var deadline = currentGameDate.AddDays(daysUntilDeadline);
+            
             var newFeature = new Feature
             {
                 Title = $"F{maxOrder + 1}",
@@ -419,7 +440,7 @@
                 Priority = null,
                 Status = Status.ToDo,
                 AssignedToEmployeeId = null,
-                DueDate = null,
+                DueDate = deadline,
                 StoryPoints = storyPoints,
                 ColumnId = "backlog",
                 Order = maxOrder + 1,
@@ -443,6 +464,54 @@
             await NotificationService.ShowGlobalNotificationAsync(
                 "Error",
                 $"Failed to add feature: {ex.Message}",
+                NotificationType.Error
+            );
+        }
+    }
+
+    private async Task AddTestFeatureToBacklog()
+    {
+        try
+        {
+            // Generate feature title (F + next number)
+            var existingFeatures = FeatureService.Features;
+            var maxOrder = existingFeatures.Any() ? existingFeatures.Max(f => f.Order) : 0;
+            
+            // Calculate deadline: 5 days for test feature
+            var currentGameDate = GameStateService.GameStartDate.AddDays(GameStateService.CurrentDay - 1);
+            var deadline = currentGameDate.AddDays(5);
+            
+            var newFeature = new Feature
+            {
+                Title = $"F{maxOrder + 1}",
+                Description = "Test feature - 1 FE task, 1 BE task",
+                Priority = null,
+                Status = Status.ToDo,
+                AssignedToEmployeeId = null,
+                DueDate = deadline,
+                StoryPoints = 1, // Special value to indicate test feature
+                ColumnId = "backlog",
+                Order = maxOrder + 1,
+                LaborIntensity = 1.0,
+                LaborLeft = 1.0,
+                Profit = 5000
+            };
+
+            await FeatureService.CreateFeature(newFeature);
+            await NotificationService.ShowGlobalNotificationAsync(
+                "Test Feature Added",
+                "Added test feature (1 FE task, 1 BE task) to backlog.",
+                NotificationType.Success
+            );
+            
+            await LoadFeatures();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error adding test feature: {ex.Message}");
+            await NotificationService.ShowGlobalNotificationAsync(
+                "Error",
+                $"Failed to add test feature: {ex.Message}",
                 NotificationType.Error
             );
         }
@@ -526,6 +595,52 @@
             21 => "Very Large",
             _ => "Unknown"
         };
+    }
+
+    private string GetDeadlineText(DateTime dueDate)
+    {
+        var currentGameDate = GameStateService.GameStartDate.AddDays(GameStateService.CurrentDay - 1);
+        var daysUntilDeadline = (dueDate.Date - currentGameDate.Date).Days;
+        
+        if (daysUntilDeadline < 0)
+        {
+            return $"Overdue ({Math.Abs(daysUntilDeadline)} day{(Math.Abs(daysUntilDeadline) == 1 ? "" : "s")} ago)";
+        }
+        else if (daysUntilDeadline == 0)
+        {
+            return "Today";
+        }
+        else if (daysUntilDeadline == 1)
+        {
+            return "Tomorrow";
+        }
+        else if (daysUntilDeadline <= 7)
+        {
+            return $"{daysUntilDeadline} days ({dueDate:MM/dd/yyyy})";
+        }
+        else
+        {
+            return dueDate.ToString("MM/dd/yyyy");
+        }
+    }
+
+    private string GetDeadlineClass(DateTime dueDate)
+    {
+        var currentGameDate = GameStateService.GameStartDate.AddDays(GameStateService.CurrentDay - 1);
+        var daysUntilDeadline = (dueDate.Date - currentGameDate.Date).Days;
+        
+        if (daysUntilDeadline < 0)
+        {
+            return "text-danger fw-bold";
+        }
+        else if (daysUntilDeadline <= 3)
+        {
+            return "text-danger";
+        }
+        else
+        {
+            return "text-muted";
+        }
     }
 
     private async Task LoadEmployees()

@@ -158,14 +158,20 @@ public class GameStateService : IGameStateService, IDisposable
     {
         try
         {
-            // Update local state first
-            _gameStateManager.AddMoney(amount);
+            // Update local state first (including transaction record)
+            _gameStateManager.AddMoney(amount, description);
             
             // Persist to server
-            var response = await _httpClient.PostAsync($"api/gamestate/addmoney/{amount}", null);
+            var encodedDescription = Uri.EscapeDataString(description);
+            var response = await _httpClient.PostAsync($"api/gamestate/addmoney/{amount}?description={encodedDescription}", null);
             if (!response.IsSuccessStatusCode)
             {
                 Console.WriteLine($"Failed to persist money change to server: {response.StatusCode}");
+            }
+            else
+            {
+                // Reload game state to sync transactions from server
+                await LoadGameState();
             }
         }
         catch (Exception ex)

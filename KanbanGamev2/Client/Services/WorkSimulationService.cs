@@ -111,6 +111,15 @@ public class WorkSimulationService : IWorkSimulationService
 
         foreach (var feature in featuresWithTasks)
         {
+            // First check if feature has expired deadline - if so, skip completion check
+            // (deadline processing will handle removal)
+            var currentGameDate = _gameStateService.GameStartDate.AddDays(_gameStateService.CurrentDay - 1);
+            if (feature.DueDate.HasValue && feature.DueDate.Value.Date < currentGameDate.Date)
+            {
+                Console.WriteLine($"Feature '{feature.Title}' has expired deadline, skipping completion check (will be removed by deadline processing)");
+                continue;
+            }
+
             Console.WriteLine($"Checking feature '{feature.Title}' with {feature.GeneratedTaskIds.Count} tasks...");
 
             var allTasksCompleted = await _taskService.AreAllTasksCompleted(feature.GeneratedTaskIds);
