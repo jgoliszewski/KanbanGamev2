@@ -82,6 +82,10 @@ public class DragDropService : IDragDropService
         if (card is Employee empLearningOtherTeam && empLearningOtherTeam.IsLearningInOtherTeam)
             return false;
 
+        // Employees who have started learning (day counter >= 1) cannot be moved
+        if (card is Employee empLearning && empLearning.Status == EmployeeStatus.IsLearning && empLearning.LearningDays >= 1)
+            return false;
+
         // For employees, check if they can be placed in the column (either has role or can learn it)
         if (card is Employee emp)
         {

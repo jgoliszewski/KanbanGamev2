@@ -84,8 +84,8 @@
                     </div>
                     <button class="btn btn-sm btn-outline-primary move-employee-btn" 
                             @onclick="() => ShowMoveModal(employee)" 
-                            disabled="@(employee.IsChangingTeams || employee.IsLearningInOtherTeam)"
-                            title="@(employee.IsChangingTeams || employee.IsLearningInOtherTeam ? "Cannot move while changing teams or learning in other team" : "Move Employee")">
+                            disabled="@(employee.IsChangingTeams || employee.IsLearningInOtherTeam || (employee.IsLearning && employee.LearningDays >= 1))"
+                            title="@(employee.IsChangingTeams || employee.IsLearningInOtherTeam || (employee.IsLearning && employee.LearningDays >= 1) ? "Cannot move while changing teams or learning" : "Move Employee")">
                         <i class="oi oi-arrow-right"></i>
                     </button>
                 </div>
@@ -209,6 +209,10 @@
                 if (employee.Status == EmployeeStatus.IsLearningInOtherTeam)
                     return false;
                     
+                // Cannot drag employees who have started learning (day counter >= 1)
+                if (employee.Status == EmployeeStatus.IsLearning && employee.LearningDays >= 1)
+                    return false;
+                    
                 // Cannot drag employees who are working
                 if (employee.IsWorking)
                     return false;
@@ -270,6 +274,13 @@
         if (Card is Employee employee)
         {
             if (employee.IsChangingTeams || employee.IsWorking || employee.IsLearningInOtherTeam)
+            {
+                e.DataTransfer.EffectAllowed = "none";
+                return;
+            }
+            
+            // Prevent dragging if employee has started learning (day counter >= 1)
+            if (employee.Status == EmployeeStatus.IsLearning && employee.LearningDays >= 1)
             {
                 e.DataTransfer.EffectAllowed = "none";
                 return;
