@@ -47,4 +47,30 @@ public class FeatureService : IFeatureService
 
         Console.WriteLine($"Feature '{feature.Title}' sent to development and boards refreshed");
     }
+
+    public async Task<Feature> CreateFeature(Feature feature)
+    {
+        var response = await _http.PostAsJsonAsync("api/feature", feature);
+        response.EnsureSuccessStatusCode();
+        var createdFeature = await response.Content.ReadFromJsonAsync<Feature>();
+        
+        // Refresh features list
+        await GetFeatures();
+        
+        return createdFeature ?? feature;
+    }
+
+    public async Task<bool> DeleteFeature(Guid featureId)
+    {
+        var response = await _http.DeleteAsync($"api/feature/{featureId}");
+        
+        if (response.IsSuccessStatusCode)
+        {
+            // Refresh features list
+            await GetFeatures();
+            return true;
+        }
+        
+        return false;
+    }
 }

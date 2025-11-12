@@ -8,4 +8,6 @@ public interface IFeatureService
     Task GetFeatures();
     Task<Feature> UpdateFeature(Feature feature);
     Task SendFeatureToDevelopment(Feature feature);
+    Task<Feature> CreateFeature(Feature feature);
+    Task<bool> DeleteFeature(Guid featureId);
 }

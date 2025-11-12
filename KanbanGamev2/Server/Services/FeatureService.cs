@@ -29,11 +29,15 @@ public class FeatureService : IFeatureService
         return _features.FirstOrDefault(f => f.Id == id);
     }
 
-    public Feature CreateFeature(Feature feature)
+    public async Task<Feature> CreateFeature(Feature feature)
     {
         feature.Id = Guid.NewGuid();
         feature.CreatedAt = DateTime.Now;
         _features.Add(feature);
+        
+        // Notify all connected users to refresh their boards
+        await _gameHubContext.Clients.All.SendAsync("RefreshAllBoards");
+        
         return feature;
     }
 
@@ -61,12 +65,16 @@ public class FeatureService : IFeatureService
         throw new ArgumentException("Feature not found");
     }
 
-    public bool DeleteFeature(Guid id)
+    public async Task<bool> DeleteFeature(Guid id)
     {
         var feature = _features.FirstOrDefault(f => f.Id == id);
         if (feature != null)
         {
             _features.Remove(feature);
+            
+            // Notify all connected users to refresh their boards
+            await _gameHubContext.Clients.All.SendAsync("RefreshAllBoards");
+            
             return true;
         }
         return false;
@@ -430,103 +438,6 @@ public class FeatureService : IFeatureService
                 LaborIntensity = 1.0,
                 LaborLeft = 1.0,
                 Profit = 25000
-            },
-            // Analysis Backlog Features
-            new Feature
-            {
-                Id = Guid.NewGuid(),
-                Title = "F3",
-                Description = "Integrate payment gateway for subscription management",
-                Priority = null,
-                Status = Status.ToDo,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(10),
-                StoryPoints = 0,
-                ColumnId = "backlog",
-                Order = 3,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0,
-                Profit = 35000
-            },
-            new Feature
-            {
-                Id = Guid.NewGuid(),
-                Title = "F4",
-                Description = "Develop mobile application for iOS and Android",
-                Priority = null,
-                Status = Status.ToDo,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(30),
-                StoryPoints = 0,
-                ColumnId = "backlog",
-                Order = 4,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0,
-                Profit = 50000
-            },
-            new Feature
-            {
-                Id = Guid.NewGuid(),
-                Title = "F5",
-                Description = "Implement real-time messaging system",
-                Priority = null,
-                Status = Status.ToDo,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(12),
-                StoryPoints = 0,
-                ColumnId = "backlog",
-                Order = 5,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0,
-                Profit = 30000
-            },
-            new Feature
-            {
-                Id = Guid.NewGuid(),
-                Title = "F6",
-                Description = "Create secure file upload and storage system",
-                Priority = null,
-                Status = Status.ToDo,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(8),
-                StoryPoints = 0,
-                ColumnId = "backlog",
-                Order = 6,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0,
-                Profit = 20000
-            },
-            new Feature
-            {
-                Id = Guid.NewGuid(),
-                Title = "F7",
-                Description = "Add email notification system for important events",
-                Priority = null,
-                Status = Status.ToDo,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(5),
-                StoryPoints = 0,
-                ColumnId = "backlog",
-                Order = 7,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0,
-                Profit = 12000
-            },
-            new Feature
-            {
-                Id = Guid.NewGuid(),
-                Title = "F8",
-                Description = "Implement advanced search with filters",
-                Priority = null,
-                Status = Status.ToDo,
-                AssignedToEmployeeId = null,
-                DueDate = DateTime.Now.AddDays(15),
-                StoryPoints = 0,
-                ColumnId = "backlog",
-                Order = 8,
-                LaborIntensity = 1.0,
-                LaborLeft = 1.0,
-                Profit = 28000
             }
         };
     }

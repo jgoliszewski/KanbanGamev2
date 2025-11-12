@@ -39,9 +39,9 @@ public class FeatureController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<Feature> CreateFeature(Feature feature)
+    public async Task<ActionResult<Feature>> CreateFeature(Feature feature)
     {
-        var created = _featureService.CreateFeature(feature);
+        var created = await _featureService.CreateFeature(feature);
         return CreatedAtAction(nameof(GetFeature), new { id = created.Id }, created);
     }
 
@@ -63,9 +63,9 @@ public class FeatureController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public ActionResult DeleteFeature(Guid id)
+    public async Task<ActionResult> DeleteFeature(Guid id)
     {
-        var deleted = _featureService.DeleteFeature(id);
+        var deleted = await _featureService.DeleteFeature(id);
         if (!deleted)
             return NotFound();
         return NoContent();

@@ -7,6 +7,7 @@
 @inject ISignalRService SignalRService
 @inject IGameRestartService GameRestartService
 @inject KanbanGamev2.Shared.Services.IGameStateService GameStateService
+@inject IFeatureService FeatureService
 @inject NavigationManager Navigation
 @implements IDisposable
 @implements IAsyncDisposable
@@ -206,6 +207,95 @@
     </div>
 </div>
 
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="oi oi-list-rich"></i> Backlog Feature Management
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6 class="mb-3">Add New Feature to Backlog</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button class="btn btn-outline-primary" @onclick="() => AddFeatureToBacklog(3, 6000)" title="Very Small Feature - 3 Story Points">
+                            <i class="oi oi-plus"></i> Very Small
+                        </button>
+                        <button class="btn btn-outline-primary" @onclick="() => AddFeatureToBacklog(5, 10000)" title="Small Feature - 5 Story Points">
+                            <i class="oi oi-plus"></i> Small
+                        </button>
+                        <button class="btn btn-outline-primary" @onclick="() => AddFeatureToBacklog(8, 15000)" title="Medium Feature - 8 Story Points">
+                            <i class="oi oi-plus"></i> Medium
+                        </button>
+                        <button class="btn btn-outline-primary" @onclick="() => AddFeatureToBacklog(13, 25000)" title="Large Feature - 13 Story Points">
+                            <i class="oi oi-plus"></i> Large
+                        </button>
+                        <button class="btn btn-outline-primary" @onclick="() => AddFeatureToBacklog(21, 40000)" title="Very Large Feature - 21 Story Points">
+                            <i class="oi oi-plus"></i> Very Large
+                        </button>
+                    </div>
+                </div>
+                
+                <div>
+                    <h6 class="mb-3">Existing Features</h6>
+                    @if (_features == null || _features.Count == 0)
+                    {
+                        <p class="text-muted">No features available. Use the buttons above to add features to backlog.</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Description</th>
+                                        <th>Column</th>
+                                        <th>Story Points</th>
+                                        <th>Profit</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var feature in _features)
+                                    {
+                                        <tr>
+                                            <td><strong>@feature.Title</strong></td>
+                                            <td>@feature.Description</td>
+                                            <td>
+                                                <span class="badge @GetColumnBadgeClass(feature.ColumnId)">@GetColumnName(feature.ColumnId)</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">@feature.StoryPoints SP</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-success">$@feature.Profit.ToString("N0")</span>
+                                            </td>
+                                            <td>
+                                                @if (feature.ColumnId == "backlog")
+                                                {
+                                                    <button class="btn btn-danger btn-sm" @onclick="() => RemoveFeature(feature.Id)" title="Remove Feature">
+                                                        <i class="oi oi-trash"></i> Remove
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @if (_showVacationModal)
 {
     <div class="modal fade show" style="display: block;" tabindex="-1">
@@ -281,16 +371,161 @@
     private int _vacationDuration = 7;
     private bool _isSummaryBoardVisible = true; // New field for checkbox state
     private bool _isReadyForDevelopmentColumnVisible = true; // New field for ready dev column checkbox state
+    private List<Feature>? _features;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadEmployees();
+        await LoadFeatures();
         await GameStateService.LoadGameState(); // Load the current game state
         _isSummaryBoardVisible = GameStateService.IsSummaryBoardVisible; // Initialize the checkbox state
         _isReadyForDevelopmentColumnVisible = GameStateService.IsReadyForDevelopmentColumnVisible; // Initialize the ready dev column checkbox state
         SignalRService.EmployeeStatusChanged += OnEmployeeStatusChanged;
         GameStateService.SummaryBoardVisibilityChanged += OnGameStateSummaryBoardVisibilityChanged;
         GameStateService.ReadyForDevelopmentColumnVisibilityChanged += OnGameStateReadyForDevelopmentColumnVisibilityChanged;
+    }
+
+    private async Task LoadFeatures()
+    {
+        try
+        {
+            await FeatureService.GetFeatures();
+            // Show all features except delivered ones (where ColumnId contains "done")
+            _features = FeatureService.Features
+                .Where(f => !f.IsDelivered) // Exclude delivered features
+                .OrderBy(f => f.Order)
+                .ToList();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading features: {ex.Message}");
+        }
+    }
+
+    private async Task AddFeatureToBacklog(int storyPoints, decimal profit)
+    {
+        try
+        {
+            // Generate feature title (F + next number)
+            var existingFeatures = FeatureService.Features;
+            var maxOrder = existingFeatures.Any() ? existingFeatures.Max(f => f.Order) : 0;
+            var featureNumber = existingFeatures.Count(f => f.ColumnId == "backlog") + 1;
+            
+            var newFeature = new Feature
+            {
+                Title = $"F{maxOrder + 1}",
+                Description = $"New feature - {GetSizeName(storyPoints)} size",
+                Priority = null,
+                Status = Status.ToDo,
+                AssignedToEmployeeId = null,
+                DueDate = null,
+                StoryPoints = storyPoints,
+                ColumnId = "backlog",
+                Order = maxOrder + 1,
+                LaborIntensity = 1.0,
+                LaborLeft = 1.0,
+                Profit = profit
+            };
+
+            await FeatureService.CreateFeature(newFeature);
+            await NotificationService.ShowGlobalNotificationAsync(
+                "Feature Added",
+                $"Added {GetSizeName(storyPoints)} feature ({storyPoints} SP) to backlog.",
+                NotificationType.Success
+            );
+            
+            await LoadFeatures();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error adding feature: {ex.Message}");
+            await NotificationService.ShowGlobalNotificationAsync(
+                "Error",
+                $"Failed to add feature: {ex.Message}",
+                NotificationType.Error
+            );
+        }
+    }
+
+    private async Task RemoveFeature(Guid featureId)
+    {
+        try
+        {
+            var feature = _features?.FirstOrDefault(f => f.Id == featureId);
+            if (feature == null || feature.ColumnId != "backlog") return;
+
+            var success = await FeatureService.DeleteFeature(featureId);
+            if (success)
+            {
+                await NotificationService.ShowGlobalNotificationAsync(
+                    "Feature Removed",
+                    $"Feature '{feature.Title}' has been removed from backlog.",
+                    NotificationType.Info
+                );
+                await LoadFeatures();
+            }
+            else
+            {
+                await NotificationService.ShowGlobalNotificationAsync(
+                    "Error",
+                    "Failed to remove feature.",
+                    NotificationType.Error
+                );
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error removing feature: {ex.Message}");
+            await NotificationService.ShowGlobalNotificationAsync(
+                "Error",
+                $"Failed to remove feature: {ex.Message}",
+                NotificationType.Error
+            );
+        }
+    }
+
+    private string GetColumnName(string? columnId)
+    {
+        if (string.IsNullOrEmpty(columnId))
+            return "Unknown";
+            
+        return columnId switch
+        {
+            "backlog" => "Backlog",
+            "ready-dev" => "Ready for Dev",
+            "development" => "Development",
+            "done" => "Done",
+            _ => columnId
+        };
+    }
+
+    private string GetColumnBadgeClass(string? columnId)
+    {
+        if (string.IsNullOrEmpty(columnId))
+            return "bg-secondary";
+            
+        return columnId switch
+        {
+            "backlog" => "bg-secondary",
+            "ready-dev" => "bg-warning",
+            "development" => "bg-primary",
+            "done" => "bg-success",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetSizeName(int storyPoints)
+    {
+        return storyPoints switch
+        {
+            3 => "Very Small",
+            5 => "Small",
+            8 => "Medium",
+            13 => "Large",
+            21 => "Very Large",
+            _ => "Unknown"
+        };
     }
 
     private async Task LoadEmployees()
