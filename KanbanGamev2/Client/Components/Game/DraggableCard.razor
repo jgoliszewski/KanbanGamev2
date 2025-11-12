@@ -7,7 +7,7 @@
 @inject IEmployeeService EmployeeService
 @inject KanbanGamev2.Shared.Services.IGameStateService GameStateService
 
-<div class="draggable-card @(IsDragging ? "dragging" : "") @(IsAssignedWorkItem ? "assigned-work-item" : "") @(IsDragOverEmployee ? "drag-over-employee" : "") @(!IsDraggable ? "not-draggable" : "")"
+<div class="draggable-card @(IsDragging ? "dragging" : "") @(IsAssignedWorkItem ? "assigned-work-item" : "") @(IsDragOverEmployee ? "drag-over-employee" : "") @(ShouldBeGrayedOut ? "not-draggable" : "") @(Card is Employee ? "employee-card-wrapper" : "")"
      draggable="@GetDraggableValue()"
      @ondragstart="OnDragStart"
      @ondragend="OnDragEnd"
@@ -23,7 +23,15 @@
                 <div class="employee-card @(employee.IsWorking ? "assigned" : "") @(employee.IsLearning ? "learning" : "") @(employee.IsChangingTeams ? "changing-teams" : "") @(employee.IsLearningInOtherTeam ? "learning-other-team" : "")">
                     <div class="employee-top">
                         <div class="employee-left">
-                    <img src="@GetEmployeeAvatar(employee.Name)" alt="@employee.Name" class="employee-avatar" />
+                            <div class="employee-avatar-container">
+                                <img src="@GetEmployeeAvatar(employee.Name)" alt="@employee.Name" class="employee-avatar" />
+                                @if (!employee.IsLearningInOtherTeam && !employee.IsChangingTeams && !employee.IsLearning)
+                                {
+                                    <span class="@(employee.IsWorking ? "status-dot-working" : "status-dot-free") status-dot-on-avatar" 
+                                          title="@(employee.IsWorking ? "Working" : "Free")">
+                                    </span>
+                                }
+                            </div>
                             <div class="employee-info-left">
                                 <div class="employee-name">@GetFirstName(employee.Name)</div>
                         <div class="employee-seniority">
@@ -35,44 +43,14 @@
                         </div>
                         <div class="employee-right">
                         <div class="employee-status">
-                            @if (employee.IsLearningInOtherTeam)
+                            @if (!employee.IsLearningInOtherTeam && !employee.IsChangingTeams && !employee.IsLearning)
                             {
-                                <div class="d-flex flex-column align-items-end gap-1">
-                                    <span class="badge bg-info" title="Learning in Other Team">
-                                        <i class="oi oi-book"></i> Learning
-                                    </span>
-                                    <small class="text-muted" style="font-size: 0.7rem; line-height: 1;">
-                                        Day @employee.LearningDays / @Employee.DaysRequiredToLearnRole
-                                    </small>
-                                </div>
-                            }
-                            else if (employee.IsChangingTeams)
-                            {
-                                <div class="d-flex flex-column align-items-end gap-1">
-                                    <span class="badge bg-warning" title="Changing Teams">
-                                        <i class="oi oi-people"></i> Changing Teams
-                                    </span>
-                                    <small class="text-muted" style="font-size: 0.7rem; line-height: 1;">
-                                        Day @employee.ChangingTeamsDays / @Employee.DaysRequiredToChangeTeams
-                                    </small>
-                                </div>
-                            }
-                            else if (employee.IsLearning)
-                            {
-                                <div class="d-flex flex-column align-items-end gap-1">
-                                    <span class="badge bg-info" title="Learning">
-                                        <i class="oi oi-book"></i> Learning
-                                    </span>
-                                    <small class="text-muted" style="font-size: 0.7rem; line-height: 1;">
-                                        Day @employee.LearningDays / @Employee.DaysRequiredToLearnRole
-                                    </small>
-                                </div>
-                            }
-                            else
-                            {
-                                <span class="@(employee.IsWorking ? "status-dot-working" : "status-dot-free")" 
-                                      title="@(employee.IsWorking ? "Working" : "Free")">
-                                </span>
+                                <button class="btn btn-sm btn-outline-primary move-employee-btn" 
+                                        @onclick="() => ShowMoveModal(employee)" 
+                                        disabled="@(employee.IsChangingTeams || employee.IsLearningInOtherTeam || (employee.IsLearning && employee.LearningDays >= 1))"
+                                        title="@(employee.IsChangingTeams || employee.IsLearningInOtherTeam || (employee.IsLearning && employee.LearningDays >= 1) ? "Cannot move while changing teams or learning" : "Move Employee")">
+                                    <i class="oi oi-arrow-right"></i>
+                                </button>
                             }
                             </div>
                         </div>
@@ -81,13 +59,45 @@
                         <div class="role-badges-container">
                             <RoleBadges Employee="@employee" />
                         </div>
+                        @if (employee.IsLearningInOtherTeam || employee.IsChangingTeams || employee.IsLearning)
+                        {
+                            <div class="employee-status-badges">
+                                @if (employee.IsLearningInOtherTeam)
+                                {
+                                    <div class="d-flex flex-column align-items-center gap-1">
+                                        <small class="text-muted" style="font-size: 0.7rem; line-height: 1;">
+                                            Day @employee.LearningDays / @Employee.DaysRequiredToLearnRole
+                                        </small>
+                                        <span class="badge bg-info" title="Learning in Other Team">
+                                            <i class="oi oi-book"></i> Learning
+                                        </span>
+                                    </div>
+                                }
+                                else if (employee.IsChangingTeams)
+                                {
+                                    <div class="d-flex flex-column align-items-center gap-1">
+                                        <small class="text-muted" style="font-size: 0.7rem; line-height: 1;">
+                                            Day @employee.ChangingTeamsDays / @Employee.DaysRequiredToChangeTeams
+                                        </small>
+                                        <span class="badge bg-warning" title="Changing Teams">
+                                            <i class="oi oi-people"></i> Changing Teams
+                                        </span>
+                                    </div>
+                                }
+                                else if (employee.IsLearning)
+                                {
+                                    <div class="d-flex flex-column align-items-center gap-1">
+                                        <small class="text-muted" style="font-size: 0.7rem; line-height: 1;">
+                                            Day @employee.LearningDays / @Employee.DaysRequiredToLearnRole
+                                        </small>
+                                        <span class="badge bg-info" title="Learning">
+                                            <i class="oi oi-book"></i> Learning
+                                        </span>
+                                    </div>
+                                }
+                            </div>
+                        }
                     </div>
-                    <button class="btn btn-sm btn-outline-primary move-employee-btn" 
-                            @onclick="() => ShowMoveModal(employee)" 
-                            disabled="@(employee.IsChangingTeams || employee.IsLearningInOtherTeam || (employee.IsLearning && employee.LearningDays >= 1))"
-                            title="@(employee.IsChangingTeams || employee.IsLearningInOtherTeam || (employee.IsLearning && employee.LearningDays >= 1) ? "Cannot move while changing teams or learning" : "Move Employee")">
-                        <i class="oi oi-arrow-right"></i>
-                    </button>
                 </div>
             }
             else
@@ -226,6 +236,23 @@
                     return false;
             }
             
+            return true;
+        }
+    }
+
+    private bool ShouldBeGrayedOut
+    {
+        get
+        {
+            // Don't gray out if draggable
+            if (IsDraggable)
+                return false;
+            
+            // Exception: Don't gray out working employees
+            if (Card is Employee employee && employee.IsWorking)
+                return false;
+            
+            // Gray out all other non-draggable cards
             return true;
         }
     }

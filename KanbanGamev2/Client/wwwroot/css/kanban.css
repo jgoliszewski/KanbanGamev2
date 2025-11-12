@@ -110,29 +110,34 @@
 
 .column-content .card {
     cursor: pointer;
-    transition: all 0.2s ease;
-    border: 1px solid #dee2e6;
+    transition: box-shadow 0.2s ease;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    background: #ffffff;
 }
 
 .column-content .card:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 .column-content .card-body {
-    padding: 10px;
+    padding: 12px;
 }
 
 .column-content .card-title {
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     font-weight: 600;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
+    color: #212529;
+    line-height: 1.3;
 }
 
 .column-content .card-text {
     font-size: 0.8rem;
     color: #6c757d;
     margin-bottom: 8px;
+    line-height: 1.4;
 }
 
 .badge {
@@ -154,12 +159,7 @@
 }
 
 /* Employee Card Specific Styles */
-.employee-card {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    position: relative;
-}
+/* Old employee-card style - replaced by modern version below */
 
 .employee-avatar {
     width: 40px;
@@ -201,30 +201,19 @@
     padding: 2px 6px;
 }
 
-/* Assignment indicator for employee cards */
-.employee-card.assigned::after {
-    /* Removed green dot styling */
-}
-
-/* Ensure employee cards with assigned work have proper spacing */
-.employee-card.assigned {
-    margin-bottom: 20px;
-    border-bottom: 2px solid transparent;
-    position: relative;
-    padding-bottom: 5px;
-}
+/* Removed assignment indicator and extra spacing that made employee cards appear bigger when they have assigned work */
 
 /* Style for work items that are assigned to employees */
 .draggable-card.assigned-work-item {
     margin-top: 5px;
-    border-left: 3px solid #28a745;
-    background-color: #f8fff9;
 }
 
 /* Visual connection between employee and assigned work */
 .draggable-card.assigned-work-item .card {
-    border-left: 3px solid #28a745;
     background-color: #f8fff9;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* Drag and Drop Styles */
@@ -243,7 +232,7 @@
     background-color: #e3f2fd;
     border-color: #2196f3;
     box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
-    transform: scale(1.02);
+    border-radius: 8px;
 }
 
 .draggable-card.drag-over-employee .employee-card {
@@ -260,10 +249,23 @@
     background-color: #e9ecef;
     border-color: #ced4da;
     color: #6c757d;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .draggable-card.not-draggable .card-body {
     filter: grayscale(0.3);
+}
+
+/* Exclude badges from grayscale filter */
+.draggable-card.not-draggable .badge,
+.draggable-card.not-draggable .employee-status-badges,
+.draggable-card.not-draggable .employee-status-badges .badge,
+.draggable-card.not-draggable .role-badges,
+.draggable-card.not-draggable .role-badge,
+.draggable-card.not-draggable .role-badges-container {
+    filter: grayscale(0) !important;
+    opacity: 1 !important;
 }
 
 .draggable-card.not-draggable:hover {
@@ -278,8 +280,7 @@
 }
 
 .employee-status .btn:hover {
-    transform: scale(1.1);
-    transition: transform 0.2s ease;
+    /* No scaling - stable design */
 }
 
 /* Modal styling */
@@ -540,7 +541,7 @@
 
 /* Role Badges */
 .role-badges-container {
-    margin: 8px 0;
+    margin-top: 8px;
 }
 
 .role-badges {
@@ -807,13 +808,36 @@
     color: #6c757d;
 }
 
-/* Employee Card Layout */
+/* Employee Card Layout - Modern and Stable */
 .employee-card {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 8px;
+    gap: 10px;
+    padding: 12px;
     position: relative;
+    min-height: 110px;
+    background: transparent;
+    border-radius: 0;
+    transition: none;
+    box-shadow: none;
+    border: none;
+}
+
+/* Unify employee card styling - apply border/radius to outer card */
+.card:has(.employee-card),
+.draggable-card .card:has(.employee-card) {
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+}
+
+/* Fallback for browsers that don't support :has() */
+.draggable-card.employee-card-wrapper .card {
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    background: #ffffff;
 }
 
 .employee-top {
@@ -826,16 +850,43 @@
 .employee-left {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.employee-avatar-container {
+    position: relative;
     flex-shrink: 0;
 }
 
 .employee-avatar {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #dee2e6;
+    border: 2px solid #e9ecef;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    display: block;
+}
+
+.status-dot-on-avatar {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    z-index: 5;
+}
+
+.status-dot-on-avatar.status-dot-working {
+    background-color: #dc3545;
+}
+
+.status-dot-on-avatar.status-dot-free {
+    background-color: #28a745;
 }
 
 .employee-info-left {
@@ -846,9 +897,10 @@
 
 .employee-name {
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     color: #212529;
-    line-height: 1;
+    line-height: 1.3;
+    margin-bottom: 2px;
 }
 
 .employee-seniority {
@@ -900,18 +952,26 @@
 
 .employee-bottom {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     padding-top: 4px;
     border-top: 1px solid #f0f0f0;
-    padding-right: 40px;
-    /* Make space for the absolutely positioned button */
+    gap: 8px;
 }
 
 .role-badges-container {
     display: flex;
     justify-content: center;
     width: 100%;
+}
+
+.employee-status-badges {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: 4px;
 }
 
 .role-badges {
@@ -930,23 +990,27 @@
 }
 
 .move-employee-btn {
-    position: absolute;
-    bottom: 8px;
-    right: 8px;
     padding: 4px 8px;
     font-size: 0.75rem;
-    border-radius: 4px;
+    border-radius: 6px;
     border: 1px solid #007bff;
-    background-color: transparent;
+    background-color: #ffffff;
     color: #007bff;
-    transition: all 0.2s ease;
+    transition: background-color 0.15s ease, color 0.15s ease;
     line-height: 1;
-    z-index: 10;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    min-width: auto;
 }
 
-.move-employee-btn:hover {
+.move-employee-btn:hover:not(:disabled) {
     background-color: #007bff;
-    color: white;
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+.move-employee-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* Notification System */
@@ -1227,7 +1291,19 @@
 }
 
 /* Priority Badge Styles - Modern and Light */
+/* Remove chevron icon from priority select */
+.priority-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: none !important;
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    padding-right: 0.5rem !important;
+}
+
 .priority-low,
+
 .priority-select.priority-low {
     background-color: #e8e9ea !important;
     color: #5a6268 !important;

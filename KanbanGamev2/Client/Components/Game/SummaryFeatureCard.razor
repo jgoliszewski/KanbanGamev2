@@ -6,7 +6,10 @@
 
 <div class="card mb-2 summary-feature-card">
     <div class="card-body p-2">
-        <h6 class="card-title mb-1">@Feature.Title</h6>
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <h6 class="card-title mb-0">@Feature.Title</h6>
+            <div class="text-success fw-bold">$@Feature.Profit.ToString("N0")</div>
+        </div>
         
         <div class="d-flex justify-content-between align-items-center mb-2">
             @if (Feature.Priority.HasValue)
@@ -31,8 +34,6 @@
                 </small>
             </div>
         }
-        
-        <div class="text-success fw-bold mb-2">Profit: $@Feature.Profit.ToString("N0")</div>
         
         @if (Feature.IsAssigned)
         {
