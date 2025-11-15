@@ -7,5 +7,6 @@ public enum EmployeeStatus
     Fired,
     IsLearning,
     ChangingTeams,
-    IsLearningInOtherTeam
+    IsLearningInOtherTeam,
+    Onboarding
 } 

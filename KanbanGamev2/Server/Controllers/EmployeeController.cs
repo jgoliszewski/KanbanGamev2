@@ -39,9 +39,9 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<Employee> CreateEmployee(Employee employee)
+    public async Task<ActionResult<Employee>> CreateEmployee(Employee employee)
     {
-        var created = _employeeService.CreateEmployee(employee);
+        var created = await _employeeService.CreateEmployee(employee);
         return CreatedAtAction(nameof(GetEmployee), new { id = created.Id }, created);
     }
 

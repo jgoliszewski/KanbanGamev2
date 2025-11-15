@@ -146,6 +146,10 @@ public class DragDropService : IDragDropService
         if (workCard is not KanbanTask && workCard is not Feature)
             return false;
 
+        // Check if employee is onboarding - they cannot work while onboarding
+        if (employee.IsOnboarding)
+            return false;
+
         // Check if employee is learning - they cannot work while learning
         if (employee.IsLearning)
             return false;

@@ -56,6 +56,9 @@ public class GameStateService : IGameStateService
         // Process vacation days for all employees
         await ProcessVacationDays();
 
+        // Process onboarding days for all employees
+        await ProcessOnboardingDays();
+
         // Process learning days for all employees
         await ProcessLearningDays();
 
@@ -119,6 +122,59 @@ public class GameStateService : IGameStateService
         {
             // Log error but don't fail the day advancement
             Console.WriteLine($"Error processing vacation days: {ex.Message}");
+        }
+    }
+
+    private async Task ProcessOnboardingDays()
+    {
+        try
+        {
+            Console.WriteLine($"Processing onboarding days for day {_currentDay}...");
+            Console.WriteLine($"Current real-world date: {DateTime.Today:yyyy-MM-dd}");
+
+            // Get all employees currently onboarding
+            var employees = _employeeService.GetEmployees();
+            var employeesOnboarding = employees.Where(e => e.Status == EmployeeStatus.Onboarding && e.OnboardingEndDate.HasValue).ToList();
+
+            Console.WriteLine($"Found {employeesOnboarding.Count} employees onboarding");
+
+            foreach (var employee in employeesOnboarding)
+            {
+                if (employee.OnboardingEndDate.HasValue)
+                {
+                    var oldEndDate = employee.OnboardingEndDate.Value;
+
+                    // Calculate remaining onboarding days based on the current onboarding end date
+                    var daysRemaining = (oldEndDate.Date - DateTime.Today.Date).Days;
+
+                    Console.WriteLine($"Employee {employee.Name}: Onboarding end date: {oldEndDate.Date:yyyy-MM-dd}, Days remaining: {daysRemaining}");
+
+                    // Decrement by 1 day since we're advancing to the next day
+                    var newDaysRemaining = daysRemaining - 1;
+                    Console.WriteLine($"Employee {employee.Name}: After decrement: {newDaysRemaining} days remaining");
+
+                    if (newDaysRemaining <= 0)
+                    {
+                        Console.WriteLine($"Employee {employee.Name} onboarding ended, making active");
+                        // Onboarding is over, make employee active
+                        await _employeeService.EndEmployeeOnboardingAsync(employee.Id);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Employee {employee.Name} onboarding updated: {newDaysRemaining} days remaining");
+                        // Update onboarding end date to reflect one less day
+                        var newEndDate = DateTime.Today.AddDays(newDaysRemaining);
+                        Console.WriteLine($"Employee {employee.Name}: New onboarding end date: {newEndDate:yyyy-MM-dd}");
+                        employee.OnboardingEndDate = newEndDate;
+                        await _employeeService.UpdateEmployee(employee);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't fail the day advancement
+            Console.WriteLine($"Error processing onboarding days: {ex.Message}");
         }
     }
 

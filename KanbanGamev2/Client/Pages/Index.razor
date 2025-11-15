@@ -5,42 +5,118 @@
 
 <PageTitle>KanbanGamev2 - Project Management</PageTitle>
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="text-center mb-5">
-                <h1 class="display-4">Welcome to KanbanGamev2</h1>
-                <p class="lead">A comprehensive project management system with real-time Kanban boards</p>
-            </div>
-        </div>
+<style>
+    .home-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 3rem 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        color: white;
+        text-align: center;
+    }
+
+    .home-header h1 {
+        font-weight: 700;
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .home-header p {
+        font-size: 1.25rem;
+        margin: 0;
+        opacity: 0.95;
+    }
+
+    .modern-card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .modern-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .balance-card {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .balance-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(40, 167, 69, 0.4);
+    }
+
+    .balance-card h3 {
+        font-weight: 700;
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    .balance-card .balance-amount {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0.5rem 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .balance-card .balance-amount.negative {
+        color: #ffc107;
+    }
+
+    .balance-card p {
+        font-size: 1.1rem;
+        margin: 0;
+        opacity: 0.95;
+    }
+
+    .balance-icon {
+        font-size: 2rem;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    }
+</style>
+
+<div class="container-fluid" style="padding: 2rem;">
+    <div class="home-header">
+        <h1>
+            <i class="oi oi-home"></i> Welcome to KanbanGamev2
+        </h1>
+        <p>A comprehensive project management system with real-time Kanban boards</p>
     </div>
 
-    <div class="row mb-4">
-        <div class="col-12">
+    <div class="row">
+        <div class="col-lg-8 col-md-6 mb-4">
+            <div class="balance-card mb-4">
+                <h3>
+                    <i class="oi oi-dollar balance-icon"></i>
+                    Company's Balance
+                </h3>
+                <div class="balance-amount @(GameStateService.CompanyMoney < 0 ? "negative" : "")">
+                    $@GameStateService.CompanyMoney.ToString("N0")
+                </div>
+                <p>Complete features to earn money for your company!</p>
+            </div>
+            <MoneyHistory />
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
             <GameCalendar />
         </div>
     </div>
-
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h3 class="card-title">
-                        <span class="oi oi-dollar"></span>
-                        Company's Balance: <span class="@(GameStateService.CompanyMoney < 0 ? "text-danger" : "")">$@GameStateService.CompanyMoney.ToString("N0")</span>
-                    </h3>
-                    <p class="card-text">Complete features to earn money for your company!</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mb-4">
-        <div class="col-12">
-            <MoneyHistory />
-        </div>
-    </div>
-
 </div>
 
 @code {

@@ -77,147 +77,237 @@
 <style>
     .game-calendar {
         background: white;
-        border-radius: 8px;
-        padding: 0.6rem; /* Reduced from 1.5rem */
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        max-width: 400px; /* Added max-width to make it smaller */
-        margin: 0 auto;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        height: 100%;
+        border: none;
+    }
+
+    .game-calendar:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     }
 
     .calendar-header {
         text-align: center;
-        margin-bottom: 0.6rem; /* Reduced from 1.5rem */
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e9ecef;
     }
 
     .calendar-header h3 {
         color: #495057;
-        margin-bottom: 0.25rem; /* Reduced from 0.5rem */
-        font-size: 1.1rem; /* Reduced from default */
+        margin-bottom: 0.75rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
     }
 
     .current-day-badge {
-        margin-top: 0.25rem; /* Reduced from 0.5rem */
+        margin-top: 0.5rem;
+    }
+
+    .current-day-badge .badge {
+        padding: 0.75rem 1.5rem;
+        font-size: 1.1rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
     }
 
     .calendar-grid {
-        margin-bottom: 0.6rem; /* Reduced from 1.5rem */
+        margin-bottom: 1.5rem;
     }
 
     .calendar-weekdays {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
-        gap: 1px; /* Reduced from 2px */
-        margin-bottom: 0.25rem; /* Reduced from 0.5rem */
+        gap: 4px;
+        margin-bottom: 0.5rem;
     }
 
     .weekday {
         text-align: center;
-        font-weight: 600;
-        color: #6c757d;
-        font-size: 0.7rem; /* Reduced from 0.875rem */
-        padding: 0.25rem; /* Reduced from 0.5rem */
+        font-weight: 700;
+        color: #495057;
+        font-size: 0.875rem;
+        padding: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 8px;
     }
 
     .calendar-days {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
-        gap: 1px; /* Reduced from 2px */
+        gap: 4px;
     }
 
     .calendar-day {
         aspect-ratio: 1;
-        border: 1px solid #e9ecef;
+        border: 2px solid #e9ecef;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         position: relative;
-        background: #f8f9fa;
-        transition: all 0.2s;
-        min-height: 30px; /* Added min-height to make squares smaller */
+        background: #ffffff;
+        transition: all 0.2s ease;
+        border-radius: 8px;
+        min-height: 45px;
+        cursor: pointer;
     }
 
     .calendar-day:hover {
-        background: #e9ecef;
+        background: #f8f9fa;
+        transform: scale(1.05);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     .calendar-day.other-month {
         color: #adb5bd;
         background: #f8f9fa;
+        opacity: 0.6;
     }
 
     .calendar-day.current-game-day {
-        background: #f8f9fa;
-        color: #212529;
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
         border: 2px solid #dc3545;
         font-weight: bold;
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        transform: scale(1.05);
+    }
+
+    .calendar-day.current-game-day:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 16px rgba(220, 53, 69, 0.5);
     }
 
     .calendar-day.past-game-day {
-        background: #f8f9fa;
-        color: #212529;
-        border-color: #e9ecef;
+        background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+        color: #495057;
+        border-color: #dee2e6;
     }
 
     .calendar-day.future-game-day {
-        background: #f8f9fa;
-        color: #212529;
-        border-color: #e9ecef;
+        background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+        color: #495057;
+        border-color: #ffc107;
     }
 
     .day-number {
-        font-size: 0.7rem; /* Reduced from 0.875rem */
-        font-weight: 500;
+        font-size: 0.875rem;
+        font-weight: 600;
     }
 
     .game-day-indicator {
-        font-size: 0.5rem; /* Reduced from 0.625rem */
+        font-size: 0.625rem;
         font-weight: bold;
-        margin-top: 0.0625rem; /* Reduced from 0.125rem */
+        margin-top: 0.125rem;
+        padding: 0.125rem 0.25rem;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+    }
+
+    .calendar-day.current-game-day .game-day-indicator {
+        background: rgba(255, 255, 255, 0.3);
     }
 
     .calendar-footer {
-        border-top: 1px solid #e9ecef;
-        padding-top: 0.4rem; /* Reduced from 1rem */
+        border-top: 2px solid #e9ecef;
+        padding-top: 1rem;
     }
 
     .game-info {
-        margin-bottom: 0.4rem; /* Reduced from 1rem */
+        margin-bottom: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
     }
 
     .info-item {
-        margin-bottom: 0.25rem; /* Reduced from 0.5rem */
-        font-size: 0.7rem; /* Reduced from 0.875rem */
-        color: #6c757d;
+        font-size: 0.875rem;
+        color: #495057;
+        padding: 0.5rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .info-item:hover {
+        background: #e9ecef;
+        transform: translateX(4px);
+    }
+
+    .info-item strong {
+        color: #667eea;
+        font-weight: 700;
     }
 
     .achievements-section {
-        border-top: 1px solid #e9ecef;
-        padding-top: 0.4rem; /* Reduced from 1rem */
+        border-top: 2px solid #e9ecef;
+        padding-top: 1rem;
     }
 
     .achievements-section h5 {
-        font-size: 0.9rem; /* Reduced from default */
-        margin-bottom: 0.1rem; /* Reduced from 0.2rem */
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        color: #495057;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     .achievements-list {
-        max-height: 90px; /* Reduced from 150px */
+        max-height: 150px;
         overflow-y: auto;
+        padding-right: 0.5rem;
+    }
+
+    .achievements-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .achievements-list::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .achievements-list::-webkit-scrollbar-thumb {
+        background: #667eea;
+        border-radius: 10px;
     }
 
     .achievement-item {
         display: flex;
         align-items: center;
-        padding: 0.25rem; /* Reduced from 0.5rem */
-        border-radius: 4px;
-        margin-bottom: 0.25rem; /* Reduced from 0.5rem */
-        background: #f8f9fa;
+        padding: 0.75rem;
+        border-radius: 10px;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border: 1px solid #e9ecef;
+        transition: all 0.2s ease;
+    }
+
+    .achievement-item:hover {
+        transform: translateX(4px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
     }
 
     .achievement-icon {
-        font-size: 1rem; /* Reduced from 1.25rem */
-        margin-right: 0.375rem; /* Reduced from 0.75rem */
+        font-size: 1.5rem;
+        margin-right: 0.75rem;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
     }
 
     .achievement-info {
@@ -225,13 +315,14 @@
     }
 
     .achievement-name {
-        font-weight: 500;
-        font-size: 0.7rem; /* Reduced from 0.875rem */
-        margin-bottom: 0.0625rem; /* Reduced from 0.125rem */
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin-bottom: 0.125rem;
+        color: #495057;
     }
 
     .achievement-date {
-        font-size: 0.6rem; /* Reduced from 0.75rem */
+        font-size: 0.75rem;
         color: #6c757d;
     }
 </style>

@@ -112,4 +112,17 @@ public class EmployeeService : IEmployeeService
         var response = await _http.PutAsync($"api/employee/{employeeId}/move?boardType={boardType}&columnId={columnId}", null);
         return response.IsSuccessStatusCode;
     }
+
+    public async Task<Employee> CreateEmployeeAsync(Employee employee)
+    {
+        var response = await _http.PostAsJsonAsync("api/employee", employee);
+        response.EnsureSuccessStatusCode();
+        var createdEmployee = await response.Content.ReadFromJsonAsync<Employee>();
+        if (createdEmployee != null)
+        {
+            await GetEmployees();
+            return createdEmployee;
+        }
+        throw new Exception("Failed to create employee");
+    }
 }

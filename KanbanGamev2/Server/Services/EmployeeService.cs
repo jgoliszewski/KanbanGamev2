@@ -29,11 +29,22 @@ public class EmployeeService : IEmployeeService
         return _employees.Where(e => e.IsAvailable).ToList();
     }
 
-    public Employee CreateEmployee(Employee employee)
+    public async Task<Employee> CreateEmployee(Employee employee)
     {
         employee.Id = Guid.NewGuid();
         employee.CreatedAt = DateTime.Now;
+        
+        // Set onboarding status for 5 days
+        employee.Status = EmployeeStatus.Onboarding;
+        employee.OnboardingEndDate = DateTime.Now.AddDays(5);
+        employee.IsAvailable = false; // Onboarding employees cannot work
+        
         _employees.Add(employee);
+        
+        // Notify all clients about the new employee
+        await _notificationService.NotifyEmployeeCreatedAsync(employee);
+        await _notificationService.NotifyRefreshAllBoardsAsync();
+        
         return employee;
     }
 
@@ -55,6 +66,7 @@ public class EmployeeService : IEmployeeService
         existingEmployee.Status = employee.Status;
         existingEmployee.VacationStartDate = employee.VacationStartDate;
         existingEmployee.VacationEndDate = employee.VacationEndDate;
+        existingEmployee.OnboardingEndDate = employee.OnboardingEndDate;
         
         // Update learning properties
         existingEmployee.LearningDays = employee.LearningDays;
@@ -296,6 +308,29 @@ public class EmployeeService : IEmployeeService
         return true;
     }
 
+    public async Task<bool> EndEmployeeOnboardingAsync(Guid employeeId)
+    {
+        var employee = _employees.FirstOrDefault(e => e.Id == employeeId);
+        if (employee == null) return false;
+
+        var oldStatus = employee.Status;
+
+        // Clear onboarding status
+        employee.Status = EmployeeStatus.Active;
+        employee.OnboardingEndDate = null;
+        employee.IsAvailable = true; // Now available to work
+
+        // Send notification and status change signal
+        await _notificationService.SendGlobalNotificationAsync("Onboarding Completed",
+            $"{employee.Name} has completed onboarding and is now active.",
+            "Success");
+
+        await _notificationService.NotifyEmployeeStatusChangedAsync(employee, oldStatus, employee.Status);
+        await _notificationService.NotifyRefreshAllBoardsAsync();
+
+        return true;
+    }
+
     public async Task<bool> FireEmployeeAsync(Guid employeeId)
     {
         var employee = _employees.FirstOrDefault(e => e.Id == employeeId);
@@ -349,6 +384,6 @@ public class EmployeeService : IEmployeeService
 
     public async Task<List<Employee>> GetAvailableEmployeesAsync()
     {
-        return _employees.Where(e => e.Status == EmployeeStatus.Active && !e.IsWorking).ToList();
+        return _employees.Where(e => e.Status == EmployeeStatus.Active && !e.IsWorking && !e.IsOnboarding).ToList();
     }
 }

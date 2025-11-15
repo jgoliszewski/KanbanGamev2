@@ -14,4 +14,5 @@ public interface IEmployeeService
     Task<bool> FireEmployeeAsync(Guid employeeId);
     Task<bool> RehireEmployeeAsync(Guid employeeId);
     Task<bool> MoveEmployee(Guid employeeId, BoardType boardType, string columnId);
+    Task<Employee> CreateEmployeeAsync(Employee employee);
 }

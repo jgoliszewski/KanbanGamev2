@@ -1,75 +1,141 @@
 @using KanbanGame.Shared
 @inject KanbanGamev2.Shared.Services.IGameStateService GameStateService
 
-<div class="money-history">
-    <h5 class="mb-3">Money History</h5>
-    @if (GameStateService.MoneyTransactions.Any())
-    {
-        <div class="transaction-list">
-            @foreach (var transaction in GameStateService.MoneyTransactions.OrderByDescending(t => t.Timestamp))
-            {
-                <div class="transaction-item @(transaction.Type == TransactionType.Income ? "income" : "expense")">
-                    <div class="transaction-amount @(transaction.Type == TransactionType.Income ? "text-success" : "text-danger")">
-                        @(transaction.Type == TransactionType.Income ? "+" : "-")$@transaction.Amount.ToString("N0")
+<div class="card modern-card">
+    <div class="card-header modern-card-header" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);">
+        <h5 class="mb-0" style="color: white; font-weight: 600; font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="oi oi-dollar"></i> Money History
+        </h5>
+    </div>
+    <div class="card-body modern-card-body">
+        @if (GameStateService.MoneyTransactions.Any())
+        {
+            <div class="transaction-list">
+                @foreach (var transaction in GameStateService.MoneyTransactions.OrderByDescending(t => t.Timestamp))
+                {
+                    <div class="transaction-item @(transaction.Type == TransactionType.Income ? "income" : "expense")">
+                        <div class="transaction-icon">
+                            <i class="oi @(transaction.Type == TransactionType.Income ? "oi-arrow-thick-top" : "oi-arrow-thick-bottom")"></i>
+                        </div>
+                        <div class="transaction-details">
+                            <div class="transaction-description">@transaction.Description</div>
+                            <div class="transaction-date">@transaction.Timestamp.ToString("MMM dd, yyyy HH:mm")</div>
+                        </div>
+                        <div class="transaction-amount @(transaction.Type == TransactionType.Income ? "text-success" : "text-danger")">
+                            @(transaction.Type == TransactionType.Income ? "+" : "-")$@transaction.Amount.ToString("N0")
+                        </div>
                     </div>
-                    <div class="transaction-details">
-                        <div class="transaction-description">@transaction.Description</div>
-                        <div class="transaction-date">@transaction.Timestamp.ToString("MMM dd, yyyy HH:mm")</div>
-                    </div>
-                </div>
-            }
-        </div>
-    }
-    else
-    {
-        <div class="text-muted">No transactions yet.</div>
-    }
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="oi oi-dollar" style="font-size: 3rem; color: #dee2e6;"></i>
+                <p class="text-muted mt-3">No transactions yet.</p>
+            </div>
+        }
+    </div>
 </div>
 
 <style>
-    .money-history {
-        background: white;
-        border-radius: 8px;
-        padding: 1rem;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    .modern-card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        overflow: hidden;
+    }
+
+    .modern-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .modern-card-header {
+        border: none;
+        padding: 1.25rem 1.5rem;
+    }
+
+    .modern-card-body {
+        padding: 1.5rem;
     }
 
     .transaction-list {
-        max-height: 300px;
+        max-height: 400px;
         overflow-y: auto;
+        padding-right: 0.5rem;
+    }
+
+    .transaction-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .transaction-list::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .transaction-list::-webkit-scrollbar-thumb {
+        background: #667eea;
+        border-radius: 10px;
     }
 
     .transaction-item {
         display: flex;
         align-items: center;
-        padding: 0.75rem;
-        border-bottom: 1px solid #eee;
-        transition: background-color 0.2s;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 0.75rem;
+        transition: all 0.2s ease;
+        border: 1px solid #e9ecef;
+        background: #ffffff;
     }
 
     .transaction-item:last-child {
-        border-bottom: none;
+        margin-bottom: 0;
     }
 
     .transaction-item:hover {
-        background-color: #f8f9fa;
+        transform: translateX(4px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        background: #f8f9fa;
     }
 
-    .transaction-amount {
-        font-weight: bold;
-        font-size: 1.1rem;
-        min-width: 100px;
-        text-align: right;
+    .transaction-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         margin-right: 1rem;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .transaction-item.income .transaction-icon {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+    }
+
+    .transaction-item.expense .transaction-icon {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
     }
 
     .transaction-details {
         flex: 1;
+        min-width: 0;
     }
 
     .transaction-description {
-        font-weight: 500;
+        font-weight: 600;
         margin-bottom: 0.25rem;
+        color: #495057;
+        font-size: 0.95rem;
     }
 
     .transaction-date {
@@ -77,11 +143,19 @@
         color: #6c757d;
     }
 
-    .income {
+    .transaction-amount {
+        font-weight: 700;
+        font-size: 1.25rem;
+        min-width: 120px;
+        text-align: right;
+        padding-left: 1rem;
+    }
+
+    .transaction-item.income {
         border-left: 4px solid #28a745;
     }
 
-    .expense {
+    .transaction-item.expense {
         border-left: 4px solid #dc3545;
     }
 </style> 

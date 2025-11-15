@@ -1,23 +1,76 @@
 @using KanbanGamev2.Client.Services
 
+<style>
+    .restart-modal {
+        border-radius: 16px;
+        border: none;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+    }
+
+    .restart-modal-header {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border: none;
+        padding: 1.5rem;
+        color: white;
+    }
+
+    .restart-modal-body {
+        padding: 1.5rem;
+    }
+
+    .restart-modal-footer {
+        border: none;
+        padding: 1.5rem;
+        border-top: 1px solid #e9ecef;
+        background-color: #f8f9fa;
+    }
+
+    .restart-alert {
+        border-radius: 10px;
+        border: none;
+        box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
+        background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+    }
+
+    .restart-btn {
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        transition: all 0.2s ease;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .restart-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .restart-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+</style>
+
 <div class="modal fade @(IsVisible ? "show" : "")" style="display: @(IsVisible ? "block" : "none");" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title text-danger">
+        <div class="modal-content restart-modal">
+            <div class="modal-header restart-modal-header">
+                <h5 class="modal-title fw-bold">
                     <i class="oi oi-warning"></i> Confirm Game Restart
                 </h5>
-                <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                <button type="button" class="btn-close btn-close-white" @onclick="CloseModal"></button>
             </div>
-            <div class="modal-body">
-                <div class="alert alert-warning" role="alert">
-                    <h6 class="alert-heading">
+            <div class="modal-body restart-modal-body">
+                <div class="alert alert-warning restart-alert" role="alert">
+                    <h6 class="alert-heading fw-bold">
                         <i class="oi oi-warning"></i> Warning: This action cannot be undone!
                     </h6>
-                    <p class="mb-0">
+                    <p class="mb-2">
                         Are you sure you want to restart the game? This will:
                     </p>
-                    <ul class="mb-0 mt-2">
+                    <ul class="mb-0 mt-2" style="padding-left: 1.5rem;">
                         <li>Reset all game progress to day 1</li>
                         <li>Reset money to $10,000</li>
                         <li>Move all features and tasks back to backlog</li>
@@ -25,15 +78,15 @@
                         <li>Clear all achievements and money transactions</li>
                     </ul>
                 </div>
-                <p class="text-muted small">
+                <p class="text-muted small mt-3">
                     <strong>Note:</strong> All connected players will see this restart and their boards will be refreshed automatically.
                 </p>
             </div>
-            <div class="modal-footer border-0 pt-0">
-                <button type="button" class="btn btn-secondary" @onclick="CloseModal">
+            <div class="modal-footer restart-modal-footer">
+                <button type="button" class="btn btn-secondary restart-btn" @onclick="CloseModal" disabled="@IsRestarting">
                     <i class="oi oi-x"></i> Cancel
                 </button>
-                <button type="button" class="btn btn-danger" @onclick="ConfirmRestart" disabled="@IsRestarting">
+                <button type="button" class="btn btn-danger restart-btn" @onclick="ConfirmRestart" disabled="@IsRestarting">
                     @if (IsRestarting)
                     {
                         <span class="spinner-border spinner-border-sm me-2" role="status"></span>
@@ -52,7 +105,7 @@
 
 @if (IsVisible)
 {
-    <div class="modal-backdrop fade show"></div>
+    <div class="modal-backdrop fade show" style="backdrop-filter: blur(4px);"></div>
 }
 
 @code {

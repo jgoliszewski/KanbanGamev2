@@ -219,6 +219,10 @@
             // Employees: check if they can be dragged
             if (Card is Employee employee)
             {
+                // Cannot drag employees who are onboarding
+                if (employee.IsOnboarding)
+                    return false;
+                    
                 // Cannot drag employees who are changing teams
                 if (employee.Status == EmployeeStatus.ChangingTeams)
                     return false;

@@ -19,6 +19,7 @@ public class Employee : Card
     public EmployeeStatus Status { get; set; } = EmployeeStatus.Active;
     public DateTime? VacationStartDate { get; set; }
     public DateTime? VacationEndDate { get; set; }
+    public DateTime? OnboardingEndDate { get; set; }
 
     // Learning properties
     public int LearningDays { get; set; } = 0;
@@ -41,6 +42,9 @@ public class Employee : Card
 
     // Computed property to check if employee is changing teams
     public bool IsChangingTeams => Status == EmployeeStatus.ChangingTeams;
+
+    // Computed property to check if employee is onboarding
+    public bool IsOnboarding => Status == EmployeeStatus.Onboarding;
 
     // Efficiency based on seniority (0-1 scale)
     public double Efficiency => Seniority switch
@@ -113,6 +117,10 @@ public class Employee : Card
     // Check if employee can work in a specific column based on their learned roles
     public bool CanWorkInColumn(string columnId)
     {
+        // If employee is onboarding, they cannot work
+        if (IsOnboarding)
+            return false;
+
         // If employee is learning, they cannot work
         if (IsLearning)
             return false;

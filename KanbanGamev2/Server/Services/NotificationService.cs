@@ -24,4 +24,14 @@ public class NotificationService : INotificationService
     {
         await _gameHub.Clients.All.SendAsync("EmployeeStatusChanged", employee, oldStatus, newStatus);
     }
+
+    public async Task NotifyEmployeeCreatedAsync(Employee employee)
+    {
+        await _gameHub.Clients.All.SendAsync("EmployeeCreated", employee);
+    }
+
+    public async Task NotifyRefreshAllBoardsAsync()
+    {
+        await _gameHub.Clients.All.SendAsync("RefreshAllBoards");
+    }
 }

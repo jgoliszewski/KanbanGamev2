@@ -6,4 +6,6 @@ public interface INotificationService
 {
     Task SendGlobalNotificationAsync(string title, string message, string type);
     Task NotifyEmployeeStatusChangedAsync(Employee employee, EmployeeStatus oldStatus, EmployeeStatus newStatus);
+    Task NotifyEmployeeCreatedAsync(Employee employee);
+    Task NotifyRefreshAllBoardsAsync();
 }
