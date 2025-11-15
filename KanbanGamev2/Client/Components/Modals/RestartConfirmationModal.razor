@@ -9,10 +9,11 @@
     }
 
     .restart-modal-header {
-        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        background: #ffebee;
         border: none;
+        border-bottom: 1px solid #f44336;
         padding: 1.5rem;
-        color: white;
+        color: #212529;
     }
 
     .restart-modal-body {
@@ -27,10 +28,9 @@
     }
 
     .restart-alert {
-        border-radius: 10px;
-        border: none;
-        box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
-        background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+        border-radius: 8px;
+        border: 1px solid #ffc107;
+        background: #fff3cd;
     }
 
     .restart-btn {
@@ -60,7 +60,7 @@
                 <h5 class="modal-title fw-bold">
                     <i class="oi oi-warning"></i> Confirm Game Restart
                 </h5>
-                <button type="button" class="btn-close btn-close-white" @onclick="CloseModal"></button>
+                <button type="button" class="btn-close" @onclick="CloseModal"></button>
             </div>
             <div class="modal-body restart-modal-body">
                 <div class="alert alert-warning restart-alert" role="alert">

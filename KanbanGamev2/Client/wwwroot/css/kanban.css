@@ -441,8 +441,8 @@
 }
 
 .column-tile:hover {
-    border-color: #007bff;
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+    border-color: #2196f3;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
     transform: translateY(-2px);
 }
 
@@ -522,7 +522,7 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #007bff, #28a745);
+    background: linear-gradient(90deg, #2196f3, #28a745);
     opacity: 0;
     transition: opacity 0.2s ease;
 }
@@ -533,7 +533,7 @@
 }
 
 .column-tile.selected::before {
-    background: linear-gradient(90deg, #28a745, #20c997);
+    background: #28a745;
 }
 
 .column-tile.unavailable::before {
@@ -593,15 +593,15 @@
 }
 
 .role-learned.role-developer {
-    background-color: #007bff;
+    background-color: #2196f3;
     /* Blue for D */
-    border: 2px solid #0056b3;
+    border: 2px solid #2196f3;
 }
 
 .role-learned.role-tester {
-    background-color: #dc3545;
+    background-color: #f44336;
     /* Red for T */
-    border: 2px solid #c82333;
+    border: 2px solid #f44336;
 }
 
 .role-learnable {
@@ -708,7 +708,7 @@
 .day-number {
     font-size: 1.2rem;
     font-weight: bold;
-    color: #17a2b8;
+    color: #2196f3;
     background-color: #e3f2fd;
     padding: 4px 8px;
     border-radius: 4px;
@@ -748,7 +748,7 @@
 }
 
 .progress-bar {
-    background-color: #17a2b8;
+    background-color: #2196f3;
     color: white;
     font-weight: 600;
     font-size: 0.8rem;
@@ -1000,9 +1000,9 @@
     padding: 4px 8px;
     font-size: 0.75rem;
     border-radius: 6px;
-    border: 1px solid #007bff;
+    border: 1px solid #2196f3;
     background-color: #ffffff;
-    color: #007bff;
+    color: #2196f3;
     transition: background-color 0.15s ease, color 0.15s ease;
     line-height: 1;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -1010,9 +1010,9 @@
 }
 
 .move-employee-btn:hover:not(:disabled) {
-    background-color: #007bff;
+    background-color: #2196f3;
     color: #ffffff;
-    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+    box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
 }
 
 .move-employee-btn:disabled {
@@ -1036,7 +1036,7 @@
     background: white;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border-left: 4px solid #007bff;
+    border-left: 4px solid #2196f3;
     overflow: hidden;
     animation: slideInRight 0.3s ease-out;
     max-width: 400px;
@@ -1085,8 +1085,8 @@
 }
 
 .notification-header .btn-close:hover {
-    background: #dc3545 !important;
-    border-color: #dc3545 !important;
+    background: #f44336 !important;
+    border-color: #f44336 !important;
     color: white !important;
     transform: scale(1.1);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -1116,8 +1116,8 @@
 }
 
 .notification-close-btn:hover {
-    background: #dc3545 !important;
-    border-color: #dc3545 !important;
+    background: #f44336 !important;
+    border-color: #f44336 !important;
     color: white !important;
     transform: scale(1.1);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -1138,7 +1138,7 @@
 
 /* Notification Types */
 .notification.notification-info {
-    border-left-color: #007bff;
+    border-left-color: #2196f3;
 }
 
 .notification.notification-success {
@@ -1150,7 +1150,7 @@
 }
 
 .notification.notification-error {
-    border-left-color: #dc3545;
+    border-left-color: #f44336;
 }
 
 /* Animation */
@@ -1219,8 +1219,9 @@
 }
 
 .modal-header {
-    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-    color: white;
+    background: #ffebee;
+    border-bottom: 1px solid #f44336;
+    color: #212529;
     border-radius: 12px 12px 0 0;
 }
 
@@ -1234,7 +1235,7 @@
 }
 
 .modal-title {
-    color: white !important;
+    color: #212529 !important;
     font-weight: 600;
 }
 
@@ -1264,15 +1265,15 @@
 }
 
 .modal-footer .btn-danger {
-    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    background: #f44336;
     border: none;
-    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+    box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
 }
 
 .modal-footer .btn-danger:hover:not(:disabled) {
-    background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+    background: #d32f2f;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
 }
 
 .modal-footer .btn-danger:disabled {
