@@ -6,30 +6,17 @@
 @inject IWorkSimulationService WorkSimulationService
 @implements IDisposable
 
+<div class="game-status-divider"></div>
 <div class="game-status">
-    <div class="status-display">
-        <div class="player-count">
-            <span class="count-text">@SignalRService.ReadyCount / @SignalRService.ConnectedCount</span>
-            <span class="count-label">ready players</span>
-        </div>
-        
-        <div class="day-display">
-            <span class="day-text">Day @GameStateService.CurrentDay</span>
-        </div>
+    <div class="player-count">
+        <span class="count-text">@SignalRService.ReadyCount / @SignalRService.ConnectedCount</span>
+        <span class="count-label">ready players</span>
     </div>
-    
-    <div class="status-buttons">
-        <button class="btn btn-sm @(IsReady ? "btn-success" : "btn-outline-success")" 
-                @onclick="ToggleReadyStatus" 
-                disabled="@(!SignalRService.IsConnected)">
-            @(IsReady ? "Ready" : "Not Ready")
-        </button>
-        
-        <button class="btn btn-sm btn-primary" 
-                @onclick="AdvanceToNextDay">
-            Next Day
-        </button>
-    </div>
+    <button class="btn btn-sm @(IsReady ? "btn-success" : "btn-outline-success")" 
+            @onclick="ToggleReadyStatus" 
+            disabled="@(!SignalRService.IsConnected)">
+        I am ready
+    </button>
 </div>
 
 @code {
@@ -80,8 +67,9 @@
         StateHasChanged();
     }
 
-    private async Task AdvanceToNextDay()
+    private async void OnAllPlayersReady()
     {
+        // Automatically advance to next day when all players are ready
         try
         {
             GlobalLoaderService.Show("Advancing to Next Day", "Simulating work progress and updating game state...");
@@ -89,8 +77,8 @@
             // Simulate work for the day
             await WorkSimulationService.SimulateWorkDay();
             
-        await SignalRService.AdvanceToNextDayAsync();
-        await GameStateService.AdvanceToNextDay();
+            await SignalRService.AdvanceToNextDayAsync();
+            await GameStateService.AdvanceToNextDay();
             
             // Add a small delay to show the loader and make the transition feel more natural
             await Task.Delay(1000);
@@ -99,12 +87,6 @@
         {
             GlobalLoaderService.Hide();
         }
-    }
-
-    private async void OnAllPlayersReady()
-    {
-        // Automatically advance to next day when all players are ready
-        await AdvanceToNextDay();
     }
 
     private void OnNextDayStarted()

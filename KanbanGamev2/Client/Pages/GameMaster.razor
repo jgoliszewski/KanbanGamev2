@@ -398,6 +398,114 @@
     <div class="row">
         <div class="col-12">
             <div class="card modern-card">
+                <div class="card-header modern-card-header success">
+                    <h5>
+                        <i class="oi oi-list-rich"></i> Backlog Feature Management
+                    </h5>
+                </div>
+                <div class="card-body modern-card-body">
+                    <div class="mb-4">
+                        <h6 class="mb-3 fw-bold" style="font-size: 1.1rem;">Add New Feature to Backlog</h6>
+                        <div class="feature-buttons">
+                            <button class="btn btn-outline-primary feature-btn" @onclick="() => AddFeatureToBacklog(3, 6000)" title="Very Small Feature - 3 Story Points">
+                                <i class="oi oi-plus"></i> Very Small
+                            </button>
+                            <button class="btn btn-outline-primary feature-btn" @onclick="() => AddFeatureToBacklog(5, 10000)" title="Small Feature - 5 Story Points">
+                                <i class="oi oi-plus"></i> Small
+                            </button>
+                            <button class="btn btn-outline-primary feature-btn" @onclick="() => AddFeatureToBacklog(8, 15000)" title="Medium Feature - 8 Story Points">
+                                <i class="oi oi-plus"></i> Medium
+                            </button>
+                            <button class="btn btn-outline-primary feature-btn" @onclick="() => AddFeatureToBacklog(13, 25000)" title="Large Feature - 13 Story Points">
+                                <i class="oi oi-plus"></i> Large
+                            </button>
+                            <button class="btn btn-outline-primary feature-btn" @onclick="() => AddFeatureToBacklog(21, 40000)" title="Very Large Feature - 21 Story Points">
+                                <i class="oi oi-plus"></i> Very Large
+                            </button>
+                            <button class="btn btn-outline-info feature-btn" @onclick="AddTestFeatureToBacklog" title="Test Feature - 1 FE task, 1 BE task">
+                                <i class="oi oi-plus"></i> Test Feature
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h6 class="mb-3 fw-bold" style="font-size: 1.1rem;">Existing Features</h6>
+                        @if (_features == null || _features.Count == 0)
+                        {
+                            <div class="text-center py-4">
+                                <i class="oi oi-list" style="font-size: 3rem; color: #dee2e6;"></i>
+                                <p class="text-muted mt-3">No features available. Use the buttons above to add features to backlog.</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table modern-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Description</th>
+                                            <th>Column</th>
+                                            <th>Story Points</th>
+                                            <th>Deadline</th>
+                                            <th>Profit</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var feature in _features)
+                                        {
+                                            <tr>
+                                                <td><strong>@feature.Title</strong></td>
+                                                <td>@feature.Description</td>
+                                                <td>
+                                                    <span class="badge modern-badge @GetColumnBadgeClass(feature.ColumnId)">@GetColumnName(feature.ColumnId)</span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge modern-badge bg-info">@feature.StoryPoints SP</span>
+                                                </td>
+                                                <td>
+                                                    @if (feature.DueDate.HasValue)
+                                                    {
+                                                        <small class="@GetDeadlineClass(feature.DueDate.Value)">
+                                                            <i class="oi oi-calendar"></i> @GetDeadlineText(feature.DueDate.Value)
+                                                        </small>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">-</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <span class="badge modern-badge bg-success">$@feature.Profit.ToString("N0")</span>
+                                                </td>
+                                                <td>
+                                                    @if (feature.ColumnId == "backlog")
+                                                    {
+                                                        <button class="btn btn-danger modern-btn modern-btn-sm" @onclick="() => RemoveFeature(feature.Id)" title="Remove Feature">
+                                                            <i class="oi oi-trash"></i> Remove
+                                                        </button>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">-</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card modern-card">
                 <div class="card-header modern-card-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">
@@ -619,114 +727,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12">
-            <div class="card modern-card">
-                <div class="card-header modern-card-header success">
-                    <h5>
-                        <i class="oi oi-list-rich"></i> Backlog Feature Management
-                    </h5>
-                </div>
-                <div class="card-body modern-card-body">
-                    <div class="mb-4">
-                        <h6 class="mb-3 fw-bold" style="font-size: 1.1rem;">Add New Feature to Backlog</h6>
-                        <div class="feature-buttons">
-                            <button class="btn btn-outline-primary feature-btn" @onclick="() => AddFeatureToBacklog(3, 6000)" title="Very Small Feature - 3 Story Points">
-                                <i class="oi oi-plus"></i> Very Small
-                            </button>
-                            <button class="btn btn-outline-primary feature-btn" @onclick="() => AddFeatureToBacklog(5, 10000)" title="Small Feature - 5 Story Points">
-                                <i class="oi oi-plus"></i> Small
-                            </button>
-                            <button class="btn btn-outline-primary feature-btn" @onclick="() => AddFeatureToBacklog(8, 15000)" title="Medium Feature - 8 Story Points">
-                                <i class="oi oi-plus"></i> Medium
-                            </button>
-                            <button class="btn btn-outline-primary feature-btn" @onclick="() => AddFeatureToBacklog(13, 25000)" title="Large Feature - 13 Story Points">
-                                <i class="oi oi-plus"></i> Large
-                            </button>
-                            <button class="btn btn-outline-primary feature-btn" @onclick="() => AddFeatureToBacklog(21, 40000)" title="Very Large Feature - 21 Story Points">
-                                <i class="oi oi-plus"></i> Very Large
-                            </button>
-                            <button class="btn btn-outline-info feature-btn" @onclick="AddTestFeatureToBacklog" title="Test Feature - 1 FE task, 1 BE task">
-                                <i class="oi oi-plus"></i> Test Feature
-                            </button>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h6 class="mb-3 fw-bold" style="font-size: 1.1rem;">Existing Features</h6>
-                        @if (_features == null || _features.Count == 0)
-                        {
-                            <div class="text-center py-4">
-                                <i class="oi oi-list" style="font-size: 3rem; color: #dee2e6;"></i>
-                                <p class="text-muted mt-3">No features available. Use the buttons above to add features to backlog.</p>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="table-responsive">
-                                <table class="table modern-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Title</th>
-                                            <th>Description</th>
-                                            <th>Column</th>
-                                            <th>Story Points</th>
-                                            <th>Deadline</th>
-                                            <th>Profit</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var feature in _features)
-                                        {
-                                            <tr>
-                                                <td><strong>@feature.Title</strong></td>
-                                                <td>@feature.Description</td>
-                                                <td>
-                                                    <span class="badge modern-badge @GetColumnBadgeClass(feature.ColumnId)">@GetColumnName(feature.ColumnId)</span>
-                                                </td>
-                                                <td>
-                                                    <span class="badge modern-badge bg-info">@feature.StoryPoints SP</span>
-                                                </td>
-                                                <td>
-                                                    @if (feature.DueDate.HasValue)
-                                                    {
-                                                        <small class="@GetDeadlineClass(feature.DueDate.Value)">
-                                                            <i class="oi oi-calendar"></i> @GetDeadlineText(feature.DueDate.Value)
-                                                        </small>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="text-muted">-</span>
-                                                    }
-                                                </td>
-                                                <td>
-                                                    <span class="badge modern-badge bg-success">$@feature.Profit.ToString("N0")</span>
-                                                </td>
-                                                <td>
-                                                    @if (feature.ColumnId == "backlog")
-                                                    {
-                                                        <button class="btn btn-danger modern-btn modern-btn-sm" @onclick="() => RemoveFeature(feature.Id)" title="Remove Feature">
-                                                            <i class="oi oi-trash"></i> Remove
-                                                        </button>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="text-muted">-</span>
-                                                    }
-                                                </td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        }
                     </div>
                 </div>
             </div>

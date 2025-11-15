@@ -1,13 +1,52 @@
 @using KanbanGame.Shared
 
+<style>
+    .move-employee-modal {
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        background: #ffffff;
+    }
+
+    .move-employee-modal-header {
+        border: none;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e9ecef;
+        background: #ffffff;
+    }
+
+    .move-employee-modal-header .modal-title {
+        color: #212529;
+        font-weight: 500;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0;
+    }
+
+    .move-employee-modal-body {
+        padding: 1.5rem;
+    }
+
+    .move-employee-modal-footer {
+        border: none;
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #e9ecef;
+        background-color: #ffffff;
+    }
+</style>
+
 <div class="modal fade @(IsVisible ? "show" : "")" style="display: @(IsVisible ? "block" : "none");" tabindex="-1">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Move Employee</h5>
+        <div class="modal-content move-employee-modal">
+            <div class="modal-header move-employee-modal-header">
+                <h5 class="modal-title">
+                    <i class="oi oi-move"></i> Move Employee
+                </h5>
                 <button type="button" class="btn-close" @onclick="OnCancel"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body move-employee-modal-body">
                 <p>Move <strong>@Employee?.Name</strong> to a different board and column.</p>
                 
                 <div class="board-selection">
@@ -57,9 +96,9 @@
                     }
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
-                <button type="button" class="btn btn-primary" @onclick="OnConfirmClicked" disabled="@(!CanConfirm)">Move Employee</button>
+            <div class="modal-footer move-employee-modal-footer">
+                <button type="button" class="btn btn-secondary" style="border-radius: 4px; padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 500; border: 1px solid #e9ecef;" @onclick="OnCancel">Cancel</button>
+                <button type="button" class="btn btn-primary" style="border-radius: 4px; padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 500;" @onclick="OnConfirmClicked" disabled="@(!CanConfirm)">Move Employee</button>
             </div>
         </div>
     </div>

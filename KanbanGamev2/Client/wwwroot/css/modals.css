@@ -1,0 +1,76 @@
+/* Modern Minimalistic Modal Styles */
+
+.modal-content {
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+}
+
+.modern-modal {
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.modern-modal-header,
+.move-employee-modal-header,
+.restart-modal-header {
+    border: none;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+    background: #ffffff;
+}
+
+.modern-modal-header .modal-title,
+.move-employee-modal-header .modal-title,
+.restart-modal-header .modal-title {
+    color: #212529;
+    font-weight: 500;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+}
+
+.modern-modal-body,
+.move-employee-modal-body,
+.restart-modal-body {
+    padding: 1.5rem;
+}
+
+.modern-modal-footer,
+.move-employee-modal-footer,
+.restart-modal-footer {
+    border: none;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e9ecef;
+    background-color: #ffffff;
+}
+
+/* Avatar selection styles */
+.avatar-option.selected {
+    border-color: #28a745;
+    background: #d4edda;
+}
+
+.avatar-option.selected .avatar-preview {
+    border-color: #28a745;
+}
+
+.avatar-option:hover {
+    border-color: #2196f3;
+    background: #e3f2fd;
+}
+
+.avatar-check {
+    background: #28a745 !important;
+}
+
+/* Remove backdrop blur */
+.modal-backdrop {
+    backdrop-filter: none !important;
+}
+

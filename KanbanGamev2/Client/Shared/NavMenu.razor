@@ -3,15 +3,6 @@
 @inject KanbanGamev2.Shared.Services.IGameStateService GameStateService
 @implements IDisposable
 
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">KanbanGamev2</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
-</div>
-
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
     <nav class="flex-column">
         <div class="nav-item px-3">
@@ -21,7 +12,7 @@
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="gamemaster">
-                <span class="oi oi-crown text-warning" aria-hidden="true"></span> Game Master
+                <span class="oi oi-cog" aria-hidden="true"></span> Game Master
             </NavLink>
         </div>
 
@@ -32,24 +23,24 @@
             </div>
             <div class="nav-item px-3 ms-3">
                 <NavLink class="nav-link" href="analysis-board">
-                    <span class="oi oi-graph" aria-hidden="true"></span> Analysis Board
+                    <span class="oi oi-graph" aria-hidden="true"></span> Analysis
                 </NavLink>
             </div>
             <div class="nav-item px-3 ms-3">
                 <NavLink class="nav-link" href="backend-board">
-                    <span class="oi oi-server" aria-hidden="true"></span> Backend Board
+                    <span class="oi oi-code" aria-hidden="true"></span> Backend
                 </NavLink>
             </div>
             <div class="nav-item px-3 ms-3">
                 <NavLink class="nav-link" href="frontend-board">
-                    <span class="oi oi-monitor" aria-hidden="true"></span> Frontend Board
+                    <span class="oi oi-monitor" aria-hidden="true"></span> Frontend
                 </NavLink>
             </div>
             @if (GameStateService.IsSummaryBoardVisible)
             {
                 <div class="nav-item px-3 ms-3">
                     <NavLink class="nav-link" href="summary-board">
-                        <span class="oi oi-dashboard" aria-hidden="true"></span> Summary Board
+                        <span class="oi oi-dashboard" aria-hidden="true"></span> Summary
                     </NavLink>
                 </div>
             }

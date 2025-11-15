@@ -107,23 +107,26 @@ a,
 }
 
 /* Game Status Component */
+.game-status-divider {
+    height: 1px;
+    background-color: #e9ecef;
+    margin: 1rem 0;
+}
+
 .game-status {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 12px 16px;
-    background-color: rgba(255, 255, 255, 0.15);
-    border-radius: 10px;
-    margin: 10px 0;
-    min-width: 200px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    gap: 0.75rem;
+    padding: 0 1rem 1rem 1rem;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
-.status-display {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+.nav-item .game-status {
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 .player-count {
@@ -134,57 +137,59 @@ a,
 }
 
 .count-text {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: white;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #212529 !important;
 }
 
 .count-label {
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.7rem;
+    color: #495057 !important;
     font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.day-display {
-    display: flex;
-    justify-content: center;
-}
-
-.day-text {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: white;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-    background-color: rgba(23, 162, 184, 0.8);
-    padding: 4px 12px;
-    border-radius: 6px;
-}
-
-.status-buttons {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
+    letter-spacing: 0.05em;
 }
 
 .game-status .btn {
-    font-size: 0.8rem;
-    font-weight: 600;
-    padding: 6px 12px;
-    border-radius: 6px;
-    min-width: 80px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border: 2px solid transparent;
-    transition: all 0.2s ease;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    width: 100%;
+    transition: all 0.15s ease;
+    background: none !important;
+    box-shadow: none !important;
+    border: 1px solid #28a745 !important;
+    color: #28a745 !important;
 }
 
-.game-status .btn:hover {
+.game-status .btn.btn-success {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+    color: #ffffff !important;
+}
+
+.game-status .btn.btn-outline-success {
+    background-color: transparent !important;
+    border-color: #28a745 !important;
+    color: #28a745 !important;
+}
+
+.game-status .btn:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: none !important;
+}
+
+.game-status .btn.btn-success:hover:not(:disabled) {
+    background-color: #218838 !important;
+    border-color: #218838 !important;
+    color: #ffffff !important;
+}
+
+.game-status .btn.btn-outline-success:hover:not(:disabled) {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+    color: #ffffff !important;
 }
 
 .game-status .btn:disabled {
@@ -256,27 +261,10 @@ a,
 /* Responsive adjustments for GameStatus */
 @media (max-width: 768px) {
     .game-status {
-        flex-direction: column;
-        gap: 8px;
-        margin-right: 0;
-        margin-bottom: 10px;
-        min-width: 180px;
+        padding: 0 0.75rem 0.75rem 0.75rem;
     }
 
     .count-text {
-        font-size: 1.2rem;
-    }
-
-    .day-text {
-        font-size: 1rem;
-    }
-
-    .status-buttons {
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .game-status .btn {
-        min-width: 100%;
+        font-size: 1.1rem;
     }
 }
