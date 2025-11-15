@@ -10,6 +10,7 @@ public class Employee : Card
     public bool IsAvailable { get; set; } = true;
     public Seniority Seniority { get; set; } = Seniority.Junior;
     public BoardType BoardType { get; set; } = BoardType.Analysis;
+    public decimal MonthlyWage { get; set; } = 0;
 
     // Work assignment properties
     public Guid? AssignedTaskId { get; set; }

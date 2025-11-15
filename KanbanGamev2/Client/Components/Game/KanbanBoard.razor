@@ -5,7 +5,10 @@
 <div class="kanban-board @GetBoardClass()">
     <div class="board-header mb-3 @(DragDropService.IsReadOnlyBoard(BoardType) ? "read-only" : "")">
         <h2>@Title</h2>
-        <p class="text-muted">@Description</p>
+        @if (!string.IsNullOrEmpty(Description))
+        {
+            <p class="text-muted">@Description</p>
+        }
     </div>
     <div class="board-content">
         <div class="d-flex flex-row" style="gap: 15px;">

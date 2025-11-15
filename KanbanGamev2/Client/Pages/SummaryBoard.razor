@@ -15,8 +15,7 @@
 <div class="container-fluid">
     <div class="kanban-board">
         <div class="board-header mb-3">
-            <h2>Summary Board</h2>
-            <p class="text-muted">High-level overview of all features across the development lifecycle</p>
+            <h2>Summary</h2>
         </div>
         <div class="board-content">
             <div class="d-flex flex-row" style="gap: 15px;">
@@ -111,7 +110,7 @@
             },
             new KanbanBoard.KanbanColumnData
             {
-                Title = "During Development",
+                Title = "Development",
                 ColumnId = "development",
                 Cards = GetFeaturesByColumn("development")
             },

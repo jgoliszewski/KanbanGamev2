@@ -1,9 +1,10 @@
 @using KanbanGame.Shared
 @inject KanbanGamev2.Shared.Services.IGameStateService GameStateService
+@implements IDisposable
 
 <div class="card modern-card">
-    <div class="card-header modern-card-header" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);">
-        <h5 class="mb-0" style="color: white; font-weight: 600; font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+    <div class="card-header modern-card-header" style="border-bottom-color: #2196f3;">
+        <h5 class="mb-0" style="color: #212529; font-weight: 500; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.5rem;">
             <i class="oi oi-dollar"></i> Money History
         </h5>
     </div>
@@ -40,21 +41,18 @@
 
 <style>
     .modern-card {
-        border: none;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         overflow: hidden;
-    }
-
-    .modern-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        background: #ffffff;
     }
 
     .modern-card-header {
         border: none;
-        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e9ecef;
+        padding: 1rem 1.5rem;
+        background: #ffffff;
     }
 
     .modern-card-body {
@@ -158,4 +156,35 @@
     .transaction-item.expense {
         border-left: 4px solid #dc3545;
     }
-</style> 
+</style>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Subscribe to money changes to update when transactions are added
+        GameStateService.MoneyChanged += OnMoneyChanged;
+        
+        // Load game state to ensure transactions are loaded
+        await GameStateService.LoadGameState();
+        
+        // Force UI update after loading state
+        StateHasChanged();
+    }
+
+    private void OnMoneyChanged(decimal newAmount)
+    {
+        // Trigger UI update when money changes (which includes transaction updates)
+        InvokeAsync(StateHasChanged);
+    }
+
+    private bool disposed = false;
+
+    public void Dispose()
+    {
+        if (!disposed)
+        {
+            GameStateService.MoneyChanged -= OnMoneyChanged;
+            disposed = true;
+        }
+    }
+} 

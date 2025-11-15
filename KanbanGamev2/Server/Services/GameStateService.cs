@@ -65,6 +65,9 @@ public class GameStateService : IGameStateService
         // Process team changing days for all employees
         await ProcessTeamChangingDays();
 
+        // Process employee wages on last day of month
+        await ProcessEmployeeWages();
+
         // Process feature deadlines
         await ProcessFeatureDeadlines();
 
@@ -358,7 +361,86 @@ public class GameStateService : IGameStateService
 
     private DateTime GetCurrentGameDate()
     {
-        return _gameStartDate.AddDays(_currentDay - 1);
+        // Calculate date based on working days only (Monday-Friday)
+        // Day 1 = first working day on or after game start date
+        var workingDaysPassed = _currentDay - 1;
+        var currentDate = _gameStartDate;
+        
+        // Find the first working day (Monday-Friday) on or after the game start date
+        while (currentDate.DayOfWeek == DayOfWeek.Saturday || currentDate.DayOfWeek == DayOfWeek.Sunday)
+        {
+            currentDate = currentDate.AddDays(1);
+        }
+        
+        // Calculate how many working days to add
+        var weeks = workingDaysPassed / 5;
+        var daysInCurrentWeek = workingDaysPassed % 5;
+        
+        // Get the day of week of the first working day (0=Monday, 4=Friday)
+        var firstWorkingDayOfWeek = (int)currentDate.DayOfWeek - 1; // Monday=0, Friday=4
+        
+        // Calculate the target day of week
+        var targetDayOfWeek = (firstWorkingDayOfWeek + daysInCurrentWeek) % 5;
+        
+        // Add full weeks and adjust to the correct day
+        currentDate = currentDate.AddDays(weeks * 7);
+        
+        // Adjust to the correct day of week in the current week
+        var currentDayOfWeek = (int)currentDate.DayOfWeek - 1;
+        var dayDifference = targetDayOfWeek - currentDayOfWeek;
+        currentDate = currentDate.AddDays(dayDifference);
+        
+        return currentDate;
+    }
+
+    private async Task ProcessEmployeeWages()
+    {
+        try
+        {
+            var currentGameDate = GetCurrentGameDate();
+            var lastCalendarDayOfMonth = new DateTime(currentGameDate.Year, currentGameDate.Month, 1).AddMonths(1).AddDays(-1);
+            
+            // Find the last working day (Monday-Friday) of the month
+            var lastWorkingDayOfMonth = lastCalendarDayOfMonth;
+            while (lastWorkingDayOfMonth.DayOfWeek == DayOfWeek.Saturday || lastWorkingDayOfMonth.DayOfWeek == DayOfWeek.Sunday)
+            {
+                lastWorkingDayOfMonth = lastWorkingDayOfMonth.AddDays(-1);
+            }
+            
+            // Check if today is the last working day of the month
+            if (currentGameDate.Date == lastWorkingDayOfMonth.Date)
+            {
+                Console.WriteLine($"Processing employee wages for day {_currentDay} (last working day of month: {lastWorkingDayOfMonth:yyyy-MM-dd})...");
+                
+                // Get all active employees (not fired, not on vacation)
+                var employees = _employeeService.GetEmployees();
+                var activeEmployees = employees.Where(e => 
+                    e.Status != EmployeeStatus.Fired && 
+                    e.Status != EmployeeStatus.OnVacation).ToList();
+                
+                if (activeEmployees.Any())
+                {
+                    // Calculate total wages
+                    var totalWages = activeEmployees.Sum(e => e.MonthlyWage);
+                    
+                    if (totalWages > 0)
+                    {
+                        var employeeCount = activeEmployees.Count;
+                        var wageDescription = $"Monthly payroll for {employeeCount} employee{(employeeCount == 1 ? "" : "s")}";
+                        
+                        // Deduct wages from company money
+                        await SubtractMoney(totalWages, wageDescription);
+                        
+                        Console.WriteLine($"Paid ${totalWages:N0} in wages to {employeeCount} employee(s)");
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't fail the day advancement
+            Console.WriteLine($"Error processing employee wages: {ex.Message}");
+        }
     }
 
     private async Task ProcessFeatureDeadlines()
@@ -478,6 +560,23 @@ public class GameStateService : IGameStateService
             Amount = amount,
             Description = description,
             Type = TransactionType.Income
+        };
+        _moneyTransactions.Add(transaction);
+
+        MoneyChanged?.Invoke(_companyMoney);
+        await Task.CompletedTask;
+    }
+
+    public async Task SubtractMoney(decimal amount, string description = "Expense")
+    {
+        _companyMoney -= amount;
+
+        // Record the transaction
+        var transaction = new MoneyTransaction
+        {
+            Amount = amount,
+            Description = description,
+            Type = TransactionType.Expense
         };
         _moneyTransactions.Add(transaction);
 

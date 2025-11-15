@@ -14,8 +14,8 @@
 
 <div class="container-fluid">
     <KanbanBoard 
-        Title="Frontend Development Board"
-        Description="Track frontend tasks and employee assignments through the development process"
+        Title="Frontend"
+        Description=""
         BoardType="@BoardType.Frontend"
         Columns="@frontendColumns"
         OnCardMoved="@OnCardMoved"
@@ -70,25 +70,25 @@
             },
             new KanbanBoard.KanbanColumnData
             {
-                Title = "Development Waiting",
+                Title = "Dev Waiting",
                 ColumnId = "frontend-dev-waiting",
                 Cards = GetCardsByColumn("frontend-dev-waiting")
             },
             new KanbanBoard.KanbanColumnData
             {
-                Title = "Development Doing",
+                Title = "Dev Doing",
                 ColumnId = "frontend-dev-doing",
                 Cards = GetCardsByColumn("frontend-dev-doing")
             },
             new KanbanBoard.KanbanColumnData
             {
-                Title = "Testing Waiting",
+                Title = "Test Waiting",
                 ColumnId = "frontend-test-waiting",
                 Cards = GetCardsByColumn("frontend-test-waiting")
             },
             new KanbanBoard.KanbanColumnData
             {
-                Title = "Testing Doing",
+                Title = "Test Doing",
                 ColumnId = "frontend-test-doing",
                 Cards = GetCardsByColumn("frontend-test-doing")
             },

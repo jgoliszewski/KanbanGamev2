@@ -51,9 +51,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #dee2e6;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e9ecef;
 }
 
 /* Column header border colors matching column borders */
@@ -62,45 +62,48 @@
 .analysis-board .kanban-column[data-column-id="analysis1"] .column-header,
 .analysis-board .kanban-column[data-column-id="waiting"] .column-header,
 .analysis-board .kanban-column[data-column-id="analysis2"] .column-header {
-    border-bottom: 2px solid #ffc107;
+    border-bottom: 1px solid #ffc107;
 }
 
 /* Backend Board - Green and Blue theme */
 .backend-board .kanban-column[data-column-id="backend-analysis"] .column-header {
-    border-bottom: 2px solid #28a745;
+    border-bottom: 1px solid #28a745;
 }
 
 .backend-board .kanban-column[data-column-id="backend-dev-waiting"] .column-header,
 .backend-board .kanban-column[data-column-id="backend-dev-doing"] .column-header {
-    border-bottom: 2px solid #2196f3;
+    border-bottom: 1px solid #2196f3;
 }
 
 .backend-board .kanban-column[data-column-id="backend-test-waiting"] .column-header,
 .backend-board .kanban-column[data-column-id="backend-test-doing"] .column-header {
-    border-bottom: 2px solid #f44336;
+    border-bottom: 1px solid #f44336;
 }
 
 /* Frontend Board - Green and Blue theme */
 .frontend-board .kanban-column[data-column-id="frontend-analysis"] .column-header {
-    border-bottom: 2px solid #28a745;
+    border-bottom: 1px solid #28a745;
 }
 
 .frontend-board .kanban-column[data-column-id="frontend-dev-waiting"] .column-header,
 .frontend-board .kanban-column[data-column-id="frontend-dev-doing"] .column-header {
-    border-bottom: 2px solid #2196f3;
+    border-bottom: 1px solid #2196f3;
 }
 
 .frontend-board .kanban-column[data-column-id="frontend-test-waiting"] .column-header,
 .frontend-board .kanban-column[data-column-id="frontend-test-doing"] .column-header {
-    border-bottom: 2px solid #f44336;
+    border-bottom: 1px solid #f44336;
 }
 
 
 
 .column-header h5 {
     margin: 0;
-    color: #495057;
-    font-weight: 600;
+    color: #212529;
+    font-weight: 500;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .column-content {
@@ -149,13 +152,17 @@
 }
 
 .board-header {
-    text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e9ecef;
 }
 
 .board-header h2 {
-    color: #495057;
-    margin-bottom: 10px;
+    color: #212529;
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
 }
 
 /* Employee Card Specific Styles */
@@ -218,7 +225,7 @@
 
 /* Drag and Drop Styles */
 .draggable-card {
-    transition: all 0.2s ease;
+    /* transition: all 0.2s ease; - Removed to disable drop animation */
 }
 
 .draggable-card.dragging {

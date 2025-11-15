@@ -7,109 +7,87 @@
 
 <style>
     .home-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 16px;
-        padding: 3rem 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-        color: white;
-        text-align: center;
+        margin-bottom: 24px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #e9ecef;
     }
 
     .home-header h1 {
-        font-weight: 700;
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-
-    .home-header p {
-        font-size: 1.25rem;
+        color: #212529;
         margin: 0;
-        opacity: 0.95;
+        font-size: 1.5rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
     }
 
     .modern-card {
         border: none;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        margin-bottom: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        margin-bottom: 1.5rem;
         overflow: hidden;
-    }
-
-    .modern-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        background: #ffffff;
     }
 
     .balance-card {
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        color: white;
-        border-radius: 16px;
-        padding: 2rem;
-        text-align: center;
-        box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .balance-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 40px rgba(40, 167, 69, 0.4);
+        background: #ffffff;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
     }
 
     .balance-card h3 {
-        font-weight: 700;
-        font-size: 1.75rem;
-        margin-bottom: 0.5rem;
+        color: #212529;
+        font-weight: 500;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0 0 0.75rem 0;
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 0.75rem;
+        gap: 0.5rem;
     }
 
     .balance-card .balance-amount {
-        font-size: 2.5rem;
-        font-weight: 700;
+        font-size: 2rem;
+        font-weight: 600;
         margin: 0.5rem 0;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        color: #28a745;
+        letter-spacing: -0.02em;
     }
 
     .balance-card .balance-amount.negative {
-        color: #ffc107;
+        color: #f44336;
     }
 
     .balance-card p {
-        font-size: 1.1rem;
-        margin: 0;
-        opacity: 0.95;
+        font-size: 0.875rem;
+        margin: 0.5rem 0 0 0;
+        color: #6c757d;
     }
 
     .balance-icon {
-        font-size: 2rem;
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        font-size: 1rem;
+        color: #28a745;
     }
 </style>
 
 <div class="container-fluid" style="padding: 2rem;">
     <div class="home-header">
-        <h1>
-            <i class="oi oi-home"></i> Welcome to KanbanGamev2
-        </h1>
-        <p>A comprehensive project management system with real-time Kanban boards</p>
+        <h1>Home</h1>
     </div>
 
     <div class="row">
         <div class="col-lg-8 col-md-6 mb-4">
-            <div class="balance-card mb-4">
+            <div class="balance-card">
                 <h3>
                     <i class="oi oi-dollar balance-icon"></i>
-                    Company's Balance
+                    Company Balance
                 </h3>
                 <div class="balance-amount @(GameStateService.CompanyMoney < 0 ? "negative" : "")">
                     $@GameStateService.CompanyMoney.ToString("N0")
                 </div>
-                <p>Complete features to earn money for your company!</p>
             </div>
             <MoneyHistory />
         </div>

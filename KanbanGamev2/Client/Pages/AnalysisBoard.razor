@@ -16,8 +16,8 @@
 
 <div class="container-fluid">
     <KanbanBoard 
-        Title="High Level Analysis Board"
-        Description="Track features and employee assignments through the analysis process"
+        Title="Analysis"
+        Description=""
         BoardType="@BoardType.Analysis"
         Columns="@analysisColumns"
         OnCardMoved="@OnCardMoved"
@@ -68,7 +68,7 @@
             },
             new KanbanBoard.KanbanColumnData
             {
-                Title = "Under Analysis 1",
+                Title = "Analysis 1",
                 ColumnId = "analysis1",
                 Cards = GetCardsByColumn("analysis1")
             },
@@ -80,7 +80,7 @@
             },
             new KanbanBoard.KanbanColumnData
             {
-                Title = "Under Analysis 2",
+                Title = "Analysis 2",
                 ColumnId = "analysis2",
                 Cards = GetCardsByColumn("analysis2")
             }
@@ -91,7 +91,7 @@
         {
             analysisColumns.Add(new KanbanBoard.KanbanColumnData
             {
-                Title = "Ready for Development",
+                Title = "Ready",
                 ColumnId = "ready-dev",
                 Cards = GetCardsByColumn("ready-dev")
             });

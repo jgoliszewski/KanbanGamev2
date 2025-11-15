@@ -20,12 +20,12 @@
         <div class="card-body p-2">
             @if (Card is Employee employee)
             {
-                <div class="employee-card @(employee.IsWorking ? "assigned" : "") @(employee.IsLearning ? "learning" : "") @(employee.IsChangingTeams ? "changing-teams" : "") @(employee.IsLearningInOtherTeam ? "learning-other-team" : "")">
+                <div class="employee-card @(employee.IsWorking ? "assigned" : "") @(employee.IsLearning ? "learning" : "") @(employee.IsChangingTeams ? "changing-teams" : "") @(employee.IsLearningInOtherTeam ? "learning-other-team" : "") @(employee.IsOnboarding ? "onboarding" : "")">
                     <div class="employee-top">
                         <div class="employee-left">
                             <div class="employee-avatar-container">
                                 <img src="@GetEmployeeAvatar(employee.Name)" alt="@employee.Name" class="employee-avatar" />
-                                @if (!employee.IsLearningInOtherTeam && !employee.IsChangingTeams && !employee.IsLearning)
+                                @if (!employee.IsLearningInOtherTeam && !employee.IsChangingTeams && !employee.IsLearning && !employee.IsOnboarding)
                                 {
                                     <span class="@(employee.IsWorking ? "status-dot-working" : "status-dot-free") status-dot-on-avatar" 
                                           title="@(employee.IsWorking ? "Working" : "Free")">
@@ -43,12 +43,12 @@
                         </div>
                         <div class="employee-right">
                         <div class="employee-status">
-                            @if (!employee.IsLearningInOtherTeam && !employee.IsChangingTeams && !employee.IsLearning)
+                            @if (!employee.IsLearningInOtherTeam && !employee.IsChangingTeams && !employee.IsLearning && !employee.IsOnboarding)
                             {
                                 <button class="btn btn-sm btn-outline-primary move-employee-btn" 
                                         @onclick="() => ShowMoveModal(employee)" 
-                                        disabled="@(employee.IsChangingTeams || employee.IsLearningInOtherTeam || (employee.IsLearning && employee.LearningDays >= 1))"
-                                        title="@(employee.IsChangingTeams || employee.IsLearningInOtherTeam || (employee.IsLearning && employee.LearningDays >= 1) ? "Cannot move while changing teams or learning" : "Move Employee")">
+                                        disabled="@(employee.IsChangingTeams || employee.IsLearningInOtherTeam || (employee.IsLearning && employee.LearningDays >= 1) || employee.IsOnboarding)"
+                                        title="@(employee.IsChangingTeams || employee.IsLearningInOtherTeam || (employee.IsLearning && employee.LearningDays >= 1) || employee.IsOnboarding ? "Cannot move while changing teams, learning, or onboarding" : "Move Employee")">
                                     <i class="oi oi-arrow-right"></i>
                                 </button>
                             }
@@ -59,7 +59,7 @@
                         <div class="role-badges-container">
                             <RoleBadges Employee="@employee" />
                         </div>
-                        @if (employee.IsLearningInOtherTeam || employee.IsChangingTeams || employee.IsLearning)
+                        @if (employee.IsLearningInOtherTeam || employee.IsChangingTeams || employee.IsLearning || employee.IsOnboarding)
                         {
                             <div class="employee-status-badges">
                                 @if (employee.IsLearningInOtherTeam)
@@ -92,6 +92,21 @@
                                         </small>
                                         <span class="badge bg-info" title="Learning">
                                             <i class="oi oi-book"></i> Learning
+                                        </span>
+                                    </div>
+                                }
+                                else if (employee.IsOnboarding)
+                                {
+                                    <div class="d-flex flex-column align-items-center gap-1">
+                                        @if (employee.OnboardingEndDate.HasValue)
+                                        {
+                                            var daysLeft = GetOnboardingDaysLeft(employee.OnboardingEndDate.Value);
+                                            <small class="text-muted" style="font-size: 0.7rem; line-height: 1;">
+                                                @daysLeft day@(daysLeft == 1 ? "" : "s") left
+                                            </small>
+                                        }
+                                        <span class="badge bg-info" title="Onboarding">
+                                            <i class="oi oi-person"></i> Onboarding
                                         </span>
                                     </div>
                                 }
@@ -290,6 +305,13 @@
         return fullName.Split(' ').FirstOrDefault() ?? fullName;
     }
 
+    private int GetOnboardingDaysLeft(DateTime onboardingEndDate)
+    {
+        var now = DateTime.Today;
+        var timeLeft = onboardingEndDate.Date - now;
+        return Math.Max(0, (int)timeLeft.TotalDays);
+    }
+
     private string GetDraggableValue()
     {
         return IsDraggable ? "true" : "false";
@@ -312,7 +334,7 @@
         
         if (Card is Employee employee)
         {
-            if (employee.IsChangingTeams || employee.IsWorking || employee.IsLearningInOtherTeam)
+            if (employee.IsChangingTeams || employee.IsWorking || employee.IsLearningInOtherTeam || employee.IsOnboarding)
             {
                 e.DataTransfer.EffectAllowed = "none";
                 return;

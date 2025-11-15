@@ -8,21 +8,18 @@
             <span class="oi oi-calendar"></span>
             Game Calendar
         </h3>
-        <div class="current-day-badge">
-            <span class="badge bg-primary fs-5">Day @GameStateService.CurrentDay</span>
-        </div>
     </div>
     
     <div class="calendar-body">
         <div class="calendar-grid">
             <div class="calendar-weekdays">
-                <div class="weekday">Sun</div>
                 <div class="weekday">Mon</div>
                 <div class="weekday">Tue</div>
                 <div class="weekday">Wed</div>
                 <div class="weekday">Thu</div>
                 <div class="weekday">Fri</div>
                 <div class="weekday">Sat</div>
+                <div class="weekday">Sun</div>
             </div>
             
             <div class="calendar-days">
@@ -30,10 +27,6 @@
                 {
                     <div class="calendar-day @GetDayClass(day)">
                         <span class="day-number">@day.Day</span>
-                        @if (day.IsGameDay)
-                        {
-                            <span class="game-day-indicator">@day.GameDay</span>
-                        }
                     </div>
                 }
             </div>
@@ -77,31 +70,26 @@
 <style>
     .game-calendar {
         background: white;
-        border-radius: 16px;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
         padding: 1.5rem;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         height: 100%;
-        border: none;
-    }
-
-    .game-calendar:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     }
 
     .calendar-header {
-        text-align: center;
         margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #e9ecef;
     }
 
     .calendar-header h3 {
-        color: #495057;
-        margin-bottom: 0.75rem;
-        font-size: 1.5rem;
-        font-weight: 700;
+        color: #212529;
+        margin: 0 0 0.5rem 0;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -113,12 +101,12 @@
     }
 
     .current-day-badge .badge {
-        padding: 0.75rem 1.5rem;
-        font-size: 1.1rem;
-        font-weight: 700;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        background: #f8f9fa;
+        color: #212529;
+        border: 1px solid #e9ecef;
     }
 
     .calendar-grid {
@@ -351,7 +339,36 @@
 
     private DateTime GetGameDate()
     {
-        return GameStateService.GameStartDate.AddDays(GameStateService.CurrentDay - 1);
+        // Calculate date based on working days only (Monday-Friday)
+        // Day 1 = first working day on or after game start date
+        var workingDaysPassed = GameStateService.CurrentDay - 1;
+        var currentDate = GameStateService.GameStartDate;
+        
+        // Find the first working day (Monday-Friday) on or after the game start date
+        while (currentDate.DayOfWeek == DayOfWeek.Saturday || currentDate.DayOfWeek == DayOfWeek.Sunday)
+        {
+            currentDate = currentDate.AddDays(1);
+        }
+        
+        // Calculate how many working days to add
+        var weeks = workingDaysPassed / 5;
+        var daysInCurrentWeek = workingDaysPassed % 5;
+        
+        // Get the day of week of the first working day (0=Monday, 4=Friday)
+        var firstWorkingDayOfWeek = (int)currentDate.DayOfWeek - 1; // Monday=0, Friday=4
+        
+        // Calculate the target day of week
+        var targetDayOfWeek = (firstWorkingDayOfWeek + daysInCurrentWeek) % 5;
+        
+        // Add full weeks and adjust to the correct day
+        currentDate = currentDate.AddDays(weeks * 7);
+        
+        // Adjust to the correct day of week in the current week
+        var currentDayOfWeek = (int)currentDate.DayOfWeek - 1;
+        var dayDifference = targetDayOfWeek - currentDayOfWeek;
+        currentDate = currentDate.AddDays(dayDifference);
+        
+        return currentDate;
     }
 
     private List<CalendarDay> GetCalendarDays()
@@ -362,23 +379,55 @@
         var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
         
         // Get the first day to display (previous month's days)
-        var firstDisplayDay = firstDayOfMonth.AddDays(-(int)firstDayOfMonth.DayOfWeek);
+        // Adjust for Monday as first day of week (DayOfWeek: Sunday=0, Monday=1, ..., Saturday=6)
+        // We want Monday to be the first day, so we need to adjust the offset
+        var dayOfWeek = (int)firstDayOfMonth.DayOfWeek;
+        // Convert: Sunday=0 -> 6, Monday=1 -> 0, Tuesday=2 -> 1, ..., Saturday=6 -> 5
+        var mondayOffset = dayOfWeek == 0 ? 6 : dayOfWeek - 1;
+        var firstDisplayDay = firstDayOfMonth.AddDays(-mondayOffset);
+        
+        // Calculate the first working day for game day mapping
+        var gameStartDate = GameStateService.GameStartDate.Date;
+        var firstWorkingDay = gameStartDate;
+        while (firstWorkingDay.DayOfWeek == DayOfWeek.Saturday || firstWorkingDay.DayOfWeek == DayOfWeek.Sunday)
+        {
+            firstWorkingDay = firstWorkingDay.AddDays(1);
+        }
+        
+        // Get the day of week of the first working day (0=Monday, 4=Friday)
+        var firstWorkingDayOfWeek = (int)firstWorkingDay.DayOfWeek - 1;
         
         for (int i = 0; i < 42; i++) // 6 weeks * 7 days
         {
             var dayDate = firstDisplayDay.AddDays(i);
-            var gameStartDate = GameStateService.GameStartDate.Date; // Use date only, no time component
-            var gameDay = (dayDate.Date - gameStartDate).Days + 1;
+            var isWorkingDay = dayDate.DayOfWeek != DayOfWeek.Saturday && dayDate.DayOfWeek != DayOfWeek.Sunday;
+            
+            int? gameDay = null;
+            if (isWorkingDay && dayDate >= firstWorkingDay)
+            {
+                // Count working days from first working day to current day
+                int workingDayCount = 0;
+                var checkDate = firstWorkingDay;
+                while (checkDate <= dayDate)
+                {
+                    if (checkDate.DayOfWeek != DayOfWeek.Saturday && checkDate.DayOfWeek != DayOfWeek.Sunday)
+                    {
+                        workingDayCount++;
+                    }
+                    checkDate = checkDate.AddDays(1);
+                }
+                gameDay = workingDayCount;
+            }
             
             days.Add(new CalendarDay
             {
                 Date = dayDate,
                 Day = dayDate.Day,
-                IsGameDay = gameDay >= 1 && gameDay <= GameStateService.CurrentDay + 7, // Show current + 7 future days
-                GameDay = gameDay >= 1 ? gameDay.ToString() : null,
+                IsGameDay = gameDay.HasValue && gameDay.Value >= 1 && gameDay.Value <= GameStateService.CurrentDay + 7, // Show current + 7 future days
+                GameDay = gameDay.HasValue && gameDay.Value >= 1 ? gameDay.Value.ToString() : null,
                 IsCurrentGameDay = gameDay == GameStateService.CurrentDay,
-                IsPastGameDay = gameDay >= 1 && gameDay < GameStateService.CurrentDay,
-                IsFutureGameDay = gameDay > GameStateService.CurrentDay,
+                IsPastGameDay = gameDay.HasValue && gameDay.Value >= 1 && gameDay.Value < GameStateService.CurrentDay,
+                IsFutureGameDay = gameDay.HasValue && gameDay.Value > GameStateService.CurrentDay,
                 IsOtherMonth = dayDate.Month != currentDate.Month
             });
         }

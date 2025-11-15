@@ -39,6 +39,12 @@ public class EmployeeService : IEmployeeService
         employee.OnboardingEndDate = DateTime.Now.AddDays(5);
         employee.IsAvailable = false; // Onboarding employees cannot work
         
+        // Set default wage if not provided
+        if (employee.MonthlyWage == 0)
+        {
+            employee.MonthlyWage = GetDefaultWageForSeniority(employee.Seniority);
+        }
+        
         _employees.Add(employee);
         
         // Notify all clients about the new employee
@@ -67,6 +73,7 @@ public class EmployeeService : IEmployeeService
         existingEmployee.VacationStartDate = employee.VacationStartDate;
         existingEmployee.VacationEndDate = employee.VacationEndDate;
         existingEmployee.OnboardingEndDate = employee.OnboardingEndDate;
+        existingEmployee.MonthlyWage = employee.MonthlyWage;
         
         // Update learning properties
         existingEmployee.LearningDays = employee.LearningDays;
@@ -151,7 +158,7 @@ public class EmployeeService : IEmployeeService
     private Employee CreateEmployeeWithRoles(string name, string email, string columnId, BoardType boardType, 
         Role learnedRole, List<Role> learnableRoles, Role blockedRole)
     {
-        return new Employee
+        var employee = new Employee
         {
             Id = Guid.NewGuid(),
             Name = name,
@@ -163,6 +170,22 @@ public class EmployeeService : IEmployeeService
             BoardType = boardType,
             ColumnId = columnId,
             Status = EmployeeStatus.Active
+        };
+        
+        // Set default wage based on seniority
+        employee.MonthlyWage = GetDefaultWageForSeniority(employee.Seniority);
+        
+        return employee;
+    }
+
+    private decimal GetDefaultWageForSeniority(Seniority seniority)
+    {
+        return seniority switch
+        {
+            Seniority.Junior => 2000,
+            Seniority.Mid => 3500,
+            Seniority.Senior => 5000,
+            _ => 2000
         };
     }
 
@@ -379,7 +402,7 @@ public class EmployeeService : IEmployeeService
 
     public async Task<List<Employee>> GetEmployeesByColumnAsync(string columnId)
     {
-        return _employees.Where(e => e.ColumnId == columnId && e.Status == EmployeeStatus.Active).ToList();
+        return _employees.Where(e => e.ColumnId == columnId && (e.Status == EmployeeStatus.Active || e.Status == EmployeeStatus.Onboarding || e.Status == EmployeeStatus.IsLearning || e.Status == EmployeeStatus.ChangingTeams || e.Status == EmployeeStatus.IsLearningInOtherTeam)).ToList();
     }
 
     public async Task<List<Employee>> GetAvailableEmployeesAsync()

@@ -12,7 +12,7 @@
      @ondrop:preventDefault>
     <div class="column-header">
         <h5>@Title</h5>
-        <span class="badge bg-secondary">@Cards.Count</span>
+        <span class="badge bg-secondary" style="font-size: 0.7rem; font-weight: 500; padding: 0.25rem 0.5rem;">@Cards.Count</span>
     </div>
     <div class="column-content">
         @foreach (var card in SortedCards)
@@ -45,7 +45,7 @@
         get
         {
             var sortedCards = new List<Card>();
-            var employees = Cards.OfType<Employee>().Where(e => e.Status == EmployeeStatus.Active || e.Status == EmployeeStatus.IsLearning || e.Status == EmployeeStatus.ChangingTeams || e.Status == EmployeeStatus.IsLearningInOtherTeam).ToList();
+            var employees = Cards.OfType<Employee>().Where(e => e.Status == EmployeeStatus.Active || e.Status == EmployeeStatus.IsLearning || e.Status == EmployeeStatus.ChangingTeams || e.Status == EmployeeStatus.IsLearningInOtherTeam || e.Status == EmployeeStatus.Onboarding).ToList();
             var workItems = Cards.Where(c => c is KanbanTask || c is Feature).ToList();
 
             // Add employees first
