@@ -11,6 +11,7 @@
 @inject NavigationManager Navigation
 @inject IGlobalLoaderService GlobalLoaderService
 @inject IWorkSimulationService WorkSimulationService
+@inject IAuthService AuthService
 @implements IDisposable
 @implements IAsyncDisposable
 
@@ -378,6 +379,12 @@
     }
 </style>
 
+@if (!AuthService.IsAuthenticated)
+{
+    @* Empty page for unauthenticated users *@
+}
+else
+{
 <div class="container-fluid" style="padding: 2rem;">
     <div class="gamemaster-header">
         <div class="d-flex justify-content-between align-items-center">
@@ -936,7 +943,7 @@
     IsVisible="@_showRestartConfirmation" 
     IsVisibleChanged="@((bool value) => _showRestartConfirmation = value)"
     OnRestartConfirmed="RestartGame" />
-
+}
 @code {
     private List<Employee>? _employees;
     private bool _showVacationModal = false;
@@ -967,6 +974,18 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Check authentication first
+        await AuthService.CheckAuthenticationAsync();
+        AuthService.AuthenticationStateChanged += OnAuthenticationStateChanged;
+        
+        if (AuthService.IsAuthenticated)
+        {
+            await LoadGameMasterData();
+        }
+    }
+
+    private async Task LoadGameMasterData()
+    {
         await LoadEmployees();
         await LoadFeatures();
         await GameStateService.LoadGameState(); // Load the current game state
@@ -975,6 +994,15 @@
         SignalRService.EmployeeStatusChanged += OnEmployeeStatusChanged;
         GameStateService.SummaryBoardVisibilityChanged += OnGameStateSummaryBoardVisibilityChanged;
         GameStateService.ReadyForDevelopmentColumnVisibilityChanged += OnGameStateReadyForDevelopmentColumnVisibilityChanged;
+    }
+
+    private void OnAuthenticationStateChanged(bool isAuthenticated)
+    {
+        if (isAuthenticated)
+        {
+            _ = LoadGameMasterData();
+        }
+        StateHasChanged();
     }
 
     private async Task LoadFeatures()
@@ -1645,6 +1673,7 @@
 
     public void Dispose()
     {
+        AuthService.AuthenticationStateChanged -= OnAuthenticationStateChanged;
         SignalRService.EmployeeStatusChanged -= OnEmployeeStatusChanged;
         GameStateService.SummaryBoardVisibilityChanged -= OnGameStateSummaryBoardVisibilityChanged;
         GameStateService.ReadyForDevelopmentColumnVisibilityChanged -= OnGameStateReadyForDevelopmentColumnVisibilityChanged;
@@ -1652,6 +1681,7 @@
 
     public async ValueTask DisposeAsync()
     {
+        AuthService.AuthenticationStateChanged -= OnAuthenticationStateChanged;
         SignalRService.EmployeeStatusChanged -= OnEmployeeStatusChanged;
         GameStateService.SummaryBoardVisibilityChanged -= OnGameStateSummaryBoardVisibilityChanged;
         GameStateService.ReadyForDevelopmentColumnVisibilityChanged -= OnGameStateReadyForDevelopmentColumnVisibilityChanged;

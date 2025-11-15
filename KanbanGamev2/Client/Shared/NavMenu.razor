@@ -1,6 +1,7 @@
 ﻿@using KanbanGamev2.Client.Components
 @using KanbanGamev2.Client.Services
 @inject KanbanGamev2.Shared.Services.IGameStateService GameStateService
+@inject IAuthService AuthService
 @implements IDisposable
 
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
@@ -10,11 +11,14 @@
                 <span class="oi oi-home" aria-hidden="true"></span> Home
             </NavLink>
         </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="gamemaster">
-                <span class="oi oi-cog" aria-hidden="true"></span> Game Master
-            </NavLink>
-        </div>
+        @if (AuthService.IsAuthenticated)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="gamemaster">
+                    <span class="oi oi-cog" aria-hidden="true"></span> Game Master
+                </NavLink>
+            </div>
+        }
 
 
         <div class="nav-item px-3">
@@ -50,17 +54,107 @@
                 <GameStatus />
             </div>
         </div>
+        
+        <div class="nav-item px-3 mt-auto" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+            @if (AuthService.IsAuthenticated)
+            {
+                <div class="d-flex align-items-center justify-content-between">
+                    <span class="text-muted small">
+                        <i class="oi oi-check text-success"></i> Authenticated
+                    </span>
+                    <button class="btn btn-outline-danger btn-sm" @onclick="HandleLogout" title="Logout">
+                        <i class="oi oi-account-logout"></i> Logout
+                    </button>
+                </div>
+            }
+            else
+            {
+                <button class="btn btn-primary w-100" @onclick="ShowLoginModal" title="Login as Game Master">
+                    <i class="oi oi-lock-locked"></i> Login
+                </button>
+            }
+        </div>
     </nav>
 </div>
 
+@if (_showLoginModal)
+{
+    <div class="modal fade show" style="display: block; z-index: 1050;" tabindex="-1" @onclick="CloseLoginModalOnBackdrop">
+        <div class="modal-dialog modal-dialog-centered" @onclick:stopPropagation="true">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="oi oi-lock-locked"></i> Game Master Login
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CloseLoginModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3">
+                        Enter the password to access the Game Master panel.
+                    </p>
+                    <div class="mb-3">
+                        <label for="sidebarPasswordInput" class="form-label">Password</label>
+                        <input type="password" 
+                               class="form-control @(_loginError ? "is-invalid" : "")" 
+                               id="sidebarPasswordInput" 
+                               @bind="_password" 
+                               @bind:event="oninput"
+                               @onkeypress="HandleKeyPress"
+                               placeholder="Enter password"
+                               autofocus />
+                        @if (_loginError)
+                        {
+                            <div class="invalid-feedback">
+                                Invalid password. Please try again.
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseLoginModal">Cancel</button>
+                    <button type="button" class="btn btn-primary" @onclick="HandleLogin" disabled="@_isLoggingIn">
+                        @if (_isLoggingIn)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <span>Logging in...</span>
+                        }
+                        else
+                        {
+                            <span>Login</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show" style="z-index: 1040;"></div>
+}
+
 @code {
     private bool collapseNavMenu = true;
+    private bool _showLoginModal = false;
+    private string _password = string.Empty;
+    private bool _loginError = false;
+    private bool _isLoggingIn = false;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        await AuthService.CheckAuthenticationAsync();
+        AuthService.AuthenticationStateChanged += OnAuthenticationStateChanged;
         GameStateService.SummaryBoardVisibilityChanged += OnSummaryBoardVisibilityChanged;
+    }
+
+    private void OnAuthenticationStateChanged(bool isAuthenticated)
+    {
+        if (isAuthenticated)
+        {
+            _showLoginModal = false;
+            _password = string.Empty;
+            _loginError = false;
+        }
+        StateHasChanged();
     }
 
     private void OnSummaryBoardVisibilityChanged(bool isVisible)
@@ -73,8 +167,72 @@
         collapseNavMenu = !collapseNavMenu;
     }
 
+    private void ShowLoginModal()
+    {
+        _showLoginModal = true;
+        _password = string.Empty;
+        _loginError = false;
+        StateHasChanged();
+    }
+
+    private void CloseLoginModal()
+    {
+        _showLoginModal = false;
+        _password = string.Empty;
+        _loginError = false;
+        StateHasChanged();
+    }
+
+    private void CloseLoginModalOnBackdrop(Microsoft.AspNetCore.Components.Web.MouseEventArgs e)
+    {
+        CloseLoginModal();
+    }
+
+    private async Task HandleLogin()
+    {
+        if (string.IsNullOrWhiteSpace(_password))
+        {
+            _loginError = true;
+            StateHasChanged();
+            return;
+        }
+
+        _isLoggingIn = true;
+        _loginError = false;
+        StateHasChanged();
+
+        var success = await AuthService.LoginAsync(_password);
+        
+        if (success)
+        {
+            _password = string.Empty;
+            _showLoginModal = false;
+        }
+        else
+        {
+            _loginError = true;
+        }
+
+        _isLoggingIn = false;
+        StateHasChanged();
+    }
+
+    private async Task HandleKeyPress(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await HandleLogin();
+        }
+    }
+
+    private void HandleLogout()
+    {
+        AuthService.Logout();
+    }
+
     public void Dispose()
     {
+        AuthService.AuthenticationStateChanged -= OnAuthenticationStateChanged;
         GameStateService.SummaryBoardVisibilityChanged -= OnSummaryBoardVisibilityChanged;
     }
 }

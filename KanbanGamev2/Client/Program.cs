@@ -42,4 +42,7 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 // Register game restart service
 builder.Services.AddScoped<IGameRestartService, GameRestartService>();
 
+// Register authentication service
+builder.Services.AddScoped<IAuthService, AuthService>();
+
 await builder.Build().RunAsync();
