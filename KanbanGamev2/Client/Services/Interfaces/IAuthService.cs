@@ -9,3 +9,4 @@ public interface IAuthService
     Task CheckAuthenticationAsync();
 }
 
+
